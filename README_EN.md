@@ -1,12 +1,12 @@
-# 🏛️ AGY-Craft: Software Engineering & Architecture Skills for Autonomous AI Agents
+# 🏛️ Code-Craft: Software Engineering & Architecture Skills for Autonomous AI Agents
 
-> **One-Line Value Proposition**: Systematically distills computer science classics (*Refactoring*, *The Art of UNIX Programming*, and high-level architectural philosophy) into **five-dimensional executable skills and always-on baseline rules** tailored for AI coding agents.
+> **One-Line Value Proposition**: Systematically distills computer science classics (*Refactoring*, *The Art of UNIX Programming*, and high-level architectural philosophy) into **six-dimensional executable skills and always-on baseline rules** tailored for AI coding agents.
 
 English | [简体中文](./README.md)
 
 ---
 
-## 1. Why AGY-Craft? (Problem Model & Vision)
+## 1. Why Code-Craft? (Problem Model & Vision)
 
 Modern Large Language Models (LLMs) demonstrate remarkable syntax generation capabilities, but when confronted with real-world enterprise engineering, they often suffer from **three critical pain points**:
 
@@ -21,7 +21,7 @@ Leveraging the **Google Antigravity / Agent Customization Specification**, we tr
 
 ## 2. Architecture Topology
 
-AGY-Craft establishes a comprehensive defense-in-depth engineering matrix:
+Code-Craft establishes a comprehensive defense-in-depth engineering matrix:
 
 ```mermaid
 flowchart TD
@@ -124,7 +124,7 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 ## 5. Directory Layout
 
 ```text
-create_kills/
+code-craft/
 ├── .agents/                               # AI Agent rules & skills core repository
 │   ├── rules/
 │   │   └── coding-standards.md            # Global baseline coding standards

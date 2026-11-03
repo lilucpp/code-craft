@@ -1,7 +1,7 @@
-# 🏛️ AGY-Craft: AI Agent 软件工程与高阶架构技能库
+# 🏛️ Code-Craft: AI Agent 软件工程与高阶架构技能库
 *(Software Engineering & Architecture Skills for Autonomous AI Agents)*
 
-> **一句话价值主张**：将计算机科学经典名著（《重构》《UNIX编程艺术》与酷壳高阶软件设计心法）系统化重构成 AI Agent 可直接判定、执行与按需激活的**“五维工程技能（Skills）与常驻底线准则（Rules）”**。
+> **一句话价值主张**：将计算机科学经典名著（《重构》《UNIX编程艺术》与酷壳高阶软件设计心法）系统化重构成 AI Agent 可直接判定、执行与按需激活的**“六维工程技能（Skills）与常驻底线准则（Rules）”**。
 
 [English Documentation](./README_EN.md) | 简体中文
 
@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横五纵”**的立体质量防护网：
+本项目采用**“一横六纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -125,7 +125,7 @@ flowchart TD
 ## 5. 项目目录全景 (Directory Layout)
 
 ```text
-create_kills/
+code-craft/
 ├── .agents/                               # AI Agent 规则与技能核心资产
 │   ├── rules/
 │   │   └── coding-standards.md            # 全局常驻编码规范与设计底线
