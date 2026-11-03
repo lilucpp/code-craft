@@ -1,27 +1,40 @@
-# Software Engineering & Architecture Skills for AI Agents
+# 🏛️ AGY-Craft: Software Engineering & Architecture Skills for Autonomous AI Agents
+
+> **One-Line Value Proposition**: Systematically distills computer science classics (*Refactoring*, *The Art of UNIX Programming*, and high-level architectural philosophy) into **five-dimensional executable skills and always-on baseline rules** tailored for AI coding agents.
 
 English | [简体中文](./README.md)
 
-This project translates timeless computer science classics and modern high-level software engineering principles into **machine-executable rules and skills** designed for AI Agents (such as Google Antigravity, Claude Code, Cursor, etc.).
+---
 
-By distilling long-form human literature into structured operational runbooks, decision trees, diagnostic checklists, and anti-pattern catalogs, it equips AI coding agents with deep, disciplined engineering wisdom across daily coding, code review, modular design, system architecture, and **technical communication & documentation**.
+## 1. Why AGY-Craft? (Problem Model & Vision)
+
+Modern Large Language Models (LLMs) demonstrate remarkable syntax generation capabilities, but when confronted with real-world enterprise engineering, they often suffer from **three critical pain points**:
+
+1. **"Toy Code" & Proliferating Code Smells**: LLMs inherently produce flat, sprawling blocks of code laden with nested `if-else` cascades, oversized functions, primitive obsession, and duplicate logic—lacking sensitivity to architectural rot;
+2. **Over-Engineering & Fragile Inheritance**: When tasked with system design, LLMs frequently fall into "Speculative Generality", abusing deep inheritance hierarchies and violating YAGNI and the Law of Demeter;
+3. **Fragmented & Ephemeral Prompts**: Pasting massive prompt instructions in every session bloats the context window, degrades model attention, and fails to establish an enduring, repeatable engineering discipline.
+
+### The Solution
+Leveraging the **Google Antigravity / Agent Customization Specification**, we transform bulky human literature into machine-executable runbooks with **Progressive Disclosure**, giving autonomous agents the instinctive discipline of senior software architects.
 
 ---
 
-## 1. Architectural Blueprint
+## 2. Architecture Topology
+
+AGY-Craft establishes a comprehensive defense-in-depth engineering matrix:
 
 ```mermaid
 flowchart TD
-    subgraph Always-On Rules [Rules - Baseline Constraints]
+    subgraph Global Baseline Rules [Rules - Always-On]
         R["coding-standards.md<br/>(SRP, Guard Clauses, Data-Driven, I/O Separation, Fail-Fast, DbC)"]
     end
 
-    subgraph Specialized Skills [Skills - Progressive Disclosure On-Demand]
-        S1["code-design<br/>(Package Topology, Interface Contracts, OOD)"]
-        S2["code-review<br/>(Code Review, 22 Code Smells Diagnosis)"]
-        S3["refactoring<br/>(Safe Refactoring, 68 Mechanics Catalog)"]
-        S4["unix-philosophy<br/>(System Architecture, Separation, Pipelines)"]
-        S5["tech-communication<br/>(Tech Sharing, Documentation, Troubleshooting & RCA)"]
+    subgraph Specialized Skills Matrix [Skills - Progressive Disclosure On-Demand]
+        S1["【Meso-Design】code-design<br/>Packaging (CCP/CRP/ADP) + Interface Contracts (OCP/ISP/DbC/SoC)"]
+        S2["【Micro-Review】code-review<br/>22 Code Smells Diagnostic Manual + 3-Tier Checklist"]
+        S3["【Micro-Refactoring】refactoring<br/>68 Mechanics Catalog + Runnable Demo / Test Safety Net"]
+        S4["【Macro-System】unix-philosophy<br/>17 TAOUP Rules + Separation of Policy/Mechanism + Pipeline Patterns"]
+        S5["【Communication】tech-communication<br/>CoolShell Sharing Model + Stack Overflow MRE + RCA Post-Mortem"]
     end
 
     R --> S1
@@ -33,40 +46,90 @@ flowchart TD
 
 ---
 
-## 2. Rules & Skills Catalog
+## 3. Skills & Rules Matrix
 
-### 1. Global Baseline Rules (Always-On)
-* **[`.agents/rules/coding-standards.md`](./.agents/rules/coding-standards.md)**:
-  * **Function Design**: Length within 20–30 lines, Single Level of Abstraction Principle (SLAP), $\le 3$ parameters, **Guard Clauses first**.
-  * **I/O Separation & Silence**: `stdout` is strictly reserved for machine-consumable data payloads; all logging, warnings, and diagnostic telemetry must go to `stderr`. Silence is golden on success.
-  * **Empirical Integrity & Safety**: Build runnable test verification demos when encountering ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
+### 1. Global Baseline Rules (`.agents/rules/`)
+* **[`coding-standards.md`](./.agents/rules/coding-standards.md)**:
+  * **Function Design**: Length constrained to 20–30 lines, Single Level of Abstraction Principle (SLAP), $\le 3$ arguments, **Guard Clauses first**;
+  * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
+  * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Specialized Skills (5 Pillars)
-All skills follow the standard Antigravity specification with precise activation triggers (YAML frontmatter) and progressive disclosure reference libraries:
+### 2. Five Specialized Skills (`.agents/skills/`)
 
-| Skill | Activation Scenarios | Theoretical Source | Key Content & References |
-| :--- | :--- | :--- | :--- |
-| **[`code-design`](./.agents/skills/code-design/)** | System architecture, package topology, interface modeling, modular design | Clean Architecture, SOLID, CoolShell Insights | - **Package & Component Topology**: CCP (Common Closure), CRP (Common Reuse), ADP (Acyclic Dependencies) & cycle-breaking mechanics.<br/>- **Interface & Contract**: OCP (Open/Closed), ISP (Interface Segregation), DbC (Design by Contract: Pre/Post-conditions & Invariants), SoC (Separation of Concerns).<br/>- **Evolutionary Design**: YAGNI, Composition over Inheritance, CoC (Convention over Configuration). |
-| **[`code-review`](./.agents/skills/code-review/)** | Code review, quality inspection, detecting architectural decay | Martin Fowler's *Refactoring* (Ch. 3) | - **22 Code Smells Diagnostic Manual** (symptoms, root causes, recommended treatments).<br/>- **3-Tier Comprehensive Review Checklist** (package dependencies, OO contracts, logic details). |
-| **[`refactoring`](./.agents/skills/refactoring/)** | Refactoring code, reducing cyclomatic complexity, decoupling | Martin Fowler's *Refactoring* (Ch. 6–11) | - **Refactoring Iron Laws**: Self-testing net / runnable demo safety first, Two Hats rule, Baby Steps.<br/>- **68 Standard Refactoring Mechanics Catalog** (problems, solutions, motivations, before/after code).<br/>- **Smell-to-Refactoring Quick Lookup Matrix**. |
-| **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | System architecture, CLI utilities, IPC protocols, config systems | Eric S. Raymond's *TAOUP*, CoolShell Blog | - **17 Unix Rules In-Depth** (Compactness & Miller's Law $7 \pm 2$, Orthogonality, Representation Rule).<br/>- **10 Classic Interface Patterns** (Filter, Cantrip, Engine-Interface Separation, CLI Server).<br/>- **CLI & Configuration Standards** (`-a` to `-z` option conventions, `--` terminator, 5-tier config precedence).<br/>- **Textuality & Application Protocols** (Line-oriented framing, 3-digit status codes, metadata formats). |
-| **[`tech-communication`](./.agents/skills/tech-communication/)** | Writing READMEs, RFCs/Design Docs, Tech Sharing, MRE Bug Reports, Incident RCA | CoolShell *Quality Technical Sharing*, Stack Overflow *How to Ask* | - **CoolShell Tech Sharing Model**: Problem Model $\to$ Alternatives Comparison $\to$ Mechanism & Internals $\to$ Best Practices.<br/>- **Stack Overflow Asking Standard**: MRE (Minimal, Reproducible Example), self-describing titles, expected vs actual behavior, zero screenshot policy.<br/>- **Industry-Grade README Guidelines**: Value proposition, visual architecture, quick start in 3 minutes, trade-offs.<br/>- **Architect-Level RCA & QA**: TL;DR conclusion first, 5-Whys root cause deduction, minimal precise fix, long-term regression defense. |
+| Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
+| :--- | :---: | :--- | :--- |
+| **[`code-design`](./.agents/skills/code-design/)** | **Meso**<br/>Packages & Modules | Component Principles (Uncle Bob)<br/>SOLID Principles<br/>Bertrand Meyer (DbC) | - **Package Topology**: CCP (Common Closure), CRP (Common Reuse), ADP (Acyclic Dependencies) & 2 cycle-breaking surgical techniques<br/>- **Interface & Contract**: OCP (Open/Closed), ISP (Interface Segregation), DbC (Pre/Post-conditions & Invariants)<br/>- **Evolutionary Design**: YAGNI anti-over-engineering, Composition over Inheritance, CoC (Convention over Configuration) |
+| **[`code-review`](./.agents/skills/code-review/)** | **Micro**<br/>Code Health | Martin Fowler's *Refactoring* (Ch. 3) | - **22 Code Smells Diagnostic Manual** (Divergent Change, Shotgun Surgery, Feature Envy symptoms and treatments)<br/>- **Rapid Inspection Checklist** (Package topology, OO contracts, function logic) |
+| **[`refactoring`](./.agents/skills/refactoring/)** | **Micro**<br/>Safe Execution | Martin Fowler's *Refactoring* (Ch. 6–11) | - **Refactoring Iron Laws**: Safety-net demo first, Two Hats rule, Baby Steps<br/>- **68 Refactoring Mechanics Catalog** (Composing methods, moving features, organizing data, simplifying conditionals)<br/>- **Smell-to-Refactoring Quick Lookup Matrix** |
+| **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **Macro**<br/>System Architecture | Eric S. Raymond's *TAOUP*<br/>CoolShell *Handling Volatile Requirements* | - **17 Unix Rules In-Depth** (Compactness & Miller's Law $7 \pm 2$, Orthogonality, Data-Driven Representation)<br/>- **10 Classic Interface Patterns** (Filter, Cantrip, Engine-Interface Separation, CLI Server)<br/>- **CLI & Configuration Standards** (`-a` to `-z` option dictionary, 5-tier config precedence, `--` parsing terminator) |
+| **[`tech-communication`](./.agents/skills/tech-communication/)** | **Interaction**<br/>Docs & Troubleshooting | CoolShell *Quality Technical Sharing*<br/>Stack Overflow *How to Ask* | - **CoolShell Tech Sharing Model**: Problem Model $\to$ Alternatives Comparison $\to$ Mechanism & Internals $\to$ Best Practices<br/>- **Stack Overflow Asking Standard**: MRE (Minimal, Reproducible Example), expected vs actual behavior, zero screenshot policy<br/>- **Industry-Grade README Guidelines**: Value proposition, visual architecture, quick start in 3 minutes, trade-offs<br/>- **Architect-Level RCA & QA**: TL;DR conclusion first, 5-Whys root cause deduction, minimal precise fix, long-term regression defense |
 
 ---
 
-## 3. Directory Layout
+## 4. Quick Start & Practical Scenarios
+
+Zero external dependencies required. As long as your IDE/CLI supports agent customization (such as Google Antigravity), these skills **trigger automatically based on conversational context**.
+
+### Scenario 1: Code Review (Detecting Code Smells)
+```text
+💬 User: "Review the code quality of this payment callback handler"
+🤖 Agent Response:
+1. Automatically activates [code-review] skill;
+2. Scans against the 22 code smells catalog, identifying Divergent Change and Switch Statements;
+3. Reports severity rating (Major/Minor) and recommends Replace Conditional with Polymorphism (9.6).
+```
+
+### Scenario 2: Safe Refactoring (Empirical Baby Steps)
+```text
+💬 User: "Refactor this deeply nested conditional discount calculation"
+🤖 Agent Response:
+1. Automatically activates [refactoring] skill;
+2. Declares: "Safety net first—constructing an isolated runnable demo to lock baseline behavior";
+3. Executes baby steps: introducing guard clauses and strategy dispatch tables, verifying after every atomic edit.
+```
+
+### Scenario 3: Architectural Package Design
+```text
+💬 User: "Design the package structure and contracts for a multi-tenant permission validation module"
+🤖 Agent Response:
+1. Automatically activates [code-design] skill;
+2. Applies CCP to group highly-correlated classes, applies CRP to prune unneeded dependencies, ensuring an Acyclic Dependency Graph (ADP);
+3. Explicitly defines precondition and postcondition contracts (DbC) on tenant context.
+```
+
+### Scenario 4: High-Quality Technical Sharing & Docs
+```text
+💬 User: "I need to give a tech talk on 'Why We Need Separation of Concerns' next week. Help me outline it."
+🤖 Agent Response:
+1. Automatically activates [tech-communication] skill;
+2. Outputs according to the CoolShell cognitive model: Real-world pain point $\to$ Alternatives comparison (AOP vs Middleware vs Events) $\to$ Core mechanism & data flow $\to$ Team best practices.
+```
+
+---
+
+## 5. Directory Layout
 
 ```text
 create_kills/
-├── .agents/                               # Root directory for Agent rules and skills
+├── .agents/                               # AI Agent rules & skills core repository
 │   ├── rules/
 │   │   └── coding-standards.md            # Global baseline coding standards
 │   └── skills/
 │       ├── code-design/                   # Package architecture & interface contract skill
-│       ├── code-review/                   # Code review & code smells inspection skill
-│       ├── refactoring/                   # Safe refactoring & mechanics catalog skill
+│       │   ├── SKILL.md                   # Skill entry point & workflow
+│       │   └── references/                # [On-demand] CCP/CRP/ADP/DbC/SoC references
+│       ├── code-review/                   # Code review & smells diagnosis skill
+│       │   ├── SKILL.md                   # Skill entry point & workflow
+│       │   └── references/                # [On-demand] 22 smells manual & checklist
+│       ├── refactoring/                   # Safe refactoring & mechanics skill
+│       │   ├── SKILL.md                   # Skill entry point & workflow
+│       │   └── references/                # [On-demand] 68 mechanics catalog & lookup matrix
 │       ├── unix-philosophy/               # Unix philosophy & system design skill
-│       └── tech-communication/            # Technical communication, documentation & RCA skill
+│       │   ├── SKILL.md                   # Skill entry point & workflow
+│       │   └── references/                # [On-demand] 17 rules, CLI & config standards
+│       └── tech-communication/            # Technical communication, docs & RCA skill
+│           ├── SKILL.md                   # Skill entry point & workflow
+│           └── references/                # [On-demand] Sharing model, MRE, RCA templates
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
@@ -80,41 +143,35 @@ create_kills/
 
 ---
 
-## 4. How to Use These Skills
+## 6. Design Trade-offs
 
-In any Agent Customization environment supporting skills (such as Antigravity):
-
-* 💬 **Review Request**: "*Review this newly written payment settlement logic*"
-  $\to$ Automatically triggers `code-review`, scanning against the 22 code smells and ADP/ISP checklists.
-* 💬 **Refactor Request**: "*Refactor this nested 4-layer conditional block*"
-  $\to$ Automatically triggers `refactoring`, mandating a safety verification demo and applying guard clauses/polymorphism in baby steps.
-* 💬 **Design Request**: "*How should I design the package structure and contracts for a multi-source data sync module?*"
-  $\to$ Automatically triggers `code-design`, applying CCP/CRP/ADP for packaging and DbC for preconditions/postconditions.
-* 💬 **Tool Development**: "*Help me build a CLI log processor*"
-  $\to$ Automatically triggers `unix-philosophy`, adhering to the Filter pattern, standard `-a`~`-z` options, and strict `stdout/stderr` isolation.
-* 💬 **Documentation**: "*Write an industry-grade README for this project*"
-  $\to$ Automatically triggers `tech-communication`, crafting a standard document with value proposition, diagrams, and runnable quick start.
-* 💬 **Incident Post-Mortem**: "*Analyze the deadlock accident that happened in production and write an RCA report*"
-  $\to$ Automatically triggers `tech-communication`, executing 5-Whys root cause analysis, minimal fix, and long-term regression testing.
+1. **Why Multiple Specialized Skills instead of a Monolithic Skill?**
+   * *Trade-off*: Stuffing all knowledge into a single monolithic document creates severe context window bloat and dilutes model attention.
+   * *Decision*: Micro-refactoring, meso-design, macro-systems, and technical communication are orthogonal concerns, packaged independently for precision targeting.
+2. **Why Pure Markdown + YAML Frontmatter?**
+   * *Trade-off*: Zero compilation, zero runtime environment friction.
+   * *Decision*: Upholds the Unix philosophy of "Textuality" and "Transparency"—readable and introspectable by both humans and machines.
 
 ---
 
-## 5. Adding New Books & Skills
+## 7. How to Extend the Knowledge Base
 
-To expand this knowledge base with more books or domain skills:
-1. **Add Raw Materials**: Place source books or papers under `resources/<topic-name>/`.
-2. **Distill & Structure**:
-   - Extract actionable criteria and workflows into `SKILL.md` (defining concise trigger conditions in YAML frontmatter).
-   - Offload extensive documentation into `references/` and `examples/` for progressive disclosure.
-3. **Harmonize Global Rules**: Distill fundamental bottom-line rules into `.agents/rules/coding-standards.md`.
+1. **Add Raw Literature**: Place raw ebooks, RFCs, or engineering articles under `resources/<topic>/`;
+2. **Structure New Skills**:
+   - Create `SKILL.md` under `.agents/skills/<skill-name>/` with accurate YAML frontmatter;
+   - Offload extensive reference manuals into `references/` for progressive disclosure;
+3. **Consolidate Universal Rules**: If a constraint applies universally across all languages, add it to `.agents/rules/coding-standards.md`.
 
 ---
 
-## 6. Acknowledgements & Literature
+## 8. Acknowledgements & Seminal Works
 
-This repository honors the seminal works and engineering philosophy of:
+AGY-Craft stands upon the shoulders of giants:
 * **Martin Fowler** — *Refactoring: Improving the Design of Existing Code*
 * **Eric S. Raymond** — *The Art of UNIX Programming*
 * **Robert C. Martin (Uncle Bob)** — *Agile Software Development: Principles, Patterns, and Practices*
 * **Hao Chen (Left-Ear Mouse / CoolShell)** — *Using Unix Design Philosophy to Deal with Volatile Requirements*, *Some Principles of Software Design*, *How to Deliver a Quality Technical Presentation*
 * **Stack Overflow Community** — *How do I ask a good question?* & *Minimal, Reproducible Example (MRE)*
+
+---
+*MIT License © 2026 lilucpp. Built with discipline, precision, and passion.*

@@ -1,27 +1,41 @@
-# AI Agent 软件设计与工程质量技能库 (Software Engineering & Design Skills for Agents)
+# 🏛️ AGY-Craft: AI Agent 软件工程与高阶架构技能库
+*(Software Engineering & Architecture Skills for Autonomous AI Agents)*
 
-[English Version](./README_EN.md) | 简体中文
+> **一句话价值主张**：将计算机科学经典名著（《重构》《UNIX编程艺术》与酷壳高阶软件设计心法）系统化重构成 AI Agent 可直接判定、执行与按需激活的**“五维工程技能（Skills）与常驻底线准则（Rules）”**。
 
-本项目致力于将计算机科学经典著作与现代高阶软件工程思想，转化为 AI Agent（如 Google Antigravity、Claude Code、Cursor 等）可直接判定、执行和按需激活的**结构化规则（Rules）与技能包（Skills）**。
-
-通过将人类阅读的“长篇理论”重构为面向机器的“执行手册、决策树、质量清单与正反模式”，让 AI 助手在日常编码、代码审查、模块设计、系统架构以及**技术表达与文档沟通**中，始终遵循最高标准的软件工程原则。
+[English Documentation](./README_EN.md) | 简体中文
 
 ---
 
-## 一、 核心知识资产图谱
+## 1. 为什么需要这个项目？(Why & Problem Model)
+
+现代大语言模型（LLM）具备极强的语法生成能力，但在面对真实复杂的工业级软件工程时，往往暴露以下**三大痛点**：
+
+1. **“玩具代码”与坏味道漫延**：LLM 倾向于生成长篇扁平代码，充斥着深层嵌套 `if-else`、长函数、基本类型偏执与重复逻辑，缺乏对代码异味（Code Smells）的敏锐嗅觉；
+2. **过度设计与脆弱继承**：在架构设计时，LLM 容易患上“夸夸其谈未来性（Speculative Generality）”的毛病，滥用深层继承体系，违反 YAGNI 与迪米特法则；
+3. **提示词工程的碎片化与遗忘**：每次对话重复粘贴海量 Prompt 不仅消耗昂贵的上下文 Token，而且容易导致模型注意力涣散，无法形成稳定、可继承的团队工程规范。
+
+### 本项目的解法
+借助 **Google Antigravity / 现代 Agent 规范**，我们实现了从“长篇人类书籍”到“机器执行手册（Runbook）”的提炼，建立**分层渐进式披露机制（Progressive Disclosure）**，让 Agent 在写代码的第一时间，自带资深架构师的工程直觉。
+
+---
+
+## 2. 核心架构拓扑 (Architecture Topology)
+
+本项目采用**“一横五纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
-    subgraph 底层常驻规则 [常驻规则 Rules - 全局约束底线]
+    subgraph 全局约束底线 [常驻规则 Rules - Always-On]
         R["coding-standards.md<br/>（单一职责、卫语句、数据驱动、I/O分流、Fail-Fast、契约意识）"]
     end
 
-    subgraph 专项技能群 [专项技能 Skills - 渐进式按需激活]
-        S1["code-design<br/>（中观包划分 / 接口契约 / 面向对象建模）"]
-        S2["code-review<br/>（微观代码审查 / 22种坏味道诊断）"]
-        S3["refactoring<br/>（微观安全重构 / 68种经典手法）"]
-        S4["unix-philosophy<br/>（宏观系统设计 / 机制分离 / 管道拼装）"]
-        S5["tech-communication<br/>（技术分享 / 文档编写 / 排障提问与答疑）"]
+    subgraph 专项技能矩阵 [专项技能 Skills - 渐进式按需激活 Progressive Disclosure]
+        S1["【中观设计】code-design<br/>包拓扑(CCP/CRP/ADP) + 接口契约(OCP/ISP/DbC/SoC)"]
+        S2["【微观审查】code-review<br/>22种代码坏味道诊断 + 三维质量审查清单"]
+        S3["【微观重构】refactoring<br/>68种标准重构手法 + 验证测试网/Demo守护"]
+        S4["【宏观系统】unix-philosophy<br/>17条Unix哲学 + 机制策略分离 + 管道接口模式"]
+        S5["【技术表达】tech-communication<br/>酷壳分享模型 + Stack Overflow MRE排障 + RCA复盘"]
     end
 
     R --> S1
@@ -33,88 +47,133 @@ flowchart TD
 
 ---
 
-## 二、 技能与规则全景导航
+## 3. 技能与规则全景一览 (Skills & Rules Matrix)
 
-### 1. 全局常驻规则 (Always-On Rules)
-* **[`.agents/rules/coding-standards.md`](./.agents/rules/coding-standards.md)**：
-  * **函数设计底线**：单函数 20~30 行以内，单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**。
-  * **I/O 分流与缄默**：`stdout` 严禁输出人类交互杂讯，纯留给机器消费；所有日志与诊断统一走 `stderr`；成功时保持沉默。
-  * **实证与安全**：遇歧义写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；改动必须经确认后方可提交。
+### 1. 全局常驻底线规则 (`.agents/rules/`)
+* **[`coding-standards.md`](./.agents/rules/coding-standards.md)**：
+  * **函数设计红线**：长度控制在 20~30 行内，单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**；
+  * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
+  * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 五大专项技能包 (Specialized Skills)
-每个技能包均遵循 Antigravity 规范，具备清晰的触发条件（YAML Frontmatter）与渐进式披露参考库：
+### 2. 五大专项技能 (`.agents/skills/`)
 
-| 技能名称 (Skill) | 触发场景 (Triggers) | 理论来源 | 核心包含内容 |
-| :--- | :--- | :--- | :--- |
-| **[`code-design`](./.agents/skills/code-design/)** | 架构设计、新模块定义、接口建模、包划分 | 经典架构、SOLID、酷壳高阶设计思想 | - **包与组件划分**：CCP 共同封闭、CRP 共同重用、ADP 无环依赖及解环方案<br/>- **接口与契约**：OCP 开闭原则、ISP 接口隔离、DbC 契约设计、SoC 关注点分离<br/>- **演进设计**：YAGNI 反过度设计、组合优于继承、CoC 惯例优于配置 |
-| **[`code-review`](./.agents/skills/code-review/)** | 代码审查、质量体检、排查设计腐化 | 马丁·福勒《重构》第3章 | - **22 种代码坏味道诊断手册**（现象、危害、治疗手法）<br/>- **三维审查快速核查清单**（包依赖层、面向对象契约层、逻辑细节层） |
-| **[`refactoring`](./.agents/skills/refactoring/)** | 代码重构、降低圈复杂度、模块解耦 | 马丁·福勒《重构》第6~11章 | - **重构铁律**：测试网/Demo 实证守护、两顶帽子法则、微步前进（Baby Steps）<br/>- **68 种标准重构手法全集**（含问题、解法、动机与代码对照）<br/>- **坏味道到手法速查映射表** |
-| **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | 系统架构、CLI 工具、通信协议、配置系统 | 埃里克·雷蒙德《UNIX编程艺术》、酷壳博文 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则）<br/>- **10 大经典接口设计模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a` 到 `-z` 标准选项语义表、5级配置覆盖模型）<br/>- **文本化与应用协议设计**（行驱动、3位状态码、4类元格式选型） |
-| **[`tech-communication`](./.agents/skills/tech-communication/)** | 写README、技术方案/RFC、技术分享、Bug排查求助、事故复盘(RCA) | 酷壳《如何做一个有质量的技术分享》、Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 底层机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、自解释标题、预期 vs 实际现象、严禁截图<br/>- **工业级 README 模板**：痛点价值主张、架构拓扑、开箱即用快速上手、技术权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析、最小精准修复、长效防线 |
+| 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
+| :--- | :---: | :--- | :--- |
+| **[`code-design`](./.agents/skills/code-design/)** | **中观**<br/>包与模块 | Uncle Bob 组件原则<br/>SOLID 原则<br/>Bertrand Meyer (DbC) | - **组件划分**：CCP 共同封闭、CRP 共同重用、ADP 无环依赖及 2 种解环手术刀<br/>- **接口契约**：OCP 开闭原则、ISP 瘦接口隔离、DbC（前置/后置条件/不变式）<br/>- **演进哲学**：YAGNI 反过度设计、组合优于继承、CoC 惯例优于配置 |
+| **[`code-review`](./.agents/skills/code-review/)** | **微观**<br/>代码体检 | Martin Fowler《重构》第3章 | - **22 种坏味道诊断手册**（发散式变化、霰弹式修改、依恋情结等详细特征与解法）<br/>- **快速核查清单**（按包拓扑、OO 契约、函数逻辑三层逐项比对） |
+| **[`refactoring`](./.agents/skills/refactoring/)** | **微观**<br/>安全实施 | Martin Fowler《重构》第6~11章 | - **重构铁律**：自测试网守护、两顶帽子法则、微步前进（Baby Steps）<br/>- **68 种经典重构手法全集**（重新组织函数、搬移特性、组织数据、简化条件等）<br/>- **坏味道到手法速查映射表** |
+| **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **宏观**<br/>系统架构 | Eric S. Raymond《UNIX编程艺术》<br/>酷壳《应对多变的需求》 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则数据驱动）<br/>- **10 大经典接口模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a`~`-z` 选项字典、5级配置覆盖模型、`--` 解析终结符） |
+| **[`tech-communication`](./.agents/skills/tech-communication/)** | **交互**<br/>表达文档 | 酷壳《如何做有质量的技术分享》<br/>Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 源码机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、预期 vs 实际现象、零代码截图<br/>- **工业级 README 模板**：痛点主张、架构拓扑、开箱即用、技术选型权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析(RCA)、长效防线 |
 
 ---
 
-## 三、 项目目录结构
+## 4. 快速上手与使用示例 (Quick Start)
 
+本项目**零外部环境依赖**，只需在支持 Agent 自定义扩展的 IDE 或 CLI 环境中挂载本仓库，技能将随对话上下文**自动触发**。
+
+### 场景 1：代码审查（诊断坏味道）
 ```text
-create_kills/
-├── .agents/                               # AI Agent 规则与技能根目录
-│   ├── rules/
-│   │   └── coding-standards.md            # 全局编码规范与底线
-│   └── skills/
-│       ├── code-design/                   # 架构建模与包设计技能
-│       ├── code-review/                   # 代码审查与坏味道体检技能
-│       ├── refactoring/                   # 代码安全重构技能
-│       ├── unix-philosophy/               # Unix哲学与系统设计技能
-│       └── tech-communication/            # 技术表达、文档编写与排障答疑技能
-│
-├── resources/                             # 原始参考资料库（持续完善中）
-│   ├── refactoring/                       # 《重构：改善既有代码的设计》原书
-│   ├── unix-programming-art/              # 《UNIX编程艺术》原书与精选博文索引
-│   └── tech-communication/                # 技术分享心法与 Stack Overflow 提问指南索引
-│
-├── .gitignore                             # Git 忽略配置
-├── README.md                              # 项目中文说明
-└── README_EN.md                           # 项目英文说明
+💬 用户："帮我审查一下这段支付回调处理函数的代码质量"
+🤖 Agent 动作：
+1. 自动激活 [code-review] 技能；
+2. 检索 22 种坏味道清单，指出：包含 Divergent Change（发散式变化）与 Switch Statements（条件分支惊悚）；
+3. 给出严重级别（Major/Minor）并建议套用 Replace Conditional with Polymorphism (9.6) 重构。
+```
+
+### 场景 2：安全重构（步步验证）
+```text
+💬 用户："重构这段复杂的嵌套 if-else 折扣计算代码"
+🤖 Agent 动作：
+1. 自动激活 [refactoring] 技能；
+2. 声明“重构前必须构筑测试网”：先编写一段独立运行的验证 Demo 锁定现有输入输出行为；
+3. 以微步（Baby Steps）方式引入卫语句（Guard Clauses）和策略分派表，每改一步验证一次。
+```
+
+### 场景 3：架构与包划分
+```text
+💬 用户："我要设计一个多租户权限校验模块，如何划分目录结构和接口？"
+🤖 Agent 动作：
+1. 自动激活 [code-design] 技能；
+2. 遵循 CCP 聚合强相关类，遵循 CRP 剔除无关依赖，确保包依赖拓扑为有向无环图 (ADP)；
+3. 基于 DbC 显式定义租户上下文的前置断言与后置校验契约。
+```
+
+### 场景 4：高水准技术分享与文档
+```text
+💬 用户："下周要在团队内分享‘为什么需要关注点分离’，帮我拟一份大纲"
+🤖 Agent 动作：
+1. 自动激活 [tech-communication] 技能；
+2. 严格按酷壳模型输出：痛点切入（一个改动引发十个包连锁崩溃） $\to$ 方案横向对比（AOP vs 中间件 vs 事件驱动） $\to$ 核心机制剖析 $\to$ 团队落地最佳实践。
 ```
 
 ---
 
-## 四、 如何使用这套 Skills？
+## 5. 项目目录全景 (Directory Layout)
 
-当您在支持 Agent Customization 的工作环境中（如 Antigravity），只需向助手发出自然语言指令，相应的技能将被**自动激活**：
-
-* 💬 **请求审查**：“*帮我 Review 这段新写的订单结算代码*”
-  $\to$ 自动加载 `code-review`，对照 22 种坏味道与 ISP/ADP 清单输出结构化体检报告。
-* 💬 **请求重构**：“*重构这个嵌套了 4 层的复杂 if-else*”
-  $\to$ 自动加载 `refactoring`，要求先建立验证 Demo/测试用例，按微步套用卫语句与多态手法。
-* 💬 **请求设计**：“*我要设计一个多源数据同步模块，如何划分包和接口？*”
-  $\to$ 自动加载 `code-design`，基于 CCP/CRP/ADP 划分模块包，定义 DbC 前后置契约。
-* 💬 **请求开发工具**：“*帮我写一个批处理日志的 CLI 命令行工具*”
-  $\to$ 自动加载 `unix-philosophy`，严格遵守过滤器模式、`-a`~`-z` 选项规范及 `stdout/stderr` 隔离。
-* 💬 **编写项目文档**：“*帮我为这个项目写一份高质量的 README*”
-  $\to$ 自动加载 `tech-communication`，生成包含痛点阐述、架构图解与开箱即用快速上手的标准文档。
-* 💬 **事故复盘 / 答疑**：“*分析刚才线上死锁的根本原因，写一份复盘报告*”
-  $\to$ 自动加载 `tech-communication`，按照 TL;DR 结论先行、5-Whys 根因分析与长效防线输出标准 RCA 报告。
+```text
+create_kills/
+├── .agents/                               # AI Agent 规则与技能核心资产
+│   ├── rules/
+│   │   └── coding-standards.md            # 全局常驻编码规范与设计底线
+│   └── skills/
+│       ├── code-design/                   # 架构建模、包划分与接口契约技能
+│       │   ├── SKILL.md                   # 技能入口与工作流
+│       │   └── references/                # [按需调阅] CCP/CRP/ADP/DbC/SoC 深度参考
+│       ├── code-review/                   # 代码审查与坏味道体检技能
+│       │   ├── SKILL.md                   # 技能入口与工作流
+│       │   └── references/                # [按需调阅] 22种坏味道手册与审查核对表
+│       ├── refactoring/                   # 代码安全重构技能
+│       │   ├── SKILL.md                   # 技能入口与工作流
+│       │   └── references/                # [按需调阅] 68种重构手法全集与映射表
+│       ├── unix-philosophy/               # Unix哲学与系统设计技能
+│       │   ├── SKILL.md                   # 技能入口与工作流
+│       │   └── references/                # [按需调阅] 17条哲学/CLI规范/接口模式
+│       └── tech-communication/            # 技术表达、文档编写与排障答疑技能
+│           ├── SKILL.md                   # 技能入口与工作流
+│           └── references/                # [按需调阅] 酷壳分享模型/MRE规范/RCA模板
+│
+├── resources/                             # 原始参考资料库（持续扩展中）
+│   ├── refactoring/                       # 《重构》原版 EPUB 资料
+│   ├── unix-programming-art/              # 《UNIX编程艺术》原版 EPUB 与博文索引
+│   └── tech-communication/                # 酷壳分享心法与 Stack Overflow 提问指南
+│
+├── .gitignore                             # Git 忽略配置
+├── README.md                              # 项目中文说明
+└── README_EN.md                           # 项目英文说明 (English Documentation)
+```
 
 ---
 
-## 五、 后续扩展指南
+## 6. 设计权衡与架构决策 (Design Trade-offs)
 
-如果您希望向本项目追加新的经典书籍或自定义技能：
-1. **追加原始资料**：放置于 `resources/<topic-name>/` 下。
-2. **提取与结构化**：
-   - 提取硬核判据与工作流，编写 `SKILL.md`（配置准确的 `description` 触发词）；
-   - 将繁重的理论和代码手册分流至 `references/` 与 `examples/`，实现渐进式披露。
-3. **沉淀常驻规则**：将具有普适性的红线规则提炼至 `.agents/rules/`。
+1. **为什么采用多技能（Multi-Skills）而非单体巨型 Skill？**
+   * *权衡*：如果把所有知识塞进单个单体文件，不仅导致严重的上下文窗口膨胀（Context Bloating），还会稀释 LLM 的注意力。
+   * *决策*：微观重构、中观设计、宏观系统、技术表达相互正交，独立成包，匹配意图时精准加载。
+2. **为什么坚持采用纯 Markdown + YAML 元数据？**
+   * *权衡*：无需编译环境，零外部第三方运行依赖。
+   * *决策*：遵循 Unix 哲学的“文本化原则”与“透明性原则”，任何人类与 AI 均可零障碍检视、复用和迁移。
 
 ---
 
-## 六、 致敬与参考资料
+## 7. 如何贡献与扩展 (Extending the Knowledge Base)
 
-本项目知识核心提炼并致敬以下大师著作与思想先驱：
+欢迎将您团队沉淀的经典工程书籍或内部研发规约合入本项目：
+1. **添加原始材料**：在 `resources/<topic>/` 下存放书籍、RFC 或技术博客；
+2. **提取结构化技能**：
+   - 在 `.agents/skills/<skill-name>/` 下创建 `SKILL.md`，定义准确的 YAML Frontmatter；
+   - 将详细的理论、步骤与正反用例分流至 `references/`，实现渐进式披露；
+3. **补充常驻红线**：若具有全语言通用性，合入 `.agents/rules/coding-standards.md`。
+
+---
+
+## 8. 致敬与思想源泉 (Acknowledgements)
+
+本项目站在巨人的肩膀上，知识体系提炼自以下思想先驱：
 * **Martin Fowler** ——《重构：改善既有代码的设计》(Refactoring: Improving the Design of Existing Code)
 * **Eric S. Raymond** ——《UNIX编程艺术》(The Art of UNIX Programming)
 * **Robert C. Martin (Uncle Bob)** ——《敏捷软件开发：原则、模式与实践》(Agile Software Development)
 * **陈皓（左耳朵耗子 / CoolShell）** ——《用Unix的设计思想来应对多变的需求》、《一些软件设计的原则》、《如何做一个有质量的技术分享》
-* **Stack Overflow Community** ——《How do I ask a good question?》& MRE (Minimal, Reproducible Example)
+* **Stack Overflow 社区** ——《How do I ask a good question?》与 MRE (Minimal, Reproducible Example) 规范
+
+---
+*MIT License © 2026 lilucpp. Built with discipline, precision, and passion.*
