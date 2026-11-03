@@ -69,7 +69,25 @@
 
 ---
 
-## 4. 实证与安全底线
+## 5. C++ 语言专项与静态分析底线
+
+1. **代码风格与排版基准**：
+   - 严格遵循 Google C++ 规范基线，并应用三处核心约束：
+     * **指针与引用右对齐**：`PointerAlignment: Right`（如 `char *p; const string &ref;`）；
+     * **禁用指针推断**：`DerivePointerAlignment: false`（彻底消灭歧义）；
+     * **行宽上限放宽**：`ColumnLimit: 120`（提升现代泛型与模板代码的可读性）。
+2. **增量治理法则 (Boy Scout Rule)**：
+   - 面对历史老项目，严禁盲目执行全量格式化；**必须使用增量模式（如 `clang-format-diff` 与 `run_check.sh --mode=diff`）仅对当前改动行/改动文件执行格式化与静态检查**。
+3. **三方库三重隔离**：
+   - 在 `.clang-format-ignore` 中显式排除 `third_party/**` 与 `build/**`；
+   - 在 `.clang-tidy` 中通过 `HeaderFilterRegex` 屏蔽非业务源码头文件；
+   - 在 CMake 中通过 `SYSTEM` 关键字引入外部依赖，压制第三方内部警告。
+4. **编译警告等同错误 (Warnings as Errors)**：
+   - 开启 `-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wnon-virtual-dtor -Wold-style-cast` 并视警告为错误。
+
+---
+
+## 6. 实证与安全底线
 
 - **补救原则与快速失败 (Rule of Repair / Fail-Fast)**：
   - 严禁静默吞掉异常（如空 `catch` 或忽略系统调用错误码）。一旦遇到不可恢复异常，立即退出崩溃并向 `stderr` 打印足量上下文。

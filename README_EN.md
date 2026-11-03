@@ -35,6 +35,7 @@ flowchart TD
         S3["【Micro-Refactoring】refactoring<br/>68 Mechanics Catalog + Runnable Demo / Test Safety Net"]
         S4["【Macro-System】unix-philosophy<br/>17 TAOUP Rules + Separation of Policy/Mechanism + Pipeline Patterns"]
         S5["【Communication】tech-communication<br/>CoolShell Sharing Model + Stack Overflow MRE + RCA Post-Mortem"]
+        S6["【C++ Quality】cpp-code-quality<br/>Custom Google Style + Incremental Diffs + Clang-Tidy & Cppcheck"]
     end
 
     R --> S1
@@ -42,6 +43,7 @@ flowchart TD
     R --> S3
     R --> S4
     R --> S5
+    R --> S6
 ```
 
 ---
@@ -51,10 +53,11 @@ flowchart TD
 ### 1. Global Baseline Rules (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**:
   * **Function Design**: Length constrained to 20–30 lines, Single Level of Abstraction Principle (SLAP), $\le 3$ arguments, **Guard Clauses first**;
+  * **C++ Specifics**: Google C++ baseline, PointerAlignment: Right, ColumnLimit: 120; incremental Boy Scout rule for legacy repos; triple-lock third-party isolation;
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Five Specialized Skills (`.agents/skills/`)
+### 2. Six Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -63,6 +66,7 @@ flowchart TD
 | **[`refactoring`](./.agents/skills/refactoring/)** | **Micro**<br/>Safe Execution | Martin Fowler's *Refactoring* (Ch. 6–11) | - **Refactoring Iron Laws**: Safety-net demo first, Two Hats rule, Baby Steps<br/>- **68 Refactoring Mechanics Catalog** (Composing methods, moving features, organizing data, simplifying conditionals)<br/>- **Smell-to-Refactoring Quick Lookup Matrix** |
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **Macro**<br/>System Architecture | Eric S. Raymond's *TAOUP*<br/>CoolShell *Handling Volatile Requirements* | - **17 Unix Rules In-Depth** (Compactness & Miller's Law $7 \pm 2$, Orthogonality, Data-Driven Representation)<br/>- **10 Classic Interface Patterns** (Filter, Cantrip, Engine-Interface Separation, CLI Server)<br/>- **CLI & Configuration Standards** (`-a` to `-z` option dictionary, 5-tier config precedence, `--` parsing terminator) |
 | **[`tech-communication`](./.agents/skills/tech-communication/)** | **Interaction**<br/>Docs & Troubleshooting | CoolShell *Quality Technical Sharing*<br/>Stack Overflow *How to Ask* | - **CoolShell Tech Sharing Model**: Problem Model $\to$ Alternatives Comparison $\to$ Mechanism & Internals $\to$ Best Practices<br/>- **Stack Overflow Asking Standard**: MRE (Minimal, Reproducible Example), expected vs actual behavior, zero screenshot policy<br/>- **Industry-Grade README Guidelines**: Value proposition, visual architecture, quick start in 3 minutes, trade-offs<br/>- **Architect-Level RCA & QA**: TL;DR conclusion first, 5-Whys root cause deduction, minimal precise fix, long-term regression defense |
+| **[`cpp-code-quality`](./.agents/skills/cpp-code-quality/)** | **Tooling**<br/>C++ Toolchain | Google C++ Style<br/>LLVM Clang-Tidy<br/>Boy Scout Incremental Rule | - **Automated Toolchain Detection**: Environment self-check script `env_check.sh` diagnoses tools with distro install hints<br/>- **One-Click Config Init**: Generates customized `.clang-format` (Right pointer, 120 cols), `.clang-tidy` (high signal-to-noise rules), and `.clang-format-ignore`<br/>- **Dual-Mode Dispatch**: Supports incremental diff checking (`clang-format-diff` for legacy repos) and full scan, safely ignoring `third_party/` |
 
 ---
 
@@ -105,6 +109,16 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 2. Outputs according to the CoolShell cognitive model: Real-world pain point $\to$ Alternatives comparison (AOP vs Middleware vs Events) $\to$ Core mechanism & data flow $\to$ Team best practices.
 ```
 
+### Scenario 5: C++ Static Analysis & Incremental Formatting
+```text
+💬 User: "This is a legacy codebase; only format and run static checks on my modified lines"
+🤖 Agent Response:
+1. Automatically activates [cpp-code-quality] skill;
+2. Pre-flight check: verifies clang-format and clang-tidy availability;
+3. Ensures .clang-format and .clang-tidy exist in project root;
+4. Executes incremental inspection: invoking clang-format-diff on git diff lines, ignoring third_party/ with zero blast radius.
+```
+
 ---
 
 ## 5. Directory Layout
@@ -116,26 +130,23 @@ create_kills/
 │   │   └── coding-standards.md            # Global baseline coding standards
 │   └── skills/
 │       ├── code-design/                   # Package architecture & interface contract skill
-│       │   ├── SKILL.md                   # Skill entry point & workflow
-│       │   └── references/                # [On-demand] CCP/CRP/ADP/DbC/SoC references
 │       ├── code-review/                   # Code review & smells diagnosis skill
-│       │   ├── SKILL.md                   # Skill entry point & workflow
-│       │   └── references/                # [On-demand] 22 smells manual & checklist
 │       ├── refactoring/                   # Safe refactoring & mechanics skill
-│       │   ├── SKILL.md                   # Skill entry point & workflow
-│       │   └── references/                # [On-demand] 68 mechanics catalog & lookup matrix
 │       ├── unix-philosophy/               # Unix philosophy & system design skill
-│       │   ├── SKILL.md                   # Skill entry point & workflow
-│       │   └── references/                # [On-demand] 17 rules, CLI & config standards
-│       └── tech-communication/            # Technical communication, docs & RCA skill
-│           ├── SKILL.md                   # Skill entry point & workflow
-│           └── references/                # [On-demand] Sharing model, MRE, RCA templates
+│       ├── tech-communication/            # Technical communication, docs & RCA skill
+│       └── cpp-code-quality/              # C++ quality, incremental diff formatting & linting
+│           ├── SKILL.md                   # Skill entry point & scenario routing
+│           ├── scripts/                   # [Executable scripts] env_check / init_config / run_check
+│           └── references/                # [On-demand] Google style, rulesets, incremental guides
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
 │   ├── unix-programming-art/              # "The Art of UNIX Programming" raw EPUB & blog links
 │   └── tech-communication/                # Technical sharing and Stack Overflow asking guides
 │
+├── .clang-format                          # [One-Click Config] Google Style + Right Pointer + 120 Cols
+├── .clang-format-ignore                   # Ignore third_party/ and build artifacts
+├── .clang-tidy                            # High signal-to-noise static analysis ruleset
 ├── .gitignore                             # Git ignore rules
 ├── README.md                              # Chinese Documentation
 └── README_EN.md                           # English Documentation

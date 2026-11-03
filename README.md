@@ -36,6 +36,7 @@ flowchart TD
         S3["【微观重构】refactoring<br/>68种标准重构手法 + 验证测试网/Demo守护"]
         S4["【宏观系统】unix-philosophy<br/>17条Unix哲学 + 机制策略分离 + 管道接口模式"]
         S5["【技术表达】tech-communication<br/>酷壳分享模型 + Stack Overflow MRE排障 + RCA复盘"]
+        S6["【C++质量】cpp-code-quality<br/>Google风格定制 + 增量diff排版 + clang-tidy/cppcheck静态分析"]
     end
 
     R --> S1
@@ -43,6 +44,7 @@ flowchart TD
     R --> S3
     R --> S4
     R --> S5
+    R --> S6
 ```
 
 ---
@@ -52,10 +54,11 @@ flowchart TD
 ### 1. 全局常驻底线规则 (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**：
   * **函数设计红线**：长度控制在 20~30 行内，单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**；
+  * **C++ 语言专项**：Google 风格基线、指针右对齐、120 字符列宽；老项目强制童子军增量检查；三方库三重隔离；
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 五大专项技能 (`.agents/skills/`)
+### 2. 六大专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -64,6 +67,7 @@ flowchart TD
 | **[`refactoring`](./.agents/skills/refactoring/)** | **微观**<br/>安全实施 | Martin Fowler《重构》第6~11章 | - **重构铁律**：自测试网守护、两顶帽子法则、微步前进（Baby Steps）<br/>- **68 种经典重构手法全集**（重新组织函数、搬移特性、组织数据、简化条件等）<br/>- **坏味道到手法速查映射表** |
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **宏观**<br/>系统架构 | Eric S. Raymond《UNIX编程艺术》<br/>酷壳《应对多变的需求》 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则数据驱动）<br/>- **10 大经典接口模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a`~`-z` 选项字典、5级配置覆盖模型、`--` 解析终结符） |
 | **[`tech-communication`](./.agents/skills/tech-communication/)** | **交互**<br/>表达文档 | 酷壳《如何做有质量的技术分享》<br/>Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 源码机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、预期 vs 实际现象、零代码截图<br/>- **工业级 README 模板**：痛点主张、架构拓扑、开箱即用、技术选型权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析(RCA)、长效防线 |
+| **[`cpp-code-quality`](./.agents/skills/cpp-code-quality/)** | **工程**<br/>C++工具链 | Google C++ Style<br/>LLVM Clang-Tidy<br/>童子军增量法则 | - **自动化工具链检测**：环境自检脚本 `env_check.sh` 探测工具链，缺失时提供发行版安装指令<br/>- **一键配置初始化**：自动生成定制版 `.clang-format`（右对齐/120列）、`.clang-tidy`（高信噪比规则）与 `.clang-format-ignore`<br/>- **双模智能调度**：支持增量行级检查（`clang-format-diff` 适配老项目）与全量扫描，彻底屏蔽 `third_party/` |
 
 ---
 
@@ -106,6 +110,16 @@ flowchart TD
 2. 严格按酷壳模型输出：痛点切入（一个改动引发十个包连锁崩溃） $\to$ 方案横向对比（AOP vs 中间件 vs 事件驱动） $\to$ 核心机制剖析 $\to$ 团队落地最佳实践。
 ```
 
+### 场景 5：C++ 静态检查与增量排版 (老项目适配)
+```text
+💬 用户："这是个老项目，只对本次修改的代码执行静态检查与格式化"
+🤖 Agent 动作：
+1. 自动激活 [cpp-code-quality] 技能；
+2. 运行环境自检：确保 clang-format/clang-tidy 已就绪；
+3. 检查并确认项目根目录具备定制版 .clang-format 与 .clang-tidy；
+4. 执行增量审查模式：仅提取 git diff 变更行调用 clang-format-diff，屏蔽 third_party/，零破坏老代码。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -117,26 +131,23 @@ create_kills/
 │   │   └── coding-standards.md            # 全局常驻编码规范与设计底线
 │   └── skills/
 │       ├── code-design/                   # 架构建模、包划分与接口契约技能
-│       │   ├── SKILL.md                   # 技能入口与工作流
-│       │   └── references/                # [按需调阅] CCP/CRP/ADP/DbC/SoC 深度参考
 │       ├── code-review/                   # 代码审查与坏味道体检技能
-│       │   ├── SKILL.md                   # 技能入口与工作流
-│       │   └── references/                # [按需调阅] 22种坏味道手册与审查核对表
 │       ├── refactoring/                   # 代码安全重构技能
-│       │   ├── SKILL.md                   # 技能入口与工作流
-│       │   └── references/                # [按需调阅] 68种重构手法全集与映射表
 │       ├── unix-philosophy/               # Unix哲学与系统设计技能
-│       │   ├── SKILL.md                   # 技能入口与工作流
-│       │   └── references/                # [按需调阅] 17条哲学/CLI规范/接口模式
-│       └── tech-communication/            # 技术表达、文档编写与排障答疑技能
-│           ├── SKILL.md                   # 技能入口与工作流
-│           └── references/                # [按需调阅] 酷壳分享模型/MRE规范/RCA模板
+│       ├── tech-communication/            # 技术表达、文档编写与排障答疑技能
+│       └── cpp-code-quality/              # C++代码质量、增量格式化与静态检查技能
+│           ├── SKILL.md                   # 技能入口与场景路由
+│           ├── scripts/                   # [可执行脚本] env_check / init_config / run_check
+│           └── references/                # [按需调阅] Google规范定制/规则集/增量隔离
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
 │   ├── unix-programming-art/              # 《UNIX编程艺术》原版 EPUB 与博文索引
 │   └── tech-communication/                # 酷壳分享心法与 Stack Overflow 提问指南
 │
+├── .clang-format                          # [一键生成] Google风格基线 + 右对齐指针 + 120列宽
+├── .clang-format-ignore                   # 格式化自动排除 third_party/ 与构建目录
+├── .clang-tidy                            # 高信噪比静态分析规则集 (HeaderFilterRegex隔离三方库)
 ├── .gitignore                             # Git 忽略配置
 ├── README.md                              # 项目中文说明
 └── README_EN.md                           # 项目英文说明 (English Documentation)
