@@ -4,7 +4,7 @@
 
 本项目致力于将计算机科学经典著作与现代高阶软件工程思想，转化为 AI Agent（如 Google Antigravity、Claude Code、Cursor 等）可直接判定、执行和按需激活的**结构化规则（Rules）与技能包（Skills）**。
 
-通过将人类阅读的“长篇理论”重构为面向机器的“执行手册、决策树、质量清单与正反模式”，让 AI 助手在日常编码、代码审查、模块设计与系统架构中，始终遵循最高标准的软件工程原则。
+通过将人类阅读的“长篇理论”重构为面向机器的“执行手册、决策树、质量清单与正反模式”，让 AI 助手在日常编码、代码审查、模块设计、系统架构以及**技术表达与文档沟通**中，始终遵循最高标准的软件工程原则。
 
 ---
 
@@ -21,12 +21,14 @@ flowchart TD
         S2["code-review<br/>（微观代码审查 / 22种坏味道诊断）"]
         S3["refactoring<br/>（微观安全重构 / 68种经典手法）"]
         S4["unix-philosophy<br/>（宏观系统设计 / 机制分离 / 管道拼装）"]
+        S5["tech-communication<br/>（技术分享 / 文档编写 / 排障提问与答疑）"]
     end
 
     R --> S1
     R --> S2
     R --> S3
     R --> S4
+    R --> S5
 ```
 
 ---
@@ -39,7 +41,7 @@ flowchart TD
   * **I/O 分流与缄默**：`stdout` 严禁输出人类交互杂讯，纯留给机器消费；所有日志与诊断统一走 `stderr`；成功时保持沉默。
   * **实证与安全**：遇歧义写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；改动必须经确认后方可提交。
 
-### 2. 专项技能包 (Specialized Skills)
+### 2. 五大专项技能包 (Specialized Skills)
 每个技能包均遵循 Antigravity 规范，具备清晰的触发条件（YAML Frontmatter）与渐进式披露参考库：
 
 | 技能名称 (Skill) | 触发场景 (Triggers) | 理论来源 | 核心包含内容 |
@@ -48,6 +50,7 @@ flowchart TD
 | **[`code-review`](./.agents/skills/code-review/)** | 代码审查、质量体检、排查设计腐化 | 马丁·福勒《重构》第3章 | - **22 种代码坏味道诊断手册**（现象、危害、治疗手法）<br/>- **三维审查快速核查清单**（包依赖层、面向对象契约层、逻辑细节层） |
 | **[`refactoring`](./.agents/skills/refactoring/)** | 代码重构、降低圈复杂度、模块解耦 | 马丁·福勒《重构》第6~11章 | - **重构铁律**：测试网/Demo 实证守护、两顶帽子法则、微步前进（Baby Steps）<br/>- **68 种标准重构手法全集**（含问题、解法、动机与代码对照）<br/>- **坏味道到手法速查映射表** |
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | 系统架构、CLI 工具、通信协议、配置系统 | 埃里克·雷蒙德《UNIX编程艺术》、酷壳博文 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则）<br/>- **10 大经典接口设计模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a` 到 `-z` 标准选项语义表、5级配置覆盖模型）<br/>- **文本化与应用协议设计**（行驱动、3位状态码、4类元格式选型） |
+| **[`tech-communication`](./.agents/skills/tech-communication/)** | 写README、技术方案/RFC、技术分享、Bug排查求助、事故复盘(RCA) | 酷壳《如何做一个有质量的技术分享》、Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 底层机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、自解释标题、预期 vs 实际现象、严禁截图<br/>- **工业级 README 模板**：痛点价值主张、架构拓扑、开箱即用快速上手、技术权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析、最小精准修复、长效防线 |
 
 ---
 
@@ -62,11 +65,13 @@ create_kills/
 │       ├── code-design/                   # 架构建模与包设计技能
 │       ├── code-review/                   # 代码审查与坏味道体检技能
 │       ├── refactoring/                   # 代码安全重构技能
-│       └── unix-philosophy/               # Unix哲学与系统设计技能
+│       ├── unix-philosophy/               # Unix哲学与系统设计技能
+│       └── tech-communication/            # 技术表达、文档编写与排障答疑技能
 │
 ├── resources/                             # 原始参考资料库（持续完善中）
 │   ├── refactoring/                       # 《重构：改善既有代码的设计》原书
-│   └── unix-programming-art/              # 《UNIX编程艺术》原书与精选博文索引
+│   ├── unix-programming-art/              # 《UNIX编程艺术》原书与精选博文索引
+│   └── tech-communication/                # 技术分享心法与 Stack Overflow 提问指南索引
 │
 ├── .gitignore                             # Git 忽略配置
 ├── README.md                              # 项目中文说明
@@ -87,6 +92,10 @@ create_kills/
   $\to$ 自动加载 `code-design`，基于 CCP/CRP/ADP 划分模块包，定义 DbC 前后置契约。
 * 💬 **请求开发工具**：“*帮我写一个批处理日志的 CLI 命令行工具*”
   $\to$ 自动加载 `unix-philosophy`，严格遵守过滤器模式、`-a`~`-z` 选项规范及 `stdout/stderr` 隔离。
+* 💬 **编写项目文档**：“*帮我为这个项目写一份高质量的 README*”
+  $\to$ 自动加载 `tech-communication`，生成包含痛点阐述、架构图解与开箱即用快速上手的标准文档。
+* 💬 **事故复盘 / 答疑**：“*分析刚才线上死锁的根本原因，写一份复盘报告*”
+  $\to$ 自动加载 `tech-communication`，按照 TL;DR 结论先行、5-Whys 根因分析与长效防线输出标准 RCA 报告。
 
 ---
 
@@ -107,4 +116,5 @@ create_kills/
 * **Martin Fowler** ——《重构：改善既有代码的设计》(Refactoring: Improving the Design of Existing Code)
 * **Eric S. Raymond** ——《UNIX编程艺术》(The Art of UNIX Programming)
 * **Robert C. Martin (Uncle Bob)** ——《敏捷软件开发：原则、模式与实践》(Agile Software Development)
-* **陈皓（左耳朵耗子 / CoolShell）** ——《用Unix的设计思想来应对多变的需求》、《一些软件设计的原则》
+* **陈皓（左耳朵耗子 / CoolShell）** ——《用Unix的设计思想来应对多变的需求》、《一些软件设计的原则》、《如何做一个有质量的技术分享》
+* **Stack Overflow Community** ——《How do I ask a good question?》& MRE (Minimal, Reproducible Example)
