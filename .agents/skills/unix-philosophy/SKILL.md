@@ -1,23 +1,26 @@
 ---
 name: unix-philosophy
 description: >-
+  Designs decoupled, composable Unix-style architectures, CLI tools, protocols, and configuration systems.
+  Use when designing system architectures, building CLI utilities, defining IPC/textual protocols,
+  separating policy and mechanism, or evaluating modularity using the 17 TAOUP Unix principles.
   基于《UNIX编程艺术》与经典Unix哲学（解耦、KISS、拼装）的系统架构与接口设计技能。
-  当用户要求进行系统架构设计、CLI命令行工具开发、跨进程通信与协议制定、配置系统设计、或评估系统解耦度时触发此技能。
+  当用户要求进行系统架构设计、CLI命令行工具开发、跨进程通信与协议制定、配置系统设计、或评估系统解耦度时触发。
 ---
 
-# Unix Philosophy & System Architecture Guide
+# Unix 哲学与系统架构设计指南
 
 本技能沉淀自埃里克·雷蒙德（Eric S. Raymond）经典著作《UNIX编程艺术》（The Art of UNIX Programming）及现代解耦架构最佳实践（酷壳/陈皓关于应对多变需求的工程心法）。
 
 ---
 
-## 1. 核心架构哲学：“解耦、KISS、拼装”
+## 1. 核心架构哲学：解耦、KISS、拼装
 
 ```mermaid
 flowchart TD
-    A["系统设计诉求"] --> B["1. 极致解耦 (Decoupling)"]
+    A["系统设计诉求"] --> B["1. 极致解耦"]
     A --> C["2. 保持质朴 (KISS)"]
-    A --> D["3. 管道拼装 (Composition)"]
+    A --> D["3. 管道拼装"]
 
     B --> B1["机制与策略分离：无状态计算引擎 vs 多变展示策略"]
     B --> B2["依赖标准与协议，绝不依赖具体实现 (DIP)"]
@@ -33,7 +36,7 @@ flowchart TD
 
 ---
 
-## 2. 架构设计与执行工作流 (Workflow)
+## 2. 架构设计与执行工作流
 
 ### 阶段一：模块紧凑性与正交性核查
 1. **心智容量校验（紧凑性）**：

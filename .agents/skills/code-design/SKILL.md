@@ -1,13 +1,16 @@
 ---
 name: code-design
 description: >-
-  基于《重构》演进式设计与面向对象原则的模块设计与建模技能。
-  当用户要求设计新模块、定义类/接口结构、进行面向对象建模、或者评估方案设计合理性时触发此技能。
+  Guides package topology, object-oriented modeling, interface contracts, and evolutionary software design.
+  Use when designing new modules, defining class/interface hierarchies, applying SOLID/package principles
+  (CCP, CRP, ADP, OCP, ISP, DbC), or evaluating architecture trade-offs.
+  基于组件原则与面向对象契约的架构设计与模块建模技能。
+  当用户要求设计新模块、定义类与接口结构、进行面向对象建模、或者评估方案架构合理性时触发。
 ---
 
-# Object-Oriented & Evolutionary Design Guide
+# 面向对象与演进式架构设计指南
 
-本技能融合马丁·福勒的**演进式设计 (Evolutionary Design)**、Uncle Bob 的**组件架构原则**与酷壳（陈皓）高阶设计心法，指导系统在中观（包/组件）与微观（类/接口）维度的结构设计与建模。
+本技能融合马丁·福勒的**演进式设计 (Evolutionary Design)**、Uncle Bob 的**组件架构原则**与酷壳（陈皓）高阶设计心法，指导系统在中观（包与组件）与微观（类与接口）维度的结构设计与建模。
 
 ---
 
@@ -15,13 +18,13 @@ description: >-
 
 ```mermaid
 flowchart TD
-    A["业务需求输入"] --> B["阶段一：包与组件拓扑划分 (Package Level)"]
-    B --> C["阶段二：类与接口契约设计 (Interface & Contract)"]
-    C --> D["阶段三：演进式实现与简单设计 (YAGNI / KISS)"]
+    A["业务需求输入"] --> B["阶段一：包与组件拓扑划分"]
+    B --> C["阶段二：类与接口契约设计"]
+    C --> D["阶段三：演进式实现与简单设计"]
 
     B --> B1["CCP 共同封闭：因同种原因变化的类放同一个包"]
     B --> B2["CRP 共同重用：不一起重用的类果断剥离"]
-    B --> B3["ADP 无环依赖：依赖拓扑严格保持有向无环图 (DAG)"]
+    B --> B3["ADP 无环依赖：依赖拓扑严格保持有向无环图 DAG"]
 
     C --> C1["OCP 开闭原则：以策略与多态实现扩展开放、修改封闭"]
     C --> C2["ISP 接口隔离：按调用角色定义精细的瘦接口"]
@@ -29,15 +32,15 @@ flowchart TD
     C --> C4["SoC 关注点分离：业务流转与横切技术关注点解耦"]
 
     D --> D1["组合优于继承：委托代替脆弱继承"]
-    D --> D2["CoC 惯例优于配置：遵循公认约定，消除配置地狱"]
+    D --> D2["CoC 惯例优于配置：遵循公认约定，消除配置冗余"]
     D --> D3["简单设计四原则：通过测试、消除重复、意图明确、元素最少"]
 ```
 
 ---
 
-## 2. 常用架构设计三步走流程
+## 2. 架构设计三步走流程
 
-### 阶段一：包与组件拓扑划分 (中观架构)
+### 阶段一：包与组件拓扑划分（中观架构）
 1. **防霰弹式修改（CCP 共同封闭）**：将概念紧密、大概率因同一类业务变更而同时修改的类聚集在同一个包内。
 2. **包瘦身与依赖隔离（CRP 共同重用）**：如果包内某些工具类/辅助类没有被一起重用，果断抽取到独立的细粒度子包。
 3. **依赖无环验证（ADP 无环依赖）**：
@@ -45,7 +48,7 @@ flowchart TD
    - 若出现循环，通过**依赖倒置 (DIP)** 反转依赖，或**提取公共抽象包**消除环路。
 - 详见：[包与组件划分设计原则](./references/component_and_package.md)
 
-### 阶段二：类与接口契约定义 (微观模型)
+### 阶段二：类与接口契约定义（微观模型）
 1. **接口精简与隔离（ISP）**：从调用方的角色定义接口（Role Interface），避免大而全的胖接口。
 2. **扩展开放与修改封闭（OCP）**：预判多变业务逻辑，提取为 Strategy 接口，核心调度代码不再频繁改动。
 3. **契约化约束（DbC）**：

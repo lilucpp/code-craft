@@ -1,11 +1,14 @@
 ---
 name: refactoring
 description: >-
+  Executes safe, behavior-preserving code refactoring using Martin Fowler's 68 standard mechanics.
+  Use when the user requests refactoring code, eliminating code smells, reducing cyclomatic complexity,
+  decoupling classes, or restructuring legacy implementations safely.
   基于马丁·福勒《重构》68种经典手法的代码安全重构技能。
-  当用户要求对代码进行重构、消除坏味道、降低圈复杂度、解耦模块、或优化现有代码实现时触发此技能。
+  当用户要求对代码进行重构、消除坏味道、降低圈复杂度、解耦模块、或优化现有代码实现时触发。
 ---
 
-# Refactoring Execution Guide
+# 安全代码重构实施指南
 
 本技能指导如何以安全、标准且严谨的方式，在不改变软件可观察行为的前提下改善其内部架构。
 
@@ -17,7 +20,7 @@ description: >-
 
 ```mermaid
 flowchart TD
-    A["确定重构目标与坏味道"] --> B["1. 构筑自测试网 / 运行验证Demo"]
+    A["确定重构目标与坏味道"] --> B["1. 构筑自测试网 / 运行验证 Demo"]
     B --> C["2. 拆解为微小原子步骤 (Baby Steps)"]
     C --> D["3. 套用标准重构手法"]
     D --> E["4. 执行验证：改一步，测试一步"]

@@ -1,18 +1,19 @@
 ---
 name: cpp-code-quality
 description: >-
-  C++代码规范格式化与静态检查专家技能。支持自动检测本地工具环境、初始化项目.clang-format与.clang-tidy配置、
-  支持全量检查与老项目增量检查(仅检查新代码/改动行)、自动屏蔽三方库与构建目录告警。
+  Inspects, formats, and lints C++ code with clang-format and clang-tidy, supporting full codebase scans, legacy project incremental checks (diff-only), and environment pre-flights.
+  Use when asked to format C++ code, run static analysis, check toolchain readiness, or inspect only new/modified lines.
+  C++代码规范格式化与静态检查专家技能。支持自动检测本地工具环境、初始化项目.clang-format与.clang-tidy配置、支持全量检查与老项目增量检查(仅检查新代码/改动行)、自动屏蔽三方库与构建目录告警。
   当用户要求执行C++静态检查、C++代码格式化、检查代码质量工具链环境、或要求“只对新代码检查”时触发此技能。
 ---
 
-# C++ Code Quality, Formatting & Static Analysis Guide
+# C++ 代码质量、格式化与静态检查指南
 
 本技能专为现代 C++ 工程提供全套自动化质量守护，涵盖**环境自检、项目配置初始化、增量代码检查与全量静态分析**。
 
 ---
 
-## 1. 核心工作流与场景决策树 (Workflow)
+## 1. 核心工作流与场景决策树
 
 ```mermaid
 flowchart TD

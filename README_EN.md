@@ -1,6 +1,6 @@
 # 🏛️ Code-Craft: Software Engineering & Architecture Skills for Autonomous AI Agents
 
-> **One-Line Value Proposition**: Systematically distills computer science classics (*Refactoring*, *The Art of UNIX Programming*, and high-level architectural philosophy) into **six-dimensional executable skills and always-on baseline rules** tailored for AI coding agents.
+> **One-Line Value Proposition**: Systematically distills computer science classics (*Refactoring*, *The Art of UNIX Programming*, systems engineering, and SQL performance) into **eight-dimensional executable skills and always-on baseline rules** tailored for AI coding agents.
 
 English | [简体中文](./README.md)
 
@@ -26,7 +26,7 @@ Code-Craft establishes a comprehensive defense-in-depth engineering matrix:
 ```mermaid
 flowchart TD
     subgraph Global Baseline Rules [Rules - Always-On]
-        R["coding-standards.md<br/>(SRP, Guard Clauses, Data-Driven, I/O Separation, Fail-Fast, DbC)"]
+        R["coding-standards.md<br/>(SRP, Guard Clauses, 8-4-2-1 Alignment, Crash-Safe Write, DECIMAL Money)"]
     end
 
     subgraph Specialized Skills Matrix [Skills - Progressive Disclosure On-Demand]
@@ -36,6 +36,9 @@ flowchart TD
         S4["【Macro-System】unix-philosophy<br/>17 TAOUP Rules + Separation of Policy/Mechanism + Pipeline Patterns"]
         S5["【Communication】tech-communication<br/>CoolShell Sharing Model + Stack Overflow MRE + RCA Post-Mortem"]
         S6["【C++ Quality】cpp-code-quality<br/>Custom Google Style + Incremental Diffs + Clang-Tidy & Cppcheck"]
+        S7["【Systems Data】systems-data-design<br/>Memory Packing + False Sharing Defense + StrongType/Typestate + OSDI14 Atomic Write"]
+        S8["【Data Storage】sql-craft<br/>B-Tree Index Column Order + Keyset Seek Pagination + Closure Table + Antipatterns Defense"]
+        S9["【Skill Meta-Engineering】skill-craft<br/>Anthropic Best Practices + Bilingual Dual-Anchor + Progressive Disclosure + Degrees of Freedom"]
     end
 
     R --> S1
@@ -44,6 +47,9 @@ flowchart TD
     R --> S4
     R --> S5
     R --> S6
+    R --> S7
+    R --> S8
+    R --> S9
 ```
 
 ---
@@ -53,11 +59,14 @@ flowchart TD
 ### 1. Global Baseline Rules (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**:
   * **Function Design**: Length constrained to 20–30 lines, Single Level of Abstraction Principle (SLAP), $\le 3$ arguments, **Guard Clauses first**;
+  * **Systems & Physical**: 8-4-2-1 descending alignment to eliminate padding; `alignas(64)` for multithreaded variables to prevent false sharing;
+  * **Crash Consistency**: Mandatory 4-step atomic write (`write tmp -> fdatasync -> rename -> dir fsync`);
+  * **Relational Storage**: Financial currency must use `DECIMAL(18, 4)`; B-Tree indexes: equality first, range second;
   * **C++ Specifics**: Google C++ baseline, PointerAlignment: Right, ColumnLimit: 120; incremental Boy Scout rule for legacy repos; triple-lock third-party isolation;
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Six Specialized Skills (`.agents/skills/`)
+### 2. Nine Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -67,6 +76,9 @@ flowchart TD
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **Macro**<br/>System Architecture | Eric S. Raymond's *TAOUP*<br/>CoolShell *Handling Volatile Requirements* | - **17 Unix Rules In-Depth** (Compactness & Miller's Law $7 \pm 2$, Orthogonality, Data-Driven Representation)<br/>- **10 Classic Interface Patterns** (Filter, Cantrip, Engine-Interface Separation, CLI Server)<br/>- **CLI & Configuration Standards** (`-a` to `-z` option dictionary, 5-tier config precedence, `--` parsing terminator) |
 | **[`tech-communication`](./.agents/skills/tech-communication/)** | **Interaction**<br/>Docs & Troubleshooting | CoolShell *Quality Technical Sharing*<br/>Stack Overflow *How to Ask* | - **CoolShell Tech Sharing Model**: Problem Model $\to$ Alternatives Comparison $\to$ Mechanism & Internals $\to$ Best Practices<br/>- **Stack Overflow Asking Standard**: MRE (Minimal, Reproducible Example), expected vs actual behavior, zero screenshot policy<br/>- **Industry-Grade README Guidelines**: Value proposition, visual architecture, quick start in 3 minutes, trade-offs<br/>- **Architect-Level RCA & QA**: TL;DR conclusion first, 5-Whys root cause deduction, minimal precise fix, long-term regression defense |
 | **[`cpp-code-quality`](./.agents/skills/cpp-code-quality/)** | **Tooling**<br/>C++ Toolchain | Google C++ Style<br/>LLVM Clang-Tidy<br/>Boy Scout Incremental Rule | - **Automated Toolchain Detection**: Environment self-check script `env_check.sh` diagnoses tools with distro install hints<br/>- **One-Click Config Init**: Generates customized `.clang-format` (Right pointer, 120 cols), `.clang-tidy` (high signal-to-noise rules), and `.clang-format-ignore`<br/>- **Dual-Mode Dispatch**: Supports incremental diff checking (`clang-format-diff` for legacy repos) and full scan, safely ignoring `third_party/` |
+| **[`systems-data-design`](./.agents/skills/systems-data-design/)** | **Systems**<br/>Memory & Crash-Safety | Williams *C++ Concurrency*<br/>Gregg *Systems Performance*<br/>OSTEP Operating Systems<br/>OSDI '14 Best Paper | - **Dual-Mode Engine**: Features proactive design defenses and advisory code optimization<br/>- **Physical Memory Alignment**: 8-4-2-1 descending packing to kill padding holes, `alignas(64)` for multi-core false sharing<br/>- **Zero-Cost Strong Types**: `StrongType` prevents ID/unit mixups, `Typestate` kills temporal sequence bugs at compile time<br/>- **Crash-Consistent Persistence**: OSDI 14 4-step atomic write (`write tmp -> fdatasync -> rename -> dir fsync`) |
+| **[`sql-craft`](./.agents/skills/sql-craft/)** | **Storage**<br/>Relations & Indexing | Markus Winand Indexing<br/>Bill Karwin *SQL Antipatterns* | - **Dual-Mode Engine**: Features schema design defenses and slow query refactoring<br/>- **B-Tree Order Rule**: Composite indexes strictly follow "equality first, range second", covering indexes eliminate random I/O<br/>- **Keyset Seek Pagination**: Replaces `LIMIT OFFSET` to eliminate scanning millions of rows on deep pages<br/>- **Antipattern Defense**: Closure Table ends recursive trees, Intersection Table eliminates comma Jaywalking, DECIMAL enforces financial precision |
+| **[`skill-craft`](./.agents/skills/skill-craft/)** | **Meta-Engineering**<br/>Agent Skills | Anthropic Official Standards<br/>Claude Best Practices | - **Dual-Mode Engine**: Proactive skill authoring and existing skill health audit/refactoring<br/>- **Bilingual Dual-Anchor**: 3rd-person English definition + Use when + Chinese domain + precise trigger keywords<br/>- **Progressive Disclosure**: Two-tier layout (`SKILL.md` + `references/`), single-layer reference depth to prevent context drift<br/>- **Degrees of Freedom**: Heuristic checklists for reasoning vs deterministic scripts for fragile tasks (forward slashes, no magic numbers) |
 
 ---
 
@@ -119,6 +131,34 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 4. Executes incremental inspection: invoking clang-format-diff on git diff lines, ignoring third_party/ with zero blast radius.
 ```
 
+### Scenario 6: Systems Memory Packing & Crash-Safe Persistence
+```text
+💬 User: "Design local storage for a multi-threaded metrics collector, or review why my config write corrupts on power cut"
+🤖 Agent Response:
+1. Automatically activates [systems-data-design] skill;
+2. Memory packing: sorts members descending 8-4-2-1 bytes to kill padding holes; adds alignas(64) on multi-core counters to prevent false sharing;
+3. Enforces OSDI 14 4-step atomic write: write tmp -> fdatasync -> rename -> parent dir fsync, eliminating torn write file corruption.
+```
+
+### Scenario 7: Database Schema Design & Query Optimization (SQL Craft)
+```text
+💬 User: "My 10-million row orders table pagination is taking 5 seconds, and tags are stored as comma strings. How to optimize?"
+🤖 Agent Response:
+1. Automatically activates [sql-craft] skill;
+2. Eliminates Jaywalking: refactors comma-separated tags into a normalized intersection table with foreign key integrity and point-lookup indexes;
+3. Resolves deep pagination cliff: refactors LIMIT 1000000, 20 into Keyset Pagination (Seek Method) using the primary key, reducing latency from 5s to 2ms.
+```
+
+### Scenario 8: Authoring New Skills & Quality Audit (skill-craft)
+```text
+💬 User: "Author a new agent skill for Kubernetes deployment troubleshooting"
+🤖 Agent Response:
+1. Automatically activates [skill-craft] skill;
+2. Follows official Anthropic standards to scaffold standard `k8s-troubleshoot` directory and 2-tier progressive disclosure layout;
+3. Crafts strict "Bilingual Dual-Anchor" Frontmatter (3rd-person verbs, English Use when, Chinese triggers);
+4. Establishes low-degree-of-freedom diagnostic script guardrails and single-layer reference manuals, omitting common sense explanations to conserve context tokens.
+```
+
 ---
 
 ## 5. Directory Layout
@@ -127,22 +167,27 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 code-craft/
 ├── .agents/                               # AI Agent rules & skills core repository
 │   ├── rules/
-│   │   └── coding-standards.md            # Global baseline coding standards
+│   │   └── coding-standards.md            # Global baseline coding standards (including systems data & SQL)
 │   └── skills/
 │       ├── code-design/                   # Package architecture & interface contract skill
 │       ├── code-review/                   # Code review & smells diagnosis skill
 │       ├── refactoring/                   # Safe refactoring & mechanics skill
 │       ├── unix-philosophy/               # Unix philosophy & system design skill
 │       ├── tech-communication/            # Technical communication, docs & RCA skill
-│       └── cpp-code-quality/              # C++ quality, incremental diff formatting & linting
-│           ├── SKILL.md                   # Skill entry point & scenario routing
-│           ├── scripts/                   # [Executable scripts] env_check / init_config / run_check
-│           └── references/                # [On-demand] Google style, rulesets, incremental guides
+│       ├── cpp-code-quality/              # C++ quality, incremental diff formatting & linting
+│       ├── systems-data-design/           # Memory packing, strong types/typestate, OSDI14 crash-safe write
+│       ├── sql-craft/                     # Relational modeling, B-Tree index ordering, Keyset pagination
+│       └── skill-craft/                   # Agent skill authoring, bilingual dual-anchor, progressive disclosure
+│           ├── SKILL.md                   # Dual-mode engine & dispatch center
+│           ├── references/                # Metadata recall / progressive disclosure / guardrails / eval checklist
+│           └── examples/                  # [Standard Scaffolding] minimal_skill_template/
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
 │   ├── unix-programming-art/              # "The Art of UNIX Programming" raw EPUB & blog links
-│   └── tech-communication/                # Technical sharing and Stack Overflow asking guides
+│   ├── tech-communication/                # Technical sharing and Stack Overflow asking guides
+│   ├── system-data-design/                # OSTEP, Concurrency, Systems Performance, OSDI14, SQL Antipatterns, SQL Performance
+│   └── agent-skills/                      # Anthropic Official Agent Skills Best Practices Guide & Cheat Sheet
 │
 ├── .clang-format                          # [One-Click Config] Google Style + Right Pointer + 120 Cols
 ├── .clang-format-ignore                   # Ignore third_party/ and build artifacts

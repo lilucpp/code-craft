@@ -1,7 +1,7 @@
 # 🏛️ Code-Craft: AI Agent 软件工程与高阶架构技能库
 *(Software Engineering & Architecture Skills for Autonomous AI Agents)*
 
-> **一句话价值主张**：将计算机科学经典名著（《重构》《UNIX编程艺术》与酷壳高阶软件设计心法）系统化重构成 AI Agent 可直接判定、执行与按需激活的**“六维工程技能（Skills）与常驻底线准则（Rules）”**。
+> **一句话价值主张**：将计算机科学经典名著（《重构》《UNIX编程艺术》、系统底层工程与 SQL 经典哲学）系统化重构成 AI Agent 可直接判定、执行与按需激活的**“八维工程技能（Skills）与常驻底线准则（Rules）”**。
 
 [English Documentation](./README_EN.md) | 简体中文
 
@@ -22,12 +22,12 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横六纵”**的立体质量防护网：
+本项目采用**“一横九纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
     subgraph 全局约束底线 [常驻规则 Rules - Always-On]
-        R["coding-standards.md<br/>（单一职责、卫语句、数据驱动、I/O分流、Fail-Fast、契约意识）"]
+        R["coding-standards.md<br/>（单一职责、卫语句、对齐Padding、Fail-Fast、原子落盘、DECIMAL金额）"]
     end
 
     subgraph 专项技能矩阵 [专项技能 Skills - 渐进式按需激活 Progressive Disclosure]
@@ -37,6 +37,9 @@ flowchart TD
         S4["【宏观系统】unix-philosophy<br/>17条Unix哲学 + 机制策略分离 + 管道接口模式"]
         S5["【技术表达】tech-communication<br/>酷壳分享模型 + Stack Overflow MRE排障 + RCA复盘"]
         S6["【C++质量】cpp-code-quality<br/>Google风格定制 + 增量diff排版 + clang-tidy/cppcheck静态分析"]
+        S7["【系统数据】systems-data-design<br/>物理内存降序对齐 + 伪共享隔离 + 强类型/Typestate + OSDI14原子落盘"]
+        S8["【数据存储】sql-craft<br/>B-Tree组合索引列序 + Keyset寻址分页 + 闭包表 + SQL反模式防御"]
+        S9["【技能设计】skill-craft<br/>Anthropic官方最佳实践 + 双语双锚点元数据 + 渐进式披露 + 自由度分级"]
     end
 
     R --> S1
@@ -45,6 +48,9 @@ flowchart TD
     R --> S4
     R --> S5
     R --> S6
+    R --> S7
+    R --> S8
+    R --> S9
 ```
 
 ---
@@ -54,11 +60,14 @@ flowchart TD
 ### 1. 全局常驻底线规则 (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**：
   * **函数设计红线**：长度控制在 20~30 行内，单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**；
+  * **系统物理底线**：结构体 8-4-2-1 降序对齐消灭 Padding；跨核变量强制 `alignas(64)` 隔离伪共享；
+  * **崩溃一致性**：文件落盘强制四步法（`write tmp -> fdatasync -> rename -> dir fsync`），杜绝断电损坏；
+  * **关系数据规范**：金额强制 `DECIMAL(18, 4)`，严禁逗号分隔多值，复合索引等值在前范围在后；
   * **C++ 语言专项**：Google 风格基线、指针右对齐、120 字符列宽；老项目强制童子军增量检查；三方库三重隔离；
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 六大专项技能 (`.agents/skills/`)
+### 2. 九大专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -68,6 +77,9 @@ flowchart TD
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **宏观**<br/>系统架构 | Eric S. Raymond《UNIX编程艺术》<br/>酷壳《应对多变的需求》 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则数据驱动）<br/>- **10 大经典接口模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a`~`-z` 选项字典、5级配置覆盖模型、`--` 解析终结符） |
 | **[`tech-communication`](./.agents/skills/tech-communication/)** | **交互**<br/>表达文档 | 酷壳《如何做有质量的技术分享》<br/>Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 源码机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、预期 vs 实际现象、零代码截图<br/>- **工业级 README 模板**：痛点主张、架构拓扑、开箱即用、技术选型权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析(RCA)、长效防线 |
 | **[`cpp-code-quality`](./.agents/skills/cpp-code-quality/)** | **工程**<br/>C++工具链 | Google C++ Style<br/>LLVM Clang-Tidy<br/>童子军增量法则 | - **自动化工具链检测**：环境自检脚本 `env_check.sh` 探测工具链，缺失时提供发行版安装指令<br/>- **一键配置初始化**：自动生成定制版 `.clang-format`（右对齐/120列）、`.clang-tidy`（高信噪比规则）与 `.clang-format-ignore`<br/>- **双模智能调度**：支持增量行级检查（`clang-format-diff` 适配老项目）与全量扫描，彻底屏蔽 `third_party/` |
+| **[`systems-data-design`](./.agents/skills/systems-data-design/)** | **系统**<br/>内存与落盘 | Williams《并发实战》<br/>Gregg《系统性能》<br/>OSTEP 操作系统<br/>OSDI '14 顶会论文 | - **双模驱动**：包含 AI 主动设计防线与问答诊断优化双引擎<br/>- **物理内存对齐**：成员按 8-4-2-1 降序排布挤出 Padding，跨核变量 `alignas(64)` 隔离伪共享<br/>- **零开销强类型**：`StrongType` 消除参数混淆，`Typestate` 编译期掐死时序调用 Bug<br/>- **崩溃安全原子落盘**：OSDI 14 标准四步法（`write tmp -> fdatasync -> rename -> dir fsync`） |
+| **[`sql-craft`](./.agents/skills/sql-craft/)** | **存储**<br/>关系与索引 | Markus Winand 索引<br/>Bill Karwin《SQL反模式》 | - **双模驱动**：包含表结构设计主动防御与慢查询重构双引擎<br/>- **B-Tree 列序铁律**：复合索引严格遵守“等值在前、范围在后”，覆盖索引消除回表 I/O<br/>- **大表 Seek 分页**：Keyset Pagination 消除 `LIMIT OFFSET` 带来的百万行全表扫描雪崩<br/>- **反模式治理**：闭包表（Closure Table）终结树递归、交叉表干掉逗号乱穿马路、金额强制 DECIMAL |
+| **[`skill-craft`](./.agents/skills/skill-craft/)** | **元工程**<br/>Agent技能 | Anthropic 官方规范<br/>Claude Best Practices | - **双模驱动**：包含新技能规范化主动设计与现有技能体检优化双引擎<br/>- **双语双锚点**：第三人称英文定义 + Use when + 中文场景 + 命令词精准召回<br/>- **渐进式披露**：两级目录结构（`SKILL.md` + `references/`），强制单层引用深度，严禁套娃递归<br/>- **自由度控制**：高自由度启发式核对清单 vs 低自由度硬性脚本（正斜杠、零巫术常量） |
 
 ---
 
@@ -120,6 +132,34 @@ flowchart TD
 4. 执行增量审查模式：仅提取 git diff 变更行调用 clang-format-diff，屏蔽 third_party/，零破坏老代码。
 ```
 
+### 场景 6：系统级数据排布与原子落盘 (主动防御与诊断)
+```text
+💬 用户："设计一个多线程监控模块的本地状态存储，或者帮我看看这段写配置文件的代码为什么断电会坏"
+🤖 Agent 动作：
+1. 自动激活 [systems-data-design] 技能；
+2. 结构体主动降序重排：成员按 8->4->2->1 字节排序消除 Padding，跨核计数器加 alignas(64) 绝杀伪共享；
+3. 持久化强制注入 OSDI 14 顶会四步法：写临时文件 -> fdatasync -> rename -> 父目录 fsync，杜绝断电半写入文件损坏。
+```
+
+### 场景 7：数据库表结构与高性能查询优化 (SQL 建模)
+```text
+💬 用户："千万级订单表分页越来越慢，而且商品标签用逗号存的，怎么优化？"
+🤖 Agent 动作：
+1. 自动激活 [sql-craft] 技能；
+2. 阻断“乱穿马路”反模式：将逗号标签重构为标准关联交叉表，保留外键约束与索引点查能力；
+3. 解决深分页雪崩：将 LIMIT 1000000, 20 重构为基于主键 Seek 的 Keyset Pagination，耗时从 5 秒降至 2 毫秒。
+```
+
+### 场景 8：编写新技能或规范体检 (Skill 元工程)
+```text
+💬 用户："帮我编写一个针对 Kubernetes 部署排障的新技能"
+🤖 Agent 动作：
+1. 自动激活 [skill-craft] 技能；
+2. 遵循 Anthropic 官方规范，生成标准小写 `k8s-troubleshoot` 目录与两级渐进式披露架构；
+3. 输出严格的“双语双锚点”Frontmatter（第三人称动词、英文 Use when 与中文触发词）；
+4. 提供低自由度的诊断脚本护栏与单层深度的参考手册，彻底杜绝常识解释以节省 Token。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -128,22 +168,27 @@ flowchart TD
 code-craft/
 ├── .agents/                               # AI Agent 规则与技能核心资产
 │   ├── rules/
-│   │   └── coding-standards.md            # 全局常驻编码规范与设计底线
+│   │   └── coding-standards.md            # 全局常驻编码规范与设计底线 (含系统数据与SQL底线)
 │   └── skills/
 │       ├── code-design/                   # 架构建模、包划分与接口契约技能
 │       ├── code-review/                   # 代码审查与坏味道体检技能
 │       ├── refactoring/                   # 代码安全重构技能
 │       ├── unix-philosophy/               # Unix哲学与系统设计技能
 │       ├── tech-communication/            # 技术表达、文档编写与排障答疑技能
-│       └── cpp-code-quality/              # C++代码质量、增量格式化与静态检查技能
-│           ├── SKILL.md                   # 技能入口与场景路由
-│           ├── scripts/                   # [可执行脚本] env_check / init_config / run_check
-│           └── references/                # [按需调阅] Google规范定制/规则集/增量隔离
+│       ├── cpp-code-quality/              # C++代码质量、增量格式化与静态检查技能
+│       ├── systems-data-design/           # 物理内存对齐、强类型/Typestate、OSDI14崩溃安全落盘技能
+│       ├── sql-craft/                     # 关系建模、B-Tree复合索引列序、Keyset分页与反模式防御
+│       └── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
+│           ├── SKILL.md                   # 双模引擎与调度中心
+│           ├── references/                # 元数据召回/渐进式披露/自由度/跨模型测试清单
+│           └── examples/                  # [标准脚手架] minimal_skill_template/
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
 │   ├── unix-programming-art/              # 《UNIX编程艺术》原版 EPUB 与博文索引
-│   └── tech-communication/                # 酷壳分享心法与 Stack Overflow 提问指南
+│   ├── tech-communication/                # 酷壳分享心法与 Stack Overflow 提问指南
+│   ├── system-data-design/                # OSTEP、并发实战、系统性能、OSDI14论文、SQL反模式、SQL性能
+│   └── agent-skills/                      # Anthropic 官方 Agent Skills 最佳实践指南与速查手册
 │
 ├── .clang-format                          # [一键生成] Google风格基线 + 右对齐指针 + 120列宽
 ├── .clang-format-ignore                   # 格式化自动排除 third_party/ 与构建目录

@@ -1,27 +1,30 @@
 ---
 name: code-review
 description: >-
-  基于《重构》22种坏味道与现代软件工程标准的代码审查(Code Review)技能。
-  当用户要求对代码进行审查、评估质量、排查代码坏味道、诊断架构设计缺陷或寻找重构切入点时触发此技能。
+  Conducts structured code reviews, diagnoses 22 Martin Fowler code smells, and identifies design flaws.
+  Use when the user asks to review code, evaluate code quality, diagnose code smells, assess architectural debt,
+  or find refactoring opportunities.
+  基于《重构》22种坏味道与现代软件工程标准的代码审查与质量诊断技能。
+  当用户要求对代码进行审查、评估质量、排查代码坏味道、诊断架构设计缺陷或寻找重构切入点时触发。
 ---
 
-# Code Review & Quality Diagnosis Guide
+# 代码审查与坏味道诊断指南
 
-本技能为代码审查提供工业级标准诊断流程，以马丁·福勒《重构》第3章的 22 种代码坏味道为核心依据。
+本技能为代码审查提供工业级标准诊断流程，以马丁·福勒《重构》第 3 章的 22 种代码坏味道为核心依据。
 
 ---
 
-## 1. 审查工作流 (Review Workflow)
+## 1. 审查工作流
 
 ```mermaid
 flowchart TD
-    A["接收代码/审查请求"] --> B["阶段一：坏味道排查 (Code Smells)"]
+    A["接收代码/审查请求"] --> B["阶段一：坏味道排查"]
     B --> C["阶段二：设计与架构合规性核对"]
     C --> D["阶段三：分级评定 (Blocker/Major/Minor)"]
     D --> E["输出结构化审查报告与重构手法建议"]
 ```
 
-### 阶段一：坏味道排查 (Code Smells Scan)
+### 阶段一：坏味道排查
 对照坏味道清单，逐一筛查代码是否存在设计腐化迹象：
 - 详细坏味道定义、表现与治疗手法查阅：[22种代码坏味道手册](./references/code_smells.md)
 - 快速核查清单：[审查快速核对表](./references/review_checklist.md)
