@@ -42,6 +42,7 @@ flowchart TD
         S10["【Modern C++】effective-cpp<br/>Scott Meyers 132 Items Trilogy + RAII/Smart Pointers + Move/Forward + Operators & Polymorphism Traps"]
         S11["【C++ Idioms】cpp-idioms<br/>More C++ Idioms 75+ Patterns + NVI Template Method + CRTP Static Poly + Type Erasure Value Semantics + Attorney Proxy"]
         S12["【C++ Concurrency】cpp-concurrency<br/>Williams C++ Concurrency + Memory Model/Atomics + Fine-Grained Queue + Lock-Free CAS + Work Stealing"]
+        S13["【C++ Testing】cpp-testing<br/>GoogleTest/Catch2 + GMock Dependency Injection + AAA Matrix + ASan/UBSan + Coverage Gates"]
     end
 
     R --> S1
@@ -56,6 +57,7 @@ flowchart TD
     R --> S10
     R --> S11
     R --> S12
+    R --> S13
 ```
 
 ---
@@ -72,7 +74,7 @@ flowchart TD
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Twelve Specialized Skills (`.agents/skills/`)
+### 2. Thirteen Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -88,6 +90,8 @@ flowchart TD
 | **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **Modern C++**<br/>Idioms & Design | Scott Meyers Bible Trilogy<br/>*Effective C++* (55 Items)<br/>*More Effective C++* (35 Items)<br/>*Effective Modern C++* (42 Items) | - **Dual-Mode Engine**: Proactive modern C++ design contracts and legacy C++98 modernization/refactoring<br/>- **RAII & Smart Pointers**: `unique_ptr` default ownership, `make` family allocations, constructor exception safety, Pimpl compilation isolation<br/>- **Operators & Polymorphism**: Never treat arrays polymorphically, never overload short-circuit `&&`/`||`, implement `op` via `op=`, catch exceptions by reference<br/>- **Move & Forwarding**: `std::move` rvalue casting, `std::forward` reference preservation, reference collapsing, universal reference overload avoidance<br/>- **Class Hierarchy & Safety**: Polymorphic virtual destructors, `override` specifier, Rule of 5/0, `noexcept` container move unlocks, `clone()` virtual constructor |
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **Advanced C++**<br/>Patterns & Idioms | Wikibooks *More C++ Idioms*<br/>75+ Seminal Patterns & Idioms | - **Dual-Mode Engine**: Proactive C++ idiom selection and class architecture diagnostic refactoring<br/>- **Interface & Encapsulation**: NVI (Non-Virtual Interface) pattern enforces class contracts (public non-virtual + private virtual), Attorney-Client provides selective friendship without exposing private members<br/>- **Zero-Cost Static Polymorphism**: CRTP eliminates dynamic dispatch overhead and `vptr` size, C++20 `[[no_unique_address]]` maximizes Empty Base Optimization (EBO)<br/>- **Type Erasure & Value Semantics**: 3-tier architecture (external value wrapper + internal templated holder) gives non-intrusive runtime polymorphism without common base classes<br/>- **Exception Safety & Lifecycle**: Copy-and-Swap provides unified strong exception safety, Construct-On-First-Use eliminates Static Initialization Order Fiasco (SIOF) |
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **Concurrency**<br/>Multithreading & Lock-Free | Anthony Williams Bible<br/>*C++ Concurrency in Action* (2nd Ed) | - **Dual-Mode Engine**: Proactive concurrent architecture and race/deadlock diagnostic hunting<br/>- **Thread Lifecycle**: C++20 `jthread` cooperative cancellation & RAII join guarantees eliminating `std::terminate` crashes<br/>- **Mutex & Deadlock Defense**: `scoped_lock` multi-locking, hierarchical mutex cycles defense, reader-writer `shared_mutex`, `call_once`<br/>- **C++ Memory Model**: 6 memory orderings, acquire-release happens-before chains, relaxed counters, synchronization fences<br/>- **Concurrent Data Structures & Pools**: Fine-grained head/tail dummy queue, bucketed hash map, lock-free CAS stack with ABA defense, Work-Stealing thread pool |
+| **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **Testing**<br/>Unit Test & Mocking | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **Dual-Mode Engine**: Proactive testing architecture and untestable legacy code decoupling<br/>- **Scaffolding & Sanitizers**: CMake `FetchContent` declarative dependencies, ASan/UBSan memory sanitization for testing builds<br/>- **Test Design & AAA**: Strict Arrange-Act-Assert pattern, 4-zone boundary matrix (empty/single/extremes/invalid), strong exception safety testing<br/>- **Mocking & Isolation**: Dependency injection interface extraction, modern GoogleMock `MOCK_METHOD` and `EXPECT_CALL` expectations<br/>- **Automated CI Pipeline**: Format $\to$ Clang-Tidy $\to$ ASan CTest execution $\to$ lcov/llvm-cov code coverage gate ($\ge 80\%$) |
+
 
 
 
@@ -200,6 +204,16 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 4. Memory Model & Sanitizer: Advises enabling TSAN (-fsanitize=thread) for continuous race detection, and provides Work-Stealing thread pool and Hazard Pointer lock-free refactoring for multi-core scaling.
 ```
 
+### Scenario 12: Modern Unit Testing, Mocking & CI Quality Gates (cpp-testing)
+```text
+💬 User: "Write unit tests for this money transfer service, mocking the database and external SMS gateway while checking for memory leaks and exception safety"
+🤖 Agent Response:
+1. Automatically activates [cpp-testing] skill;
+2. Dependency Injection & Isolation: Extracts `IAccountRepository` and `ISmsGateway` pure virtual interfaces, using modern GoogleMock `MOCK_METHOD` to eliminate concrete database and network coupling;
+3. Strict AAA Pattern: Constructs Arrange-Act-Assert test cases covering normal transfers, insufficient funds boundary, and invalid zero amounts with `EXPECT_CALL` constraints;
+4. Dual Sanitizers & Exception Safety: Configures ASan + UBSan compiler options, verifying that no database state mutations occur upon transfer failure (Strong Exception Safety Guarantee).
+```
+
 ---
 
 ## 5. Directory Layout
@@ -221,10 +235,11 @@ code-craft/
 │       ├── skill-craft/                   # Agent skill authoring, bilingual dual-anchor, progressive disclosure
 │       ├── effective-cpp/                 # Scott Meyers 132 modern C++ trilogy, RAII, move semantics & class design
 │       ├── cpp-idioms/                    # Wikibooks 75+ seminal C++ idioms, NVI, CRTP, Type Erasure, Attorney pattern
-│       └── cpp-concurrency/               # Anthony Williams C++ Concurrency, memory model, fine-grained queue, work stealing
+│       ├── cpp-concurrency/               # Anthony Williams C++ Concurrency, memory model, fine-grained queue, work stealing
+│       └── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers modern testing & CI quality pipeline
 │           ├── SKILL.md                   # Dual-mode engine & dispatch center
-│           ├── references/                # RAII threads / mutex deadlock / condvar futures / memory order / data structures / pool / TSAN
-│           └── examples/                  # [Modern C++ Demos] thread_safe_queue / lock_free_stack / work_stealing_thread_pool
+│           ├── references/                # CMake scaffolding / AAA boundaries / GMock DI / Sanitizers & CI pipeline
+│           └── examples/                  # [Modern C++ Demos] CMakeLists template / test_account_service_gmock / test_parameterized
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB

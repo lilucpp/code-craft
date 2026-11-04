@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横十二纵”**的立体质量防护网：
+本项目采用**“一横十三纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -43,6 +43,7 @@ flowchart TD
         S10["【现代C++】effective-cpp<br/>Scott Meyers 132条圣经三部曲 + RAII/智能指针 + 移动转发 + 运算符与多态防坑"]
         S11["【C++惯用法】cpp-idioms<br/>More C++ Idioms 75+模式 + NVI模板方法 + CRTP静态多态 + Type Erasure值语义 + Attorney受限友元"]
         S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
+        S13["【C++测试体系】cpp-testing<br/>GoogleTest/Catch2 + GMock依赖注入 + AAA模式 + ASan/UBSan + 覆盖率门禁"]
     end
 
     R --> S1
@@ -57,6 +58,7 @@ flowchart TD
     R --> S10
     R --> S11
     R --> S12
+    R --> S13
 ```
 
 ---
@@ -73,7 +75,7 @@ flowchart TD
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 十二门专项技能 (`.agents/skills/`)
+### 2. 十三门专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -89,6 +91,8 @@ flowchart TD
 | **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **现代C++**<br/>语言与设计 | Scott Meyers 圣经三部曲<br/>《Effective C++》(55条)<br/>《More Effective C++》(35条)<br/>《Effective Modern C++》(42条) | - **双模驱动**：包含现代 C++ 主动设计契约与老旧代码升版诊断重构双引擎<br/>- **RAII 与智能指针**：`unique_ptr` 默认所有权、`make` 系列无缝构建、构造函数智能指针防泄漏、Pimpl 析构编译隔离<br/>- **运算符与多态防坑**：绝不多态化处理数组、严禁重载短路操作符 `&&`/`||`、复合赋值 `op=` 实现 `op`、异常强制按引用捕获<br/>- **右值移动与转发**：`std::move` 强转右值、`std::forward` 保留引用、引用折叠、避免通用引用贪婪重载<br/>- **继承与接口硬契约**：多态基类虚析构、`override` 显式重写、三五零法则、`noexcept` 容器移动解锁、`clone()` 虚拟构造器 |
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **高级C++**<br/>模式与架构 | Wikibooks《More C++ Idioms》<br/>75+ 经典设计模式与惯用法 | - **双模驱动**：包含高级 C++ 惯用法主动设计与类架构体检重构双引擎<br/>- **接口与隔离**：NVI 模板方法守护类契约（公有非虚+私有虚函数）、Attorney-Client 细粒度友元隔离，绝不全盘暴露私有变量<br/>- **零成本静态多态**：CRTP 消除虚函数表与 `vptr` 寻址开销，C++20 `[[no_unique_address]]` 极致 EBO 空基类优化<br/>- **非侵入泛型与值语义**：Type Erasure 3层架构（外部值语义包装类 + 内部模板 Holder），实现非侵入式异构存储<br/>- **异常与初始化时序**：Copy-and-Swap 统一按值传参实现强异常安全，Construct On First Use 彻底终结跨单元静态初始化灾难 (SIOF) |
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **并发架构**<br/>多线程与无锁 | Anthony Williams 圣经<br/>《C++ Concurrency in Action》(第2版) | - **双模驱动**：包含高性能多线程主动架构与竞态/死锁诊断排障双引擎<br/>- **线程生命周期**：C++20 `jthread` 自动协作取消与析构加入、RAII 彻底终结 `std::terminate` 悬空引用崩溃<br/>- **互斥与死锁防御**：`scoped_lock` 变参一次性加锁、层级锁打破加锁死锁环路、`shared_mutex` 读写分离、`call_once` 安全单例<br/>- **底层内存模型**：6 种内存定序全解、Acquire-Release 构造 Happens-Before 同步链、Relaxed 极简计数、Fences 内存屏障<br/>- **并发容器与线程池**：分离头尾锁 Dummy 队列、分桶锁哈希表、无锁栈/队列与 ABA 防御、工作窃取（Work-Stealing）多核高吞吐线程池 |
+| **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **质量工程**<br/>单元测试与Mock | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **双模驱动**：包含测试架构主动设计与测试坏味道/难测代码解耦双引擎<br/>- **脚手架与消毒剂**：CMake `FetchContent` 声明式拉取 GTest/Catch2、Debug 构建强制挂载 ASan/UBSan 提前引爆内存缺陷<br/>- **用例设计规范**：严格执行 AAA 模式（Arrange-Act-Assert）、边界矩阵覆盖（空/单/极值/非法）、强异常安全回滚断言<br/>- **依赖注入与Mock**：抽象纯虚接口解除高延迟/不可控外部依赖，使用 GoogleMock `MOCK_METHOD` 与 `EXPECT_CALL` 精准打桩<br/>- **自动化流水线**：格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan 单元测试 $\to$ lcov/llvm-cov 覆盖率门禁（$\ge 80\%$） |
+
 
 
 
@@ -201,6 +205,16 @@ flowchart TD
 4. 内存模型与底层排障：指导开启 TSAN (-fsanitize=thread) 自动化竞态检测，若处于极致多核路径，提供 Work-Stealing 线程池与 Hazard Pointer 无锁重构方案。
 ```
 
+### 场景 12：单元测试、Mock 隔离与质量门禁 (cpp-testing)
+```text
+💬 用户："帮我给这个用户转账服务写单元测试，需要模拟数据库与外部短信网关，并且检查内存泄漏与异常安全"
+🤖 Agent 动作：
+1. 自动激活 [cpp-testing] 技能；
+2. 依赖注入与 Mock 隔离：提取 `IAccountRepository` 与 `ISmsGateway` 纯虚接口，使用 GoogleMock `MOCK_METHOD` 宏定义桩类，解除数据库与网络强耦合；
+3. 严格 AAA 模式设计：分别编写正常转账、余额不足边界、非法负金额等测试场景，使用 `EXPECT_CALL` 约束调用次数与匹配参数；
+4. 双消毒剂与异常安全守护：配置 ASan + UBSan 编译选项，验证转账失败时数据库状态不发生任何写变异（强异常安全保证）。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -222,10 +236,11 @@ code-craft/
 │       ├── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
 │       ├── effective-cpp/                 # Scott Meyers 132条现代C++圣经三部曲、RAII、移动转发与类设计技能
 │       ├── cpp-idioms/                    # Wikibooks 75+ 经典C++惯用法、NVI、CRTP、Type Erasure、Attorney模式技能
-│       └── cpp-concurrency/               # Anthony Williams 经典C++并发、内存模型、细粒度锁队列、工作窃取技能
+│       ├── cpp-concurrency/               # Anthony Williams 经典C++并发、内存模型、细粒度锁队列、工作窃取技能
+│       └── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers现代单元测试与质量流水线技能
 │           ├── SKILL.md                   # 双模引擎与调度中心
-│           ├── references/                # 线程RAII/互斥死锁/条件变量Future/内存模型原子序/并发容器/性能线程池/TSAN
-│           └── examples/                  # [现代实战] thread_safe_queue / lock_free_stack / work_stealing_thread_pool
+│           ├── references/                # CMake脚手架/AAA边界设计/GMock依赖注入/Sanitizers与CI流水线
+│           └── examples/                  # [现代实战] CMakeLists模板 / test_account_service_gmock / test_parameterized
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
