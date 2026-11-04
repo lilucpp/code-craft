@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横十一纵”**的立体质量防护网：
+本项目采用**“一横十二纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -42,6 +42,7 @@ flowchart TD
         S9["【技能设计】skill-craft<br/>Anthropic官方最佳实践 + 双语双锚点元数据 + 渐进式披露 + 自由度分级"]
         S10["【现代C++】effective-cpp<br/>Scott Meyers 132条圣经三部曲 + RAII/智能指针 + 移动转发 + 运算符与多态防坑"]
         S11["【C++惯用法】cpp-idioms<br/>More C++ Idioms 75+模式 + NVI模板方法 + CRTP静态多态 + Type Erasure值语义 + Attorney受限友元"]
+        S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
     end
 
     R --> S1
@@ -55,6 +56,7 @@ flowchart TD
     R --> S9
     R --> S10
     R --> S11
+    R --> S12
 ```
 
 ---
@@ -71,7 +73,7 @@ flowchart TD
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 十一门专项技能 (`.agents/skills/`)
+### 2. 十二门专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -86,6 +88,8 @@ flowchart TD
 | **[`skill-craft`](./.agents/skills/skill-craft/)** | **元工程**<br/>Agent技能 | Anthropic 官方规范<br/>Claude Best Practices | - **双模驱动**：包含新技能规范化主动设计与现有技能体检优化双引擎<br/>- **双语双锚点**：第三人称英文定义 + Use when + 中文场景 + 命令词精准召回<br/>- **渐进式披露**：两级目录结构（`SKILL.md` + `references/`），强制单层引用深度，严禁套娃递归<br/>- **自由度控制**：高自由度启发式核对清单 vs 低自由度硬性脚本（正斜杠、零巫术常量） |
 | **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **现代C++**<br/>语言与设计 | Scott Meyers 圣经三部曲<br/>《Effective C++》(55条)<br/>《More Effective C++》(35条)<br/>《Effective Modern C++》(42条) | - **双模驱动**：包含现代 C++ 主动设计契约与老旧代码升版诊断重构双引擎<br/>- **RAII 与智能指针**：`unique_ptr` 默认所有权、`make` 系列无缝构建、构造函数智能指针防泄漏、Pimpl 析构编译隔离<br/>- **运算符与多态防坑**：绝不多态化处理数组、严禁重载短路操作符 `&&`/`||`、复合赋值 `op=` 实现 `op`、异常强制按引用捕获<br/>- **右值移动与转发**：`std::move` 强转右值、`std::forward` 保留引用、引用折叠、避免通用引用贪婪重载<br/>- **继承与接口硬契约**：多态基类虚析构、`override` 显式重写、三五零法则、`noexcept` 容器移动解锁、`clone()` 虚拟构造器 |
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **高级C++**<br/>模式与架构 | Wikibooks《More C++ Idioms》<br/>75+ 经典设计模式与惯用法 | - **双模驱动**：包含高级 C++ 惯用法主动设计与类架构体检重构双引擎<br/>- **接口与隔离**：NVI 模板方法守护类契约（公有非虚+私有虚函数）、Attorney-Client 细粒度友元隔离，绝不全盘暴露私有变量<br/>- **零成本静态多态**：CRTP 消除虚函数表与 `vptr` 寻址开销，C++20 `[[no_unique_address]]` 极致 EBO 空基类优化<br/>- **非侵入泛型与值语义**：Type Erasure 3层架构（外部值语义包装类 + 内部模板 Holder），实现非侵入式异构存储<br/>- **异常与初始化时序**：Copy-and-Swap 统一按值传参实现强异常安全，Construct On First Use 彻底终结跨单元静态初始化灾难 (SIOF) |
+| **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **并发架构**<br/>多线程与无锁 | Anthony Williams 圣经<br/>《C++ Concurrency in Action》(第2版) | - **双模驱动**：包含高性能多线程主动架构与竞态/死锁诊断排障双引擎<br/>- **线程生命周期**：C++20 `jthread` 自动协作取消与析构加入、RAII 彻底终结 `std::terminate` 悬空引用崩溃<br/>- **互斥与死锁防御**：`scoped_lock` 变参一次性加锁、层级锁打破加锁死锁环路、`shared_mutex` 读写分离、`call_once` 安全单例<br/>- **底层内存模型**：6 种内存定序全解、Acquire-Release 构造 Happens-Before 同步链、Relaxed 极简计数、Fences 内存屏障<br/>- **并发容器与线程池**：分离头尾锁 Dummy 队列、分桶锁哈希表、无锁栈/队列与 ABA 防御、工作窃取（Work-Stealing）多核高吞吐线程池 |
+
 
 
 ---
@@ -187,6 +191,16 @@ flowchart TD
 4. 静态多态与值语义：若调用链处于高频循环，建议重构为 CRTP 消除虚表开销；若需要异构存储，建议采用 Type Erasure 提供非侵入式值语义。
 ```
 
+### 场景 11：高性能多线程与无锁并发架构 (cpp-concurrency)
+```text
+💬 用户："帮我设计一个高吞吐的多生产者多消费者队列，既要避免全局互斥锁瓶颈，又要防止 pop() 发生死锁与内存空悬"
+🤖 Agent 动作：
+1. 自动激活 [cpp-concurrency] 技能；
+2. 细粒度并发锁架构：引入 Dummy Node（虚节点）隔离头尾指针，拆分为独立 head_mutex 与 tail_mutex，入队与出队完全解耦并发执行；
+3. 异常安全与接口防御：识别标准 STL pop() 抛异常丢失数据的 TOCTOU 坏味道，重构为基于 std::shared_ptr 的强异常安全弹出机制；
+4. 内存模型与底层排障：指导开启 TSAN (-fsanitize=thread) 自动化竞态检测，若处于极致多核路径，提供 Work-Stealing 线程池与 Hazard Pointer 无锁重构方案。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -207,10 +221,11 @@ code-craft/
 │       ├── sql-craft/                     # 关系建模、B-Tree复合索引列序、Keyset分页与反模式防御
 │       ├── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
 │       ├── effective-cpp/                 # Scott Meyers 132条现代C++圣经三部曲、RAII、移动转发与类设计技能
-│       └── cpp-idioms/                    # Wikibooks 75+ 经典C++惯用法、NVI、CRTP、Type Erasure、Attorney模式技能
+│       ├── cpp-idioms/                    # Wikibooks 75+ 经典C++惯用法、NVI、CRTP、Type Erasure、Attorney模式技能
+│       └── cpp-concurrency/               # Anthony Williams 经典C++并发、内存模型、细粒度锁队列、工作窃取技能
 │           ├── SKILL.md                   # 双模引擎与调度中心
-│           ├── references/                # 接口封装/CRTP元编程/类型擦除值语义/资源生命周期/75+全量演进对照
-│           └── examples/                  # [现代实战] nvi_and_attorney_client / crtp_static_interface / type_erasure_holder
+│           ├── references/                # 线程RAII/互斥死锁/条件变量Future/内存模型原子序/并发容器/性能线程池/TSAN
+│           └── examples/                  # [现代实战] thread_safe_queue / lock_free_stack / work_stealing_thread_pool
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
@@ -219,7 +234,8 @@ code-craft/
 │   ├── system-data-design/                # OSTEP、并发实战、系统性能、OSDI14论文、SQL反模式、SQL性能
 │   ├── agent-skills/                      # Anthropic 官方 Agent Skills 最佳实践指南与速查手册
 │   ├── effective-cpp/                     # Scott Meyers 经典三部曲原版资料 (EC++、More EC++、EMC++)
-│   └── more-cpp-idioms/                   # 《More C++ Idioms》(Wikibooks) 原版资料与演进目录
+│   ├── more-cpp-idioms/                   # 《More C++ Idioms》(Wikibooks) 原版资料与演进目录
+│   └── cpp-concurrency/                   # 《C++ Concurrency in Action》（第2版）原版资料
 │
 ├── .clang-format                          # [一键生成] Google风格基线 + 右对齐指针 + 120列宽
 ├── .clang-format-ignore                   # 格式化自动排除 third_party/ 与构建目录

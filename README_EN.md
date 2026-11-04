@@ -41,6 +41,7 @@ flowchart TD
         S9["【Skill Meta-Engineering】skill-craft<br/>Anthropic Best Practices + Bilingual Dual-Anchor + Progressive Disclosure + Degrees of Freedom"]
         S10["【Modern C++】effective-cpp<br/>Scott Meyers 132 Items Trilogy + RAII/Smart Pointers + Move/Forward + Operators & Polymorphism Traps"]
         S11["【C++ Idioms】cpp-idioms<br/>More C++ Idioms 75+ Patterns + NVI Template Method + CRTP Static Poly + Type Erasure Value Semantics + Attorney Proxy"]
+        S12["【C++ Concurrency】cpp-concurrency<br/>Williams C++ Concurrency + Memory Model/Atomics + Fine-Grained Queue + Lock-Free CAS + Work Stealing"]
     end
 
     R --> S1
@@ -54,6 +55,7 @@ flowchart TD
     R --> S9
     R --> S10
     R --> S11
+    R --> S12
 ```
 
 ---
@@ -70,7 +72,7 @@ flowchart TD
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Eleven Specialized Skills (`.agents/skills/`)
+### 2. Twelve Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -85,6 +87,8 @@ flowchart TD
 | **[`skill-craft`](./.agents/skills/skill-craft/)** | **Meta-Engineering**<br/>Agent Skills | Anthropic Official Standards<br/>Claude Best Practices | - **Dual-Mode Engine**: Proactive skill authoring and existing skill health audit/refactoring<br/>- **Bilingual Dual-Anchor**: 3rd-person English definition + Use when + Chinese domain + precise trigger keywords<br/>- **Progressive Disclosure**: Two-tier layout (`SKILL.md` + `references/`), single-layer reference depth to prevent context drift<br/>- **Degrees of Freedom**: Heuristic checklists for reasoning vs deterministic scripts for fragile tasks (forward slashes, no magic numbers) |
 | **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **Modern C++**<br/>Idioms & Design | Scott Meyers Bible Trilogy<br/>*Effective C++* (55 Items)<br/>*More Effective C++* (35 Items)<br/>*Effective Modern C++* (42 Items) | - **Dual-Mode Engine**: Proactive modern C++ design contracts and legacy C++98 modernization/refactoring<br/>- **RAII & Smart Pointers**: `unique_ptr` default ownership, `make` family allocations, constructor exception safety, Pimpl compilation isolation<br/>- **Operators & Polymorphism**: Never treat arrays polymorphically, never overload short-circuit `&&`/`||`, implement `op` via `op=`, catch exceptions by reference<br/>- **Move & Forwarding**: `std::move` rvalue casting, `std::forward` reference preservation, reference collapsing, universal reference overload avoidance<br/>- **Class Hierarchy & Safety**: Polymorphic virtual destructors, `override` specifier, Rule of 5/0, `noexcept` container move unlocks, `clone()` virtual constructor |
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **Advanced C++**<br/>Patterns & Idioms | Wikibooks *More C++ Idioms*<br/>75+ Seminal Patterns & Idioms | - **Dual-Mode Engine**: Proactive C++ idiom selection and class architecture diagnostic refactoring<br/>- **Interface & Encapsulation**: NVI (Non-Virtual Interface) pattern enforces class contracts (public non-virtual + private virtual), Attorney-Client provides selective friendship without exposing private members<br/>- **Zero-Cost Static Polymorphism**: CRTP eliminates dynamic dispatch overhead and `vptr` size, C++20 `[[no_unique_address]]` maximizes Empty Base Optimization (EBO)<br/>- **Type Erasure & Value Semantics**: 3-tier architecture (external value wrapper + internal templated holder) gives non-intrusive runtime polymorphism without common base classes<br/>- **Exception Safety & Lifecycle**: Copy-and-Swap provides unified strong exception safety, Construct-On-First-Use eliminates Static Initialization Order Fiasco (SIOF) |
+| **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **Concurrency**<br/>Multithreading & Lock-Free | Anthony Williams Bible<br/>*C++ Concurrency in Action* (2nd Ed) | - **Dual-Mode Engine**: Proactive concurrent architecture and race/deadlock diagnostic hunting<br/>- **Thread Lifecycle**: C++20 `jthread` cooperative cancellation & RAII join guarantees eliminating `std::terminate` crashes<br/>- **Mutex & Deadlock Defense**: `scoped_lock` multi-locking, hierarchical mutex cycles defense, reader-writer `shared_mutex`, `call_once`<br/>- **C++ Memory Model**: 6 memory orderings, acquire-release happens-before chains, relaxed counters, synchronization fences<br/>- **Concurrent Data Structures & Pools**: Fine-grained head/tail dummy queue, bucketed hash map, lock-free CAS stack with ABA defense, Work-Stealing thread pool |
+
 
 
 ---
@@ -186,6 +190,16 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 4. Polymorphism & Value Semantics: If high-frequency execution requires zero vtable overhead, recommends CRTP static polymorphism; for heterogeneous collections, recommends Type Erasure for non-intrusive value semantics.
 ```
 
+### Scenario 11: High-Performance Multithreading & Lock-Free Architecture (cpp-concurrency)
+```text
+💬 User: "Design a high-throughput multi-producer multi-consumer queue, avoiding global mutex bottlenecks and preventing pop() deadlock and memory leaks"
+🤖 Agent Response:
+1. Automatically activates [cpp-concurrency] skill;
+2. Fine-Grained Locking: Introduces a Dummy Node to isolate head and tail pointers, splitting access into independent head_mutex and tail_mutex so pushes and pops run fully concurrently;
+3. Exception Safety: Diagnoses the TOCTOU flaw in standard STL pop() interfaces, refactoring to std::shared_ptr pop return values to guarantee strong exception safety;
+4. Memory Model & Sanitizer: Advises enabling TSAN (-fsanitize=thread) for continuous race detection, and provides Work-Stealing thread pool and Hazard Pointer lock-free refactoring for multi-core scaling.
+```
+
 ---
 
 ## 5. Directory Layout
@@ -206,10 +220,11 @@ code-craft/
 │       ├── sql-craft/                     # Relational modeling, B-Tree index ordering, Keyset pagination
 │       ├── skill-craft/                   # Agent skill authoring, bilingual dual-anchor, progressive disclosure
 │       ├── effective-cpp/                 # Scott Meyers 132 modern C++ trilogy, RAII, move semantics & class design
-│       └── cpp-idioms/                    # Wikibooks 75+ seminal C++ idioms, NVI, CRTP, Type Erasure, Attorney pattern
+│       ├── cpp-idioms/                    # Wikibooks 75+ seminal C++ idioms, NVI, CRTP, Type Erasure, Attorney pattern
+│       └── cpp-concurrency/               # Anthony Williams C++ Concurrency, memory model, fine-grained queue, work stealing
 │           ├── SKILL.md                   # Dual-mode engine & dispatch center
-│           ├── references/                # Encapsulation / CRTP / Type Erasure / Resource lifecycle / 75+ catalog
-│           └── examples/                  # [Modern C++ Demos] nvi_and_attorney_client / crtp_static_interface / type_erasure_holder
+│           ├── references/                # RAII threads / mutex deadlock / condvar futures / memory order / data structures / pool / TSAN
+│           └── examples/                  # [Modern C++ Demos] thread_safe_queue / lock_free_stack / work_stealing_thread_pool
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
@@ -218,7 +233,8 @@ code-craft/
 │   ├── system-data-design/                # OSTEP, Concurrency, Systems Performance, OSDI14, SQL Antipatterns, SQL Performance
 │   ├── agent-skills/                      # Anthropic Official Agent Skills Best Practices Guide & Cheat Sheet
 │   ├── effective-cpp/                     # Scott Meyers "Effective C++", "More Effective C++", "Effective Modern C++"
-│   └── more-cpp-idioms/                   # "More C++ Idioms" (Wikibooks) raw literature & evolution mapping
+│   ├── more-cpp-idioms/                   # "More C++ Idioms" (Wikibooks) raw literature & evolution mapping
+│   └── cpp-concurrency/                   # "C++ Concurrency in Action" (2nd Ed) raw literature
 │
 ├── .clang-format                          # [One-Click Config] Google Style + Right Pointer + 120 Cols
 ├── .clang-format-ignore                   # Ignore third_party/ and build artifacts
