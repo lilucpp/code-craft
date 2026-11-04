@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横九纵”**的立体质量防护网：
+本项目采用**“一横十纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -40,6 +40,7 @@ flowchart TD
         S7["【系统数据】systems-data-design<br/>物理内存降序对齐 + 伪共享隔离 + 强类型/Typestate + OSDI14原子落盘"]
         S8["【数据存储】sql-craft<br/>B-Tree组合索引列序 + Keyset寻址分页 + 闭包表 + SQL反模式防御"]
         S9["【技能设计】skill-craft<br/>Anthropic官方最佳实践 + 双语双锚点元数据 + 渐进式披露 + 自由度分级"]
+        S10["【现代C++】effective-cpp<br/>Scott Meyers 132条圣经三部曲 + RAII/智能指针 + 移动转发 + 运算符与多态防坑"]
     end
 
     R --> S1
@@ -51,6 +52,7 @@ flowchart TD
     R --> S7
     R --> S8
     R --> S9
+    R --> S10
 ```
 
 ---
@@ -67,7 +69,7 @@ flowchart TD
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 九大专项技能 (`.agents/skills/`)
+### 2. 十大专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -80,6 +82,7 @@ flowchart TD
 | **[`systems-data-design`](./.agents/skills/systems-data-design/)** | **系统**<br/>内存与落盘 | Williams《并发实战》<br/>Gregg《系统性能》<br/>OSTEP 操作系统<br/>OSDI '14 顶会论文 | - **双模驱动**：包含 AI 主动设计防线与问答诊断优化双引擎<br/>- **物理内存对齐**：成员按 8-4-2-1 降序排布挤出 Padding，跨核变量 `alignas(64)` 隔离伪共享<br/>- **零开销强类型**：`StrongType` 消除参数混淆，`Typestate` 编译期掐死时序调用 Bug<br/>- **崩溃安全原子落盘**：OSDI 14 标准四步法（`write tmp -> fdatasync -> rename -> dir fsync`） |
 | **[`sql-craft`](./.agents/skills/sql-craft/)** | **存储**<br/>关系与索引 | Markus Winand 索引<br/>Bill Karwin《SQL反模式》 | - **双模驱动**：包含表结构设计主动防御与慢查询重构双引擎<br/>- **B-Tree 列序铁律**：复合索引严格遵守“等值在前、范围在后”，覆盖索引消除回表 I/O<br/>- **大表 Seek 分页**：Keyset Pagination 消除 `LIMIT OFFSET` 带来的百万行全表扫描雪崩<br/>- **反模式治理**：闭包表（Closure Table）终结树递归、交叉表干掉逗号乱穿马路、金额强制 DECIMAL |
 | **[`skill-craft`](./.agents/skills/skill-craft/)** | **元工程**<br/>Agent技能 | Anthropic 官方规范<br/>Claude Best Practices | - **双模驱动**：包含新技能规范化主动设计与现有技能体检优化双引擎<br/>- **双语双锚点**：第三人称英文定义 + Use when + 中文场景 + 命令词精准召回<br/>- **渐进式披露**：两级目录结构（`SKILL.md` + `references/`），强制单层引用深度，严禁套娃递归<br/>- **自由度控制**：高自由度启发式核对清单 vs 低自由度硬性脚本（正斜杠、零巫术常量） |
+| **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **现代C++**<br/>语言与设计 | Scott Meyers 圣经三部曲<br/>《Effective C++》(55条)<br/>《More Effective C++》(35条)<br/>《Effective Modern C++》(42条) | - **双模驱动**：包含现代 C++ 主动设计契约与老旧代码升版诊断重构双引擎<br/>- **RAII 与智能指针**：`unique_ptr` 默认所有权、`make` 系列无缝构建、构造函数智能指针防泄漏、Pimpl 析构编译隔离<br/>- **运算符与多态防坑**：绝不多态化处理数组、严禁重载短路操作符 `&&`/`||`、复合赋值 `op=` 实现 `op`、异常强制按引用捕获<br/>- **右值移动与转发**：`std::move` 强转右值、`std::forward` 保留引用、引用折叠、避免通用引用贪婪重载<br/>- **继承与接口硬契约**：多态基类虚析构、`override` 显式重写、三五零法则、`noexcept` 容器移动解锁、`clone()` 虚拟构造器 |
 
 ---
 
@@ -160,6 +163,16 @@ flowchart TD
 4. 提供低自由度的诊断脚本护栏与单层深度的参考手册，彻底杜绝常识解释以节省 Token。
 ```
 
+### 场景 9：现代 C++ 规范设计与遗留代码升级 (effective-cpp)
+```text
+💬 用户："帮我看下这段基于 C++98 写的旧代码，怎么用现代 C++ 优雅重构，并且避免内存泄漏"
+🤖 Agent 动作：
+1. 自动激活 [effective-cpp] 技能；
+2. 识别老旧反模式：将裸 new/delete 重构为 std::unique_ptr，将 NULL 升级为 nullptr，将私有非拷贝基类升级为 = delete；
+3. 规范化 Pimpl 惯用法：前置声明并在 .cpp 中显式 default 析构函数，防止 incomplete type 编译报错；
+4. 移动语义防线：严禁在按值返回局部对象时多余 std::move 破坏编译器 RVO 优化；为移动构造标注 noexcept 解锁容器高效扩容。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -178,17 +191,19 @@ code-craft/
 │       ├── cpp-code-quality/              # C++代码质量、增量格式化与静态检查技能
 │       ├── systems-data-design/           # 物理内存对齐、强类型/Typestate、OSDI14崩溃安全落盘技能
 │       ├── sql-craft/                     # 关系建模、B-Tree复合索引列序、Keyset分页与反模式防御
-│       └── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
+│       ├── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
+│       └── effective-cpp/                 # Scott Meyers 132条现代C++圣经三部曲、RAII、移动转发与类设计技能
 │           ├── SKILL.md                   # 双模引擎与调度中心
-│           ├── references/                # 元数据召回/渐进式披露/自由度/跨模型测试清单
-│           └── examples/                  # [标准脚手架] minimal_skill_template/
+│           ├── references/                # 资源管理/现代语法/移动完美转发/类继承/并发/运算符异常/132条款全景
+│           └── examples/                  # [现代实战] modern_pimpl_idiom / safe_thread_guard / cloneable_virtual_copy
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
 │   ├── unix-programming-art/              # 《UNIX编程艺术》原版 EPUB 与博文索引
 │   ├── tech-communication/                # 酷壳分享心法与 Stack Overflow 提问指南
 │   ├── system-data-design/                # OSTEP、并发实战、系统性能、OSDI14论文、SQL反模式、SQL性能
-│   └── agent-skills/                      # Anthropic 官方 Agent Skills 最佳实践指南与速查手册
+│   ├── agent-skills/                      # Anthropic 官方 Agent Skills 最佳实践指南与速查手册
+│   └── effective-cpp/                     # Scott Meyers 经典三部曲原版资料 (EC++、More EC++、EMC++)
 │
 ├── .clang-format                          # [一键生成] Google风格基线 + 右对齐指针 + 120列宽
 ├── .clang-format-ignore                   # 格式化自动排除 third_party/ 与构建目录

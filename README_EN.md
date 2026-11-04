@@ -39,6 +39,7 @@ flowchart TD
         S7["【Systems Data】systems-data-design<br/>Memory Packing + False Sharing Defense + StrongType/Typestate + OSDI14 Atomic Write"]
         S8["【Data Storage】sql-craft<br/>B-Tree Index Column Order + Keyset Seek Pagination + Closure Table + Antipatterns Defense"]
         S9["【Skill Meta-Engineering】skill-craft<br/>Anthropic Best Practices + Bilingual Dual-Anchor + Progressive Disclosure + Degrees of Freedom"]
+        S10["【Modern C++】effective-cpp<br/>Scott Meyers 132 Items Trilogy + RAII/Smart Pointers + Move/Forward + Operators & Polymorphism Traps"]
     end
 
     R --> S1
@@ -50,6 +51,7 @@ flowchart TD
     R --> S7
     R --> S8
     R --> S9
+    R --> S10
 ```
 
 ---
@@ -66,7 +68,7 @@ flowchart TD
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Nine Specialized Skills (`.agents/skills/`)
+### 2. Ten Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -79,6 +81,7 @@ flowchart TD
 | **[`systems-data-design`](./.agents/skills/systems-data-design/)** | **Systems**<br/>Memory & Crash-Safety | Williams *C++ Concurrency*<br/>Gregg *Systems Performance*<br/>OSTEP Operating Systems<br/>OSDI '14 Best Paper | - **Dual-Mode Engine**: Features proactive design defenses and advisory code optimization<br/>- **Physical Memory Alignment**: 8-4-2-1 descending packing to kill padding holes, `alignas(64)` for multi-core false sharing<br/>- **Zero-Cost Strong Types**: `StrongType` prevents ID/unit mixups, `Typestate` kills temporal sequence bugs at compile time<br/>- **Crash-Consistent Persistence**: OSDI 14 4-step atomic write (`write tmp -> fdatasync -> rename -> dir fsync`) |
 | **[`sql-craft`](./.agents/skills/sql-craft/)** | **Storage**<br/>Relations & Indexing | Markus Winand Indexing<br/>Bill Karwin *SQL Antipatterns* | - **Dual-Mode Engine**: Features schema design defenses and slow query refactoring<br/>- **B-Tree Order Rule**: Composite indexes strictly follow "equality first, range second", covering indexes eliminate random I/O<br/>- **Keyset Seek Pagination**: Replaces `LIMIT OFFSET` to eliminate scanning millions of rows on deep pages<br/>- **Antipattern Defense**: Closure Table ends recursive trees, Intersection Table eliminates comma Jaywalking, DECIMAL enforces financial precision |
 | **[`skill-craft`](./.agents/skills/skill-craft/)** | **Meta-Engineering**<br/>Agent Skills | Anthropic Official Standards<br/>Claude Best Practices | - **Dual-Mode Engine**: Proactive skill authoring and existing skill health audit/refactoring<br/>- **Bilingual Dual-Anchor**: 3rd-person English definition + Use when + Chinese domain + precise trigger keywords<br/>- **Progressive Disclosure**: Two-tier layout (`SKILL.md` + `references/`), single-layer reference depth to prevent context drift<br/>- **Degrees of Freedom**: Heuristic checklists for reasoning vs deterministic scripts for fragile tasks (forward slashes, no magic numbers) |
+| **[`effective-cpp`](./.agents/skills/effective-cpp/)** | **Modern C++**<br/>Idioms & Design | Scott Meyers Bible Trilogy<br/>*Effective C++* (55 Items)<br/>*More Effective C++* (35 Items)<br/>*Effective Modern C++* (42 Items) | - **Dual-Mode Engine**: Proactive modern C++ design contracts and legacy C++98 modernization/refactoring<br/>- **RAII & Smart Pointers**: `unique_ptr` default ownership, `make` family allocations, constructor exception safety, Pimpl compilation isolation<br/>- **Operators & Polymorphism**: Never treat arrays polymorphically, never overload short-circuit `&&`/`||`, implement `op` via `op=`, catch exceptions by reference<br/>- **Move & Forwarding**: `std::move` rvalue casting, `std::forward` reference preservation, reference collapsing, universal reference overload avoidance<br/>- **Class Hierarchy & Safety**: Polymorphic virtual destructors, `override` specifier, Rule of 5/0, `noexcept` container move unlocks, `clone()` virtual constructor |
 
 ---
 
@@ -159,6 +162,16 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 4. Establishes low-degree-of-freedom diagnostic script guardrails and single-layer reference manuals, omitting common sense explanations to conserve context tokens.
 ```
 
+### Scenario 9: Modern C++ Idiomatic Design & Legacy Modernization (effective-cpp)
+```text
+💬 User: "Review this legacy C++98 code, migrate it to modern C++, and eliminate resource leaks"
+🤖 Agent Response:
+1. Automatically activates [effective-cpp] skill;
+2. Detects legacy antipatterns: refactors raw new/delete to std::unique_ptr, NULL to nullptr, private uncopyable classes to = delete;
+3. Standardizes Pimpl Idiom: forward declares and explicitly defaults destructor in .cpp to prevent incomplete type compilation errors;
+4. Move semantics defense: eliminates redundant std::move on local return objects to preserve RVO; marks move constructor noexcept to unlock STL reallocation speedups.
+```
+
 ---
 
 ## 5. Directory Layout
@@ -177,17 +190,19 @@ code-craft/
 │       ├── cpp-code-quality/              # C++ quality, incremental diff formatting & linting
 │       ├── systems-data-design/           # Memory packing, strong types/typestate, OSDI14 crash-safe write
 │       ├── sql-craft/                     # Relational modeling, B-Tree index ordering, Keyset pagination
-│       └── skill-craft/                   # Agent skill authoring, bilingual dual-anchor, progressive disclosure
+│       ├── skill-craft/                   # Agent skill authoring, bilingual dual-anchor, progressive disclosure
+│       └── effective-cpp/                 # Scott Meyers 132 modern C++ trilogy, RAII, move semantics & class design
 │           ├── SKILL.md                   # Dual-mode engine & dispatch center
-│           ├── references/                # Metadata recall / progressive disclosure / guardrails / eval checklist
-│           └── examples/                  # [Standard Scaffolding] minimal_skill_template/
+│           ├── references/                # Resource management / modern syntax / move / class / concurrency / operators & exceptions / 132 matrix
+│           └── examples/                  # [Modern C++ Demos] modern_pimpl_idiom / safe_thread_guard / cloneable_virtual_copy
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
 │   ├── unix-programming-art/              # "The Art of UNIX Programming" raw EPUB & blog links
 │   ├── tech-communication/                # Technical sharing and Stack Overflow asking guides
 │   ├── system-data-design/                # OSTEP, Concurrency, Systems Performance, OSDI14, SQL Antipatterns, SQL Performance
-│   └── agent-skills/                      # Anthropic Official Agent Skills Best Practices Guide & Cheat Sheet
+│   ├── agent-skills/                      # Anthropic Official Agent Skills Best Practices Guide & Cheat Sheet
+│   └── effective-cpp/                     # Scott Meyers "Effective C++", "More Effective C++", "Effective Modern C++"
 │
 ├── .clang-format                          # [One-Click Config] Google Style + Right Pointer + 120 Cols
 ├── .clang-format-ignore                   # Ignore third_party/ and build artifacts
