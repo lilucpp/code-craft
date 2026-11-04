@@ -18,3 +18,7 @@ Thumbs.db
 
 # Temporary / Scratch
 *.tmp
+
+# Distribution / Release Packages
+dist/
+release/
