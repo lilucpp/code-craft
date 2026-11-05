@@ -21,7 +21,7 @@ Leveraging the **Google Antigravity / Agent Customization Specification**, we tr
 
 ## 2. Architecture Topology
 
-Code-Craft establishes a comprehensive defense-in-depth engineering matrix:
+Code-Craft establishes a comprehensive "One Horizontal, Fourteen Verticals" defense-in-depth engineering matrix:
 
 ```mermaid
 flowchart TD
@@ -43,6 +43,7 @@ flowchart TD
         S11["【C++ Idioms】cpp-idioms<br/>More C++ Idioms 75+ Patterns + NVI Template Method + CRTP Static Poly + Type Erasure Value Semantics + Attorney Proxy"]
         S12["【C++ Concurrency】cpp-concurrency<br/>Williams C++ Concurrency + Memory Model/Atomics + Fine-Grained Queue + Lock-Free CAS + Work Stealing"]
         S13["【C++ Testing】cpp-testing<br/>GoogleTest/Catch2 + GMock Dependency Injection + AAA Matrix + ASan/UBSan + Coverage Gates"]
+        S14["【Requirements Engineering】software-requirements<br/>Wiegers Classic Requirements + 3 Levels + SIBV/Vision + Use Cases/INVEST + Planguage + Analytical Priority + RTM"]
     end
 
     R --> S1
@@ -58,6 +59,7 @@ flowchart TD
     R --> S11
     R --> S12
     R --> S13
+    R --> S14
 ```
 
 ---
@@ -74,7 +76,7 @@ flowchart TD
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Thirteen Specialized Skills (`.agents/skills/`)
+### 2. Fourteen Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -91,6 +93,7 @@ flowchart TD
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **Advanced C++**<br/>Patterns & Idioms | Wikibooks *More C++ Idioms*<br/>75+ Seminal Patterns & Idioms | - **Dual-Mode Engine**: Proactive C++ idiom selection and class architecture diagnostic refactoring<br/>- **Interface & Encapsulation**: NVI (Non-Virtual Interface) pattern enforces class contracts (public non-virtual + private virtual), Attorney-Client provides selective friendship without exposing private members<br/>- **Zero-Cost Static Polymorphism**: CRTP eliminates dynamic dispatch overhead and `vptr` size, C++20 `[[no_unique_address]]` maximizes Empty Base Optimization (EBO)<br/>- **Type Erasure & Value Semantics**: 3-tier architecture (external value wrapper + internal templated holder) gives non-intrusive runtime polymorphism without common base classes<br/>- **Exception Safety & Lifecycle**: Copy-and-Swap provides unified strong exception safety, Construct-On-First-Use eliminates Static Initialization Order Fiasco (SIOF) |
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **Concurrency**<br/>Multithreading & Lock-Free | Anthony Williams Bible<br/>*C++ Concurrency in Action* (2nd Ed) | - **Dual-Mode Engine**: Proactive concurrent architecture and race/deadlock diagnostic hunting<br/>- **Thread Lifecycle**: C++20 `jthread` cooperative cancellation & RAII join guarantees eliminating `std::terminate` crashes<br/>- **Mutex & Deadlock Defense**: `scoped_lock` multi-locking, hierarchical mutex cycles defense, reader-writer `shared_mutex`, `call_once`<br/>- **C++ Memory Model**: 6 memory orderings, acquire-release happens-before chains, relaxed counters, synchronization fences<br/>- **Concurrent Data Structures & Pools**: Fine-grained head/tail dummy queue, bucketed hash map, lock-free CAS stack with ABA defense, Work-Stealing thread pool |
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **Testing**<br/>Unit Test & Mocking | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **Dual-Mode Engine**: Proactive testing architecture and untestable legacy code decoupling<br/>- **Scaffolding & Sanitizers**: CMake `FetchContent` declarative dependencies, ASan/UBSan memory sanitization for testing builds<br/>- **Test Design & AAA**: Strict Arrange-Act-Assert pattern, 4-zone boundary matrix (empty/single/extremes/invalid), strong exception safety testing<br/>- **Mocking & Isolation**: Dependency injection interface extraction, modern GoogleMock `MOCK_METHOD` and `EXPECT_CALL` expectations<br/>- **Automated CI Pipeline**: Format $\to$ Clang-Tidy $\to$ ASan CTest execution $\to$ lcov/llvm-cov code coverage gate ($\ge 80\%$) |
+| **[`software-requirements`](./.agents/skills/software-requirements/)** | **Requirements**<br/>Business & Specification | Karl Wiegers Seminal Books<br/>*Software Requirements* (3rd Ed)<br/>*Software Requirements Essentials* | - **Dual-Mode Engine**: Proactive requirements specification and smell audit/impact analysis<br/>- **3 Levels & Scope**: Business Requirements (BR) $\to$ User Requirements (UR/Use Cases/INVEST) $\to$ Functional Requirements (FR), SIBV problem statements & vision formula<br/>- **Specification & Ambiguity Defense**: ISO/IEC/IEEE 29148 structure, mandatory "The system shall" active syntax, Table 11-2 25+ ambiguity dictionary & rewrites, boundary/symmetry defense<br/>- **Planguage Quality Quantification**: External/Internal quality attribute taxonomy, SCALE/METER/MUST/PLAN/FAIL metrics, quality trade-offs matrix<br/>- **Analytical Prioritization & Governance**: Wiegers Value-Cost-Risk formula, Formal Peer Inspection checklists, Forward/Backward RTM traceability, 5-step change impact protocol |
 
 
 
@@ -214,6 +217,17 @@ Zero external dependencies required. As long as your IDE/CLI supports agent cust
 4. Dual Sanitizers & Exception Safety: Configures ASan + UBSan compiler options, verifying that no database state mutations occur upon transfer failure (Strong Exception Safety Guarantee).
 ```
 
+### Scenario 13: Business Problem Drilling, Ambiguity Defense & Analytical Prioritization (software-requirements)
+```text
+💬 User: "Help me turn messy stakeholder requests like 'the system must quickly and easily support exporting various report formats with a friendly UI' into a formal SRS, and prioritize the features"
+🤖 Agent Response:
+1. Automatically activates [software-requirements] skill;
+2. Automated Smell Detection: Scans text to detect 4 classic Table 11-2 ambiguity smells ("quickly", "easily", "various", "friendly");
+3. SIBV Problem Modeling: Probes root accounting bottlenecks, decomposes tasks into discrete functional requirements with mandatory "The system shall" active voice;
+4. Planguage Quantification: Quantifies "quick export" via SCALE (elapsed seconds), METER (1M-row stress test), MUST (<=15s), PLAN (<=5s);
+5. Analytical Prioritization: Rates Relative Benefit, Penalty, Cost, and Risk (1-9) to compute objective priority ranking via calc_priority.py.
+```
+
 ---
 
 ## 5. Directory Layout
@@ -236,10 +250,12 @@ code-craft/
 │       ├── effective-cpp/                 # Scott Meyers 132 modern C++ trilogy, RAII, move semantics & class design
 │       ├── cpp-idioms/                    # Wikibooks 75+ seminal C++ idioms, NVI, CRTP, Type Erasure, Attorney pattern
 │       ├── cpp-concurrency/               # Anthony Williams C++ Concurrency, memory model, fine-grained queue, work stealing
-│       └── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers modern testing & CI quality pipeline
+│       ├── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers modern testing & CI quality pipeline
+│       └── software-requirements/         # Karl Wiegers software requirements, 3 levels, ambiguity defense, Planguage & prioritization
 │           ├── SKILL.md                   # Dual-mode engine & dispatch center
-│           ├── references/                # CMake scaffolding / AAA boundaries / GMock DI / Sanitizers & CI pipeline
-│           └── examples/                  # [Modern C++ Demos] CMakeLists template / test_account_service_gmock / test_parameterized
+│           ├── references/                # Foundation & scope / Elicitation & rules / Specification & ambiguity / Planguage / Prioritization & validation / RTM & change control
+│           ├── examples/                  # Vision & scope template / SRS specification template / Use case & BDD examples
+│           └── scripts/                   # Analytical priority calculator (calc_priority.py) / Requirements smell detector (lint_requirements.py)
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
@@ -249,7 +265,8 @@ code-craft/
 │   ├── agent-skills/                      # Anthropic Official Agent Skills Best Practices Guide & Cheat Sheet
 │   ├── effective-cpp/                     # Scott Meyers "Effective C++", "More Effective C++", "Effective Modern C++"
 │   ├── more-cpp-idioms/                   # "More C++ Idioms" (Wikibooks) raw literature & evolution mapping
-│   └── cpp-concurrency/                   # "C++ Concurrency in Action" (2nd Ed) raw literature
+│   ├── cpp-concurrency/                   # "C++ Concurrency in Action" (2nd Ed) raw literature
+│   └── software-requirements/             # Karl Wiegers "Software Requirements" (3rd Ed) & "Software Requirements Essentials"
 │
 ├── .clang-format                          # [One-Click Config] Google Style + Right Pointer + 120 Cols
 ├── .clang-format-ignore                   # Ignore third_party/ and build artifacts
@@ -288,6 +305,7 @@ AGY-Craft stands upon the shoulders of giants:
 * **Martin Fowler** — *Refactoring: Improving the Design of Existing Code*
 * **Eric S. Raymond** — *The Art of UNIX Programming*
 * **Robert C. Martin (Uncle Bob)** — *Agile Software Development: Principles, Patterns, and Practices*
+* **Karl Wiegers & Joy Beatty** — *Software Requirements* (3rd Edition) & *Software Requirements Essentials*
 * **Hao Chen (Left-Ear Mouse / CoolShell)** — *Using Unix Design Philosophy to Deal with Volatile Requirements*, *Some Principles of Software Design*, *How to Deliver a Quality Technical Presentation*
 * **Stack Overflow Community** — *How do I ask a good question?* & *Minimal, Reproducible Example (MRE)*
 

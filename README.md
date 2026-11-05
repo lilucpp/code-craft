@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横十三纵”**的立体质量防护网：
+本项目采用**“一横十四纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -44,6 +44,7 @@ flowchart TD
         S11["【C++惯用法】cpp-idioms<br/>More C++ Idioms 75+模式 + NVI模板方法 + CRTP静态多态 + Type Erasure值语义 + Attorney受限友元"]
         S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
         S13["【C++测试体系】cpp-testing<br/>GoogleTest/Catch2 + GMock依赖注入 + AAA模式 + ASan/UBSan + 覆盖率门禁"]
+        S14["【需求工程】software-requirements<br/>Karl Wiegers 经典需求 + 三层级模型 + SIBV/愿景 + 用例/INVEST故事 + 歧义防御 + Planguage量化 + 分析型优先级 + RTM追溯"]
     end
 
     R --> S1
@@ -59,6 +60,7 @@ flowchart TD
     R --> S11
     R --> S12
     R --> S13
+    R --> S14
 ```
 
 ---
@@ -75,7 +77,7 @@ flowchart TD
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 十三门专项技能 (`.agents/skills/`)
+### 2. 十四门专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -92,6 +94,7 @@ flowchart TD
 | **[`cpp-idioms`](./.agents/skills/cpp-idioms/)** | **高级C++**<br/>模式与架构 | Wikibooks《More C++ Idioms》<br/>75+ 经典设计模式与惯用法 | - **双模驱动**：包含高级 C++ 惯用法主动设计与类架构体检重构双引擎<br/>- **接口与隔离**：NVI 模板方法守护类契约（公有非虚+私有虚函数）、Attorney-Client 细粒度友元隔离，绝不全盘暴露私有变量<br/>- **零成本静态多态**：CRTP 消除虚函数表与 `vptr` 寻址开销，C++20 `[[no_unique_address]]` 极致 EBO 空基类优化<br/>- **非侵入泛型与值语义**：Type Erasure 3层架构（外部值语义包装类 + 内部模板 Holder），实现非侵入式异构存储<br/>- **异常与初始化时序**：Copy-and-Swap 统一按值传参实现强异常安全，Construct On First Use 彻底终结跨单元静态初始化灾难 (SIOF) |
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **并发架构**<br/>多线程与无锁 | Anthony Williams 圣经<br/>《C++ Concurrency in Action》(第2版) | - **双模驱动**：包含高性能多线程主动架构与竞态/死锁诊断排障双引擎<br/>- **线程生命周期**：C++20 `jthread` 自动协作取消与析构加入、RAII 彻底终结 `std::terminate` 悬空引用崩溃<br/>- **互斥与死锁防御**：`scoped_lock` 变参一次性加锁、层级锁打破加锁死锁环路、`shared_mutex` 读写分离、`call_once` 安全单例<br/>- **底层内存模型**：6 种内存定序全解、Acquire-Release 构造 Happens-Before 同步链、Relaxed 极简计数、Fences 内存屏障<br/>- **并发容器与线程池**：分离头尾锁 Dummy 队列、分桶锁哈希表、无锁栈/队列与 ABA 防御、工作窃取（Work-Stealing）多核高吞吐线程池 |
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **质量工程**<br/>单元测试与Mock | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **双模驱动**：包含测试架构主动设计与测试坏味道/难测代码解耦双引擎<br/>- **脚手架与消毒剂**：CMake `FetchContent` 声明式拉取 GTest/Catch2、Debug 构建强制挂载 ASan/UBSan 提前引爆内存缺陷<br/>- **用例设计规范**：严格执行 AAA 模式（Arrange-Act-Assert）、边界矩阵覆盖（空/单/极值/非法）、强异常安全回滚断言<br/>- **依赖注入与Mock**：抽象纯虚接口解除高延迟/不可控外部依赖，使用 GoogleMock `MOCK_METHOD` 与 `EXPECT_CALL` 精准打桩<br/>- **自动化流水线**：格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan 单元测试 $\to$ lcov/llvm-cov 覆盖率门禁（$\ge 80\%$） |
+| **[`software-requirements`](./.agents/skills/software-requirements/)** | **需求工程**<br/>业务分析与规格 | Karl Wiegers 经典著作<br/>《软件需求》(第3版)<br/>《软件需求精髓》(20条实践) | - **双模驱动**：包含主动需求工程规格编制与需求审查诊断排障双引擎<br/>- **三层级与边界**：业务需求(BR) $\to$ 用户需求(UR/用例/INVEST故事) $\to$ 功能需求(FR)，SIBV 问题陈述模型与愿景公式<br/>- **规格与歧义防御**：ISO/IEC/IEEE 29148 结构、统一“系统应(shall)”句式、Table 11-2 25+ 歧义词典与重构、对称性/边界闭合防御<br/>- **Planguage 质量量化**：外部/内部质量属性体系、SCALE/METER/MUST/PLAN/FAIL、质量权衡冲突矩阵<br/>- **分析型优先级与治理**：价值-代价-风险量化模型（公式计算排期）、需求同行审查(Inspection)、RTM 双向可跟踪性、变更五步影响分析 |
 
 
 
@@ -215,6 +218,17 @@ flowchart TD
 4. 双消毒剂与异常安全守护：配置 ASan + UBSan 编译选项，验证转账失败时数据库状态不发生任何写变异（强异常安全保证）。
 ```
 
+### 场景 13：业务需求梳理、歧义防御与科学排期 (software-requirements)
+```text
+💬 用户："帮我把业务方零散的‘系统要快速且简单地支持各种格式报表导出，界面要友好’整理成规范的 SRS，并且评估优先级"
+🤖 Agent 动作：
+1. 自动激活 [software-requirements] 技能；
+2. 运行歧义检测工具：扫描识别出“快速”、“简单”、“各种”、“友好”等 4 处经典歧义坏味道（Table 11-2）；
+3. 业务下钻与 SIBV 重构：探究财务对账根本痛点，拆解为独立功能需求，统一转换为“系统应 (shall)”主动句式；
+4. 质量属性 Planguage 量化：将“快速导出”量化为 SCALE（流逝秒数）、METER（百万行账单压测）、MUST（<=15s）、PLAN（<=5s）；
+5. 分析型优先级计算：输入相对收益、损失、开发成本与技术风险评分，运行 calc_priority.py 给出科学加权排序。
+```
+
 ---
 
 ## 5. 项目目录全景 (Directory Layout)
@@ -237,10 +251,12 @@ code-craft/
 │       ├── effective-cpp/                 # Scott Meyers 132条现代C++圣经三部曲、RAII、移动转发与类设计技能
 │       ├── cpp-idioms/                    # Wikibooks 75+ 经典C++惯用法、NVI、CRTP、Type Erasure、Attorney模式技能
 │       ├── cpp-concurrency/               # Anthony Williams 经典C++并发、内存模型、细粒度锁队列、工作窃取技能
-│       └── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers现代单元测试与质量流水线技能
+│       ├── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers现代单元测试与质量流水线技能
+│       └── software-requirements/         # Karl Wiegers 软件需求、三层级模型、歧义防御、Planguage、分析型优先级技能
 │           ├── SKILL.md                   # 双模引擎与调度中心
-│           ├── references/                # CMake脚手架/AAA边界设计/GMock依赖注入/Sanitizers与CI流水线
-│           └── examples/                  # [现代实战] CMakeLists模板 / test_account_service_gmock / test_parameterized
+│           ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
+│           ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
+│           └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
@@ -250,7 +266,8 @@ code-craft/
 │   ├── agent-skills/                      # Anthropic 官方 Agent Skills 最佳实践指南与速查手册
 │   ├── effective-cpp/                     # Scott Meyers 经典三部曲原版资料 (EC++、More EC++、EMC++)
 │   ├── more-cpp-idioms/                   # 《More C++ Idioms》(Wikibooks) 原版资料与演进目录
-│   └── cpp-concurrency/                   # 《C++ Concurrency in Action》（第2版）原版资料
+│   ├── cpp-concurrency/                   # 《C++ Concurrency in Action》（第2版）原版资料
+│   └── software-requirements/             # Karl Wiegers《软件需求》（第3版）与《软件需求精髓》原版资料
 │
 ├── .clang-format                          # [一键生成] Google风格基线 + 右对齐指针 + 120列宽
 ├── .clang-format-ignore                   # 格式化自动排除 third_party/ 与构建目录
@@ -290,6 +307,7 @@ code-craft/
 * **Martin Fowler** ——《重构：改善既有代码的设计》(Refactoring: Improving the Design of Existing Code)
 * **Eric S. Raymond** ——《UNIX编程艺术》(The Art of UNIX Programming)
 * **Robert C. Martin (Uncle Bob)** ——《敏捷软件开发：原则、模式与实践》(Agile Software Development)
+* **Karl Wiegers & Joy Beatty** ——《软件需求》(第3版) 与《软件需求精髓》(Software Requirements & Essentials)
 * **陈皓（左耳朵耗子 / CoolShell）** ——《用Unix的设计思想来应对多变的需求》、《一些软件设计的原则》、《如何做一个有质量的技术分享》
 * **Stack Overflow 社区** ——《How do I ask a good question?》与 MRE (Minimal, Reproducible Example) 规范
 
