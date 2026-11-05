@@ -18,6 +18,19 @@ Thumbs.db
 
 # Temporary / Scratch
 *.tmp
+build/
+bin/
+*.o
+*.a
+*.so
+*.dylib
+*.gcda
+*.gcno
+*.gcov
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+Testing/
 
 # Distribution / Release Packages
 dist/

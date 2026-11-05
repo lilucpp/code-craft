@@ -66,6 +66,73 @@ flowchart TD
 
 ---
 
+## 2.1 Modern Software Development Life Cycle (SDLC) Mapping Guide
+
+To provide developers and AI Agents with crystal-clear guidance on **"which skill to activate at each engineering phase"**, the table below maps the 15 core skills across the 6 standard stages of the software development lifecycle:
+
+```mermaid
+flowchart TD
+    subgraph S1 ["Phase 1: Requirements Engineering & Business Analysis (Requirements)"]
+        direction LR
+        REQ["software-requirements<br>• SIBV Pain Point Discovery / Scope Defense<br>• 3-Tier Requirements (BR/UR/FR) Closure<br>• Planguage Metric Quantification / Gherkin BDD"]
+    end
+
+    subgraph S2 ["Phase 2: Architecture Design & Meso/Micro Modeling (Architecture & Design)"]
+        direction LR
+        DIR["code-design<br>• Meso Package Topology (CCP/CRP/ADP)<br>• Domain Modeling / Interface Contracts DbC"]
+        UNIX["unix-philosophy<br>• KISS / Pipeline Composition / Mechanism vs Policy"]
+        DATA["systems-data-design<br>• Memory Layout / False Sharing / State Machine / Crash-Safe WAL"]
+        SQL["sql-craft<br>• Relational Schemas / B-Tree Indexing / Antipattern Defense"]
+        UI["antqt<br>• Desktop UI/UX / Ant Design Tokens / Pro Templates"]
+        DIR ~~~ UNIX ~~~ DATA ~~~ SQL ~~~ UI
+    end
+
+    subgraph S3 ["Phase 3: High-Quality Construction & Implementation (Implementation)"]
+        direction LR
+        CPP_IDIOM["cpp-idioms<br>• NVI / CRTP / Type Erasure"]
+        EFF_CPP["effective-cpp<br>• RAII / Move Semantics / Smart Pointers"]
+        CONCURRENCY["cpp-concurrency<br>• Thread Safety / Acquire-Release / Lock-Free"]
+        UB["ub-mode (Uncle Bob)<br>• TDD Cadence / Micro-Steps / Clean Code"]
+        CPP_IDIOM ~~~ EFF_CPP ~~~ CONCURRENCY ~~~ UB
+    end
+
+    subgraph S4 ["Phase 4: Testing Engineering & Quality Gates (Testing & Quality Gates)"]
+        direction LR
+        TEST["cpp-testing<br>• GoogleTest / Catch2 / GMock Isolation<br>• ASan / UBSan Memory Sanitizers / Coverage"]
+        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy Incremental Scans"]
+        TEST ~~~ QUALITY
+    end
+
+    subgraph S5 ["Phase 5: Review Diagnostics & Safe Refactoring (Review & Refactoring)"]
+        direction LR
+        REVIEW["code-review<br>• 22 Fowler Code Smells / Architectural Debt"]
+        REFACTOR["refactoring<br>• 68 Fowler Mechanics / Cyclomatic Reduction"]
+        REVIEW ~~~ REFACTOR
+    end
+
+    subgraph S6 ["Phase 6: Engineering Delivery & Post-Mortem (Communication)"]
+        direction LR
+        COMM["tech-communication<br>• Architecture RFC / Production README<br>• Minimal Reproducible Example (MRE) / RCA 5-Whys"]
+    end
+
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+```
+
+| SDLC Phase | Recommended Skills | Core Engineering Challenges Addressed | Core Deliverables & Baselines |
+| :--- | :--- | :--- | :--- |
+| **Phase 1: Requirements Engineering**<br>*(Business Analysis)* | **`software-requirements`** | • Uncover root business pain points (SIBV), avoiding premature UI design<br>• Delineate In/Out-of-Scope boundaries to prevent scope creep<br>• Structure 3-tier requirements (BR/UR/FR) and Given-When-Then BDD stories<br>• Quantify quality attributes using Planguage; eliminate Table 11-2 ambiguities | • Vision and Scope Document<br>• Software Requirements Specification (SRS)<br>• Standalone Business Rules Catalog |
+| **Phase 2: Architecture & Meso/Micro Modeling**<br>*(Architecture & Design)* | **`code-design`**<br>*(Meso/Micro Architecture)*<br><br>**`unix-philosophy`**<br>*(Macro Philosophy)*<br><br>**`systems-data-design`**<br>*(Memory & Crash Consistency)*<br><br>**`sql-craft`**<br>*(Relational Storage)*<br><br>**`antqt`**<br>*(Desktop UI/UX)* | • **Package Topology**: Enforce CCP/CRP cohesion and ensure ADP acyclic dependencies (DAG)<br>• **OO Contracts**: Interface Segregation (ISP), Open/Closed Strategy patterns (OCP), Design by Contract (DbC)<br>• **Unix Philosophy**: KISS principle, separation of mechanism and policy, textual pipeline protocols<br>• **Memory & Storage**: Cache line false-sharing padding, typestate transition defenses, crash-consistent WAL fsync, B-Tree physical index tuning<br>• **Desktop UI Topology**: 32px metric grid, 3-tier surface elevation, Pro query table and sliding drawer archetypes | • Architectural Package Dependency DAG<br>• Domain Class Diagrams & Interface Contracts<br>• Physical Database DDL & Composite Indexes<br>• Desktop UI Wireframes & Layout Shells |
+| **Phase 3: High-Quality Construction**<br>*(Implementation & Construction)* | **`effective-cpp`**<br>*(Modern C++ Standards)*<br><br>**`cpp-idioms`**<br>*(Advanced Design Patterns)*<br><br>**`cpp-concurrency`**<br>*(Multithreading & Concurrency)*<br><br>**`ub-mode`**<br>*(Clean Craftsmanship)* | • **Resource Safety**: Strict RAII lifecycle, smart pointer ownership, strong exception safety guarantees (Copy-and-Swap)<br>• **Advanced Idioms**: NVI template method base contract, CRTP zero-overhead static polymorphism, Type Erasure value wrappers<br>• **High Concurrency**: Acquire-Release memory orderings, fine-grained locked queues/hash tables, lock-free CAS/ABA defenses, TSan debugging<br>• **Clean Code**: Single Level of Abstraction Principle (SLAP), function length $\le 30$ lines, guard clauses first, rapid TDD cadence | • Robust Modern C++ Source Code<br>• High-Throughput Thread-Safe Data Structures<br>• Clean Implementations Honoring Design Contracts |
+| **Phase 4: Testing & Quality Gates**<br>*(Testing & Quality Gates)* | **`cpp-testing`**<br>*(Testing Architecture)*<br><br>**`cpp-code-quality`**<br>*(Static Analysis Gates)* | • **Unit Testing**: Author AAA (Arrange-Act-Assert) cases covering 4-zone boundary matrices<br>• **Dependency Decoupling**: Inject pure virtual interfaces; mock external side effects with GoogleMock (`MOCK_METHOD`)<br>• **Memory Sanitizers**: Mandate ASan/UBSan on debug builds to catch wild pointers and heap corruption early<br>• **Static Quality Gates**: `clang-format-diff` incremental formatting; high-signal `clang-tidy` diagnostic sweeps | • Automated GoogleTest Test Suites<br>• Zero-Defect AddressSanitizer Run Reports<br>• Code Coverage Reports ($\ge 80\%$) |
+| **Phase 5: Review & Safe Refactoring**<br>*(Review & Refactoring)* | **`code-review`**<br>*(Code Health & Smells)*<br><br>**`refactoring`**<br>*(Lossless Surgical Refactoring)* | • **Code Health Check**: Hunt down Martin Fowler's 22 code smells (Divergent Change, Shotgun Surgery, Feature Envy)<br>• **Architectural Debt**: Diagnose cyclic couplings, god classes, and hardcoded SOLID violations<br>• **Safe Refactoring**: Micro-step refactoring under test coverage using 68 classic mechanics to reduce cyclomatic complexity | • Structured Code Review Reports<br>• Behavior-Preserving Refactored Codebases<br>• Architectural Technical Debt Removal Logs |
+| **Phase 6: Communication, Delivery & Post-Mortem**<br>*(Communication & Post-Mortem)* | **`tech-communication`** | • Author architectural RFC proposals and production-grade project READMEs<br>• Distill Minimal Reproducible Examples (MRE) when filing upstream bug reports<br>• Conduct blameless 5-Whys Root Cause Analyses (RCA) post-incident to build systemic defenses | • Architectural Design RFC Proposals<br>• Incident Post-Mortem RCA Reports<br>• High-Clarity Project Technical Documentation |
+
+---
+
 ## 3. Skills & Rules Matrix
 
 ### 1. Global Baseline Rules (`.agents/rules/`)

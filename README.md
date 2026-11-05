@@ -67,6 +67,73 @@ flowchart TD
 
 ---
 
+## 2.1 现代软件开发全生命周期 (SDLC) 阶段映射指南
+
+为使开发者和 AI Agent 在面对不同研发任务时清晰知道**“在什么阶段唤醒哪个 Skill”**，下表将核心专业技能严格映射至经典的软件工程生命周期六大标准阶段：
+
+```mermaid
+flowchart TD
+    subgraph S1 ["阶段一：需求工程与业务分析 (Requirements)"]
+        direction LR
+        REQ["software-requirements<br>• SIBV 痛点挖掘 / 愿景范围<br>• 三层需求 (BR/UR/FR) 闭环<br>• Planguage 非功能量化 / Gherkin BDD"]
+    end
+
+    subgraph S2 ["阶段二：架构设计与中微观建模 (Architecture & Design)"]
+        direction LR
+        DIR["code-design<br>• 中观包拓扑 (CCP/CRP/ADP)<br>• 领域模型 / 接口契约 DbC"]
+        UNIX["unix-philosophy<br>• KISS / 管道组合 / 机制与策略分离"]
+        DATA["systems-data-design<br>• 内存排布 / Cache / 状态机 / WAL 落盘"]
+        SQL["sql-craft<br>• 关系模型 / B-Tree 物理索引 / 反模式治理"]
+        UI["antqt<br>• 桌面交互 / Ant Design 规范 / Pro 模板"]
+        DIR ~~~ UNIX ~~~ DATA ~~~ SQL ~~~ UI
+    end
+
+    subgraph S3 ["阶段三：高质量规范实现 (Implementation)"]
+        direction LR
+        CPP_IDIOM["cpp-idioms<br>• NVI / CRTP / Type Erasure"]
+        EFF_CPP["effective-cpp<br>• RAII / 移动语义 / 智能指针"]
+        CONCURRENCY["cpp-concurrency<br>• 线程安全 / Acquire-Release / 无锁编程"]
+        UB["ub-mode (Uncle Bob)<br>• TDD 驱动 / 小步快跑 / 单一职责"]
+        CPP_IDIOM ~~~ EFF_CPP ~~~ CONCURRENCY ~~~ UB
+    end
+
+    subgraph S4 ["阶段四：测试工程与质量门禁 (Testing & Quality Gates)"]
+        direction LR
+        TEST["cpp-testing<br>• GoogleTest / Catch2 / GMock 打桩<br>• ASan / UBSan 内存检测 / 覆盖率"]
+        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy 增量扫描"]
+        TEST ~~~ QUALITY
+    end
+
+    subgraph S5 ["阶段五：审查诊断与安全重构 (Review & Refactoring)"]
+        direction LR
+        REVIEW["code-review<br>• 22 种代码坏味道诊断 / 架构债评估"]
+        REFACTOR["refactoring<br>• 68 种马丁·福勒手法 / 降圈复杂度"]
+        REVIEW ~~~ REFACTOR
+    end
+
+    subgraph S6 ["阶段六：工程交付与沟通复盘 (Communication)"]
+        direction LR
+        COMM["tech-communication<br>• 架构 RFC / 项目 README<br>• 最小可复现 (MRE) / 故障复盘 (RCA)"]
+    end
+
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+```
+
+| 研发阶段 (SDLC Phase) | 推荐调用的核心 Skills | 解决的核心工程问题 | 核心产出物与交付基线 |
+| :--- | :--- | :--- | :--- |
+| **阶段一：需求工程与业务分析**<br>*(Requirements Engineering)* | **`software-requirements`** | • 探究根本痛点 (SIBV)，拒绝直接画页面<br>• 划定 In/Out of Scope 排除范围，防御范围蔓延<br>• 产出三层级需求 (BR/UR/FR) 与 Given-When-Then BDD 故事<br>• 使用 Planguage 量化非功能指标，消除 Table 11-2 歧义 | • 愿景与范围说明书<br>• 软件需求规格说明书 (SRS)<br>• 业务规则独立目录 (Rules Catalog) |
+| **阶段二：架构设计与中微观建模**<br>*(Architecture & Design)* | **`code-design`**<br>*(中微观架构)*<br><br>**`unix-philosophy`**<br>*(宏观哲学)*<br><br>**`systems-data-design`**<br>*(系统内存/状态)*<br><br>**`sql-craft`**<br>*(关系存储)*<br><br>**`antqt`**<br>*(桌面人机交互)* | • **包拓扑划分**：遵循 CCP/CRP 原则，确保 ADP 无环依赖 (DAG)<br>• **面向对象契约**：接口隔离 (ISP)、开闭原则策略模式 (OCP)、契约式设计 (DbC)<br>• **Unix 哲学**：KISS 原则、机制与策略分离、管道文本协议<br>• **内存与存储设计**：Cache 伪共享隔离、状态机防非法跃迁、WAL 崩溃安全落盘、B-Tree 物理索引优化<br>• **桌面端 UI 拓扑**：32px 标尺、三层拓扑、Pro 查询表格与抽屉骨架 | • 架构包依赖 DAG 图<br>• 领域核心类图与接口契约<br>• 物理数据库 DDL 与复合索引<br>• 桌面端 UI 骨架与原型 |
+| **阶段三：高质量规范编码实现**<br>*(Implementation & Construction)* | **`effective-cpp`**<br>*(现代语言规范)*<br><br>**`cpp-idioms`**<br>*(设计模式进阶)*<br><br>**`cpp-concurrency`**<br>*(多线程并发)*<br><br>**`ub-mode`**<br>*(整洁自律实践)* | • **资源安全**：严格 RAII 资源管理、智能指针所有权、强异常安全保证 (Copy-and-Swap)<br>• **高级惯用法**：NVI 模板方法守护基类契约、CRTP 零成本静态多态、Type Erasure 值语义包装<br>• **高并发攻坚**：Acquire-Release 内存顺序、细粒度锁队列/哈希表、无锁 CAS/ABA 防御、TSan 调试<br>• **敏捷 Clean Code**：遵循单一抽象层级 (SLAP)、函数长度 $\le 30$ 行、卫语句优先、TDD 小步快跑 | • 现代 C++ 健壮源代码<br>• 高吞吐并发安全数据结构<br>• 符合设计契约的纯净实现 |
+| **阶段四：测试工程与质量门禁**<br>*(Testing & Quality Gates)* | **`cpp-testing`**<br>*(测试体系)*<br><br>**`cpp-code-quality`**<br>*(静态分析门禁)* | • **单元测试**：编写 AAA 模式用例，设计极值/非法边界矩阵<br>• **依赖隔离**：纯虚接口依赖注入，使用 GoogleMock (`MOCK_METHOD`) 精准打桩<br>• **内存消毒**：Debug 构建强制挂载 ASan/UBSan，提前引爆野指针与内存越界<br>• **静态质量卡点**：clang-format 增量 diff 格式化，clang-tidy 深度扫描拦截隐患 | • GoogleTest 自动化测试套件<br>• ASan 消毒剂零缺陷报告<br>• 代码覆盖率报告 ($\ge 80\%$) |
+| **阶段五：审查诊断与安全重构**<br>*(Review & Refactoring)* | **`code-review`**<br>*(体检与坏味道排查)*<br><br>**`refactoring`**<br>*(无损手术重构)* | • **代码体检**：排查 Martin Fowler 22 种代码坏味道（发散式变化、霰弹式修改、依恋情结）<br>• **架构债治理**：诊断循环依赖、上帝类与违背 SOLID 的硬编码逻辑<br>• **安全重构**：在测试用例守护下运用 68 种经典重构手法小步快跑，降低圈复杂度 | • 结构化代码审查报告<br>• 行为保持 (Behavior-Preserving) 重构代码<br>• 架构债务清除记录 |
+| **阶段六：技术沟通、交付与复盘**<br>*(Communication & Post-Mortem)* | **`tech-communication`** | • 撰写高质量架构方案 (RFC) 与工程级项目 README<br>• 向开源社区提报排障问题时提炼最小可复现用例 (MRE)<br>• 生产事故后执行无指责 5-Whys 根因分析 (RCA)，沉淀长效技术防线 | • 架构设计 RFC 提案<br>• 生产事故复盘 RCA 报告<br>• 优雅的项目技术文档 |
+
+---
+
 ## 3. 技能与规则全景一览 (Skills & Rules Matrix)
 
 ### 1. 全局常驻底线规则 (`.agents/rules/`)
