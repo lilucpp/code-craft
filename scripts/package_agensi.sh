@@ -58,9 +58,19 @@ print_info "--- Step 1: Packaging Individual Skills ---"
 SKILL_COUNT=0
 declare -a PACKAGED_SKILLS=()
 
+# Skills excluded from Agensi packaging (e.g. external upstream imports from anthropics/skills)
+EXCLUDED_SKILLS=("frontend-design" "pdf" "docx")
+
 for skill_path in "${SKILLS_DIR}"/*; do
     if [[ -d "${skill_path}" && -f "${skill_path}/SKILL.md" ]]; then
         skill_name="$(basename "${skill_path}")"
+
+        # Skip excluded external skills
+        if [[ " ${EXCLUDED_SKILLS[*]} " =~ " ${skill_name} " ]]; then
+            print_warn "Skipping external upstream skill: ${CYAN}${skill_name}${NC} (excluded from packaging)"
+            continue
+        fi
+
         zip_file="${OUTPUT_DIR}/${skill_name}.zip"
 
         print_info "Packaging skill: ${CYAN}${skill_name}${NC} -> ${skill_name}.zip"

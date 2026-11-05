@@ -96,8 +96,15 @@ flowchart TD
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **质量工程**<br/>单元测试与Mock | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **双模驱动**：包含测试架构主动设计与测试坏味道/难测代码解耦双引擎<br/>- **脚手架与消毒剂**：CMake `FetchContent` 声明式拉取 GTest/Catch2、Debug 构建强制挂载 ASan/UBSan 提前引爆内存缺陷<br/>- **用例设计规范**：严格执行 AAA 模式（Arrange-Act-Assert）、边界矩阵覆盖（空/单/极值/非法）、强异常安全回滚断言<br/>- **依赖注入与Mock**：抽象纯虚接口解除高延迟/不可控外部依赖，使用 GoogleMock `MOCK_METHOD` 与 `EXPECT_CALL` 精准打桩<br/>- **自动化流水线**：格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan 单元测试 $\to$ lcov/llvm-cov 覆盖率门禁（$\ge 80\%$） |
 | **[`software-requirements`](./.agents/skills/software-requirements/)** | **需求工程**<br/>业务分析与规格 | Karl Wiegers 经典著作<br/>《软件需求》(第3版)<br/>《软件需求精髓》(20条实践) | - **双模驱动**：包含主动需求工程规格编制与需求审查诊断排障双引擎<br/>- **三层级与边界**：业务需求(BR) $\to$ 用户需求(UR/用例/INVEST故事) $\to$ 功能需求(FR)，SIBV 问题陈述模型与愿景公式<br/>- **规格与歧义防御**：ISO/IEC/IEEE 29148 结构、统一“系统应(shall)”句式、Table 11-2 25+ 歧义词典与重构、对称性/边界闭合防御<br/>- **Planguage 质量量化**：外部/内部质量属性体系、SCALE/METER/MUST/PLAN/FAIL、质量权衡冲突矩阵<br/>- **分析型优先级与治理**：价值-代价-风险量化模型（公式计算排期）、需求同行审查(Inspection)、RTM 双向可跟踪性、变更五步影响分析 |
 
+### 3. 上游外部工具技能 (`.agents/skills/`)
 
+本项目亦同步镜像引入了 Anthropic 官方开源仓库 [**anthropics/skills**](https://github.com/anthropics/skills.git) 中的三门通用办公与前端技能（作为开箱即用辅助工具，独立于 Code-Craft 核心自研技能，不纳入 `package_agensi.sh` 的对外打包体系）：
 
+| 技能目录 (Skill) | 专注层级 | 理论与工具来源 | 核心能力说明 |
+| :--- | :---: | :--- | :--- |
+| **[`frontend-design`](./.agents/skills/frontend-design/)** | **前端开发**<br/>界面与交互 | Anthropic 官方技能库<br/>Tailwind / React / Web UI | 指导 AI Agent 设计现代高保真 Web 界面、自适应布局、美学设计系统与交互动效。 |
+| **[`pdf`](./.agents/skills/pdf/)** | **文档工具**<br/>PDF处理 | Anthropic 官方技能库<br/>PyMuPDF / pdfplumber | 提供 PDF 表单结构提取、可填字段批量注入、坐标包围盒（Bounding Box）检测与页面转图片验证。 |
+| **[`docx`](./.agents/skills/docx/)** | **文档工具**<br/>Word处理 | Anthropic 官方技能库<br/>python-docx / Office XML | 支持 Word 文档结构化分析、精确段落批注评论（Comments）、修订模式（Track Changes）与样本文档合并。 |
 
 ---
 
@@ -252,11 +259,14 @@ code-craft/
 │       ├── cpp-idioms/                    # Wikibooks 75+ 经典C++惯用法、NVI、CRTP、Type Erasure、Attorney模式技能
 │       ├── cpp-concurrency/               # Anthony Williams 经典C++并发、内存模型、细粒度锁队列、工作窃取技能
 │       ├── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers现代单元测试与质量流水线技能
-│       └── software-requirements/         # Karl Wiegers 软件需求、三层级模型、歧义防御、Planguage、分析型优先级技能
-│           ├── SKILL.md                   # 双模引擎与调度中心
-│           ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
-│           ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
-│           └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
+│       ├── software-requirements/         # Karl Wiegers 软件需求、三层级模型、歧义防御、Planguage、分析型优先级技能
+│       │   ├── SKILL.md                   # 双模引擎与调度中心
+│       │   ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
+│       │   ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
+│       │   └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
+│       ├── docx/                          # [上游工具: anthropics/skills] Word 文档批注、修订与格式化处理
+│       ├── frontend-design/               # [上游工具: anthropics/skills] 现代 Web 高保真 UI/UX 界面设计指南
+│       └── pdf/                           # [上游工具: anthropics/skills] PDF 表单字段提取、自动填充与坐标渲染
 │
 ├── resources/                             # 原始参考资料库（持续扩展中）
 │   ├── refactoring/                       # 《重构》原版 EPUB 资料
@@ -308,6 +318,7 @@ code-craft/
 * **Eric S. Raymond** ——《UNIX编程艺术》(The Art of UNIX Programming)
 * **Robert C. Martin (Uncle Bob)** ——《敏捷软件开发：原则、模式与实践》(Agile Software Development)
 * **Karl Wiegers & Joy Beatty** ——《软件需求》(第3版) 与《软件需求精髓》(Software Requirements & Essentials)
+* **Anthropic 官方开源技能社区** —— [anthropics/skills](https://github.com/anthropics/skills.git)（提供 frontend-design、pdf、docx 等上游开箱即用工具技能）
 * **陈皓（左耳朵耗子 / CoolShell）** ——《用Unix的设计思想来应对多变的需求》、《一些软件设计的原则》、《如何做一个有质量的技术分享》
 * **Stack Overflow 社区** ——《How do I ask a good question?》与 MRE (Minimal, Reproducible Example) 规范
 

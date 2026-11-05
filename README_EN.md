@@ -95,8 +95,15 @@ flowchart TD
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **Testing**<br/>Unit Test & Mocking | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **Dual-Mode Engine**: Proactive testing architecture and untestable legacy code decoupling<br/>- **Scaffolding & Sanitizers**: CMake `FetchContent` declarative dependencies, ASan/UBSan memory sanitization for testing builds<br/>- **Test Design & AAA**: Strict Arrange-Act-Assert pattern, 4-zone boundary matrix (empty/single/extremes/invalid), strong exception safety testing<br/>- **Mocking & Isolation**: Dependency injection interface extraction, modern GoogleMock `MOCK_METHOD` and `EXPECT_CALL` expectations<br/>- **Automated CI Pipeline**: Format $\to$ Clang-Tidy $\to$ ASan CTest execution $\to$ lcov/llvm-cov code coverage gate ($\ge 80\%$) |
 | **[`software-requirements`](./.agents/skills/software-requirements/)** | **Requirements**<br/>Business & Specification | Karl Wiegers Seminal Books<br/>*Software Requirements* (3rd Ed)<br/>*Software Requirements Essentials* | - **Dual-Mode Engine**: Proactive requirements specification and smell audit/impact analysis<br/>- **3 Levels & Scope**: Business Requirements (BR) $\to$ User Requirements (UR/Use Cases/INVEST) $\to$ Functional Requirements (FR), SIBV problem statements & vision formula<br/>- **Specification & Ambiguity Defense**: ISO/IEC/IEEE 29148 structure, mandatory "The system shall" active syntax, Table 11-2 25+ ambiguity dictionary & rewrites, boundary/symmetry defense<br/>- **Planguage Quality Quantification**: External/Internal quality attribute taxonomy, SCALE/METER/MUST/PLAN/FAIL metrics, quality trade-offs matrix<br/>- **Analytical Prioritization & Governance**: Wiegers Value-Cost-Risk formula, Formal Peer Inspection checklists, Forward/Backward RTM traceability, 5-step change impact protocol |
 
+### 3. Upstream Utility Skills (`.agents/skills/`)
 
+Code-Craft also vendor-mirrors three general-purpose office and frontend utilities directly from the official Anthropic repository [**anthropics/skills**](https://github.com/anthropics/skills.git) (available as local utilities, excluded from `package_agensi.sh` distribution):
 
+| Skill Directory | Focus Tier | Upstream Tool Source | Key Capabilities |
+| :--- | :---: | :--- | :--- |
+| **[`frontend-design`](./.agents/skills/frontend-design/)** | **Frontend UI**<br/>Web & UX | Anthropic Official Skills<br/>Tailwind / React / Web UI | Guides AI agents in creating distinctive, high-fidelity Web user interfaces with responsive layout and cohesive design systems. |
+| **[`pdf`](./.agents/skills/pdf/)** | **Doc Tooling**<br/>PDF Processing | Anthropic Official Skills<br/>PyMuPDF / pdfplumber | Provides PDF form structure extraction, fillable field injection, bounding-box coordinate detection, and visual verification. |
+| **[`docx`](./.agents/skills/docx/)** | **Doc Tooling**<br/>Word Processing | Anthropic Official Skills<br/>python-docx / Office XML | Supports Word document structural inspection, paragraph comments, track changes revision mode, and template merges. |
 
 ---
 
@@ -251,11 +258,14 @@ code-craft/
 │       ├── cpp-idioms/                    # Wikibooks 75+ seminal C++ idioms, NVI, CRTP, Type Erasure, Attorney pattern
 │       ├── cpp-concurrency/               # Anthony Williams C++ Concurrency, memory model, fine-grained queue, work stealing
 │       ├── cpp-testing/                   # GoogleTest/Catch2/GMock/Sanitizers modern testing & CI quality pipeline
-│       └── software-requirements/         # Karl Wiegers software requirements, 3 levels, ambiguity defense, Planguage & prioritization
-│           ├── SKILL.md                   # Dual-mode engine & dispatch center
-│           ├── references/                # Foundation & scope / Elicitation & rules / Specification & ambiguity / Planguage / Prioritization & validation / RTM & change control
-│           ├── examples/                  # Vision & scope template / SRS specification template / Use case & BDD examples
-│           └── scripts/                   # Analytical priority calculator (calc_priority.py) / Requirements smell detector (lint_requirements.py)
+│       ├── software-requirements/         # Karl Wiegers software requirements, 3 levels, ambiguity defense, Planguage & prioritization
+│       │   ├── SKILL.md                   # Dual-mode engine & dispatch center
+│       │   ├── references/                # Foundation & scope / Elicitation & rules / Specification & ambiguity / Planguage / Prioritization & validation / RTM & change control
+│       │   ├── examples/                  # Vision & scope template / SRS specification template / Use case & BDD examples
+│       │   └── scripts/                   # Analytical priority calculator (calc_priority.py) / Requirements smell detector (lint_requirements.py)
+│       ├── docx/                          # [Upstream: anthropics/skills] Word document comments, revision & template tooling
+│       ├── frontend-design/               # [Upstream: anthropics/skills] Modern Web high-fidelity UI/UX design guide
+│       └── pdf/                           # [Upstream: anthropics/skills] PDF form extraction, field filling & bbox coordinates
 │
 ├── resources/                             # Raw literature & reference repository
 │   ├── refactoring/                       # Martin Fowler's "Refactoring" raw EPUB
@@ -306,6 +316,7 @@ AGY-Craft stands upon the shoulders of giants:
 * **Eric S. Raymond** — *The Art of UNIX Programming*
 * **Robert C. Martin (Uncle Bob)** — *Agile Software Development: Principles, Patterns, and Practices*
 * **Karl Wiegers & Joy Beatty** — *Software Requirements* (3rd Edition) & *Software Requirements Essentials*
+* **Anthropic Agent Skills Community** — Open-source repository [anthropics/skills](https://github.com/anthropics/skills.git) (providing frontend-design, pdf, docx utility skills)
 * **Hao Chen (Left-Ear Mouse / CoolShell)** — *Using Unix Design Philosophy to Deal with Volatile Requirements*, *Some Principles of Software Design*, *How to Deliver a Quality Technical Presentation*
 * **Stack Overflow Community** — *How do I ask a good question?* & *Minimal, Reproducible Example (MRE)*
 
