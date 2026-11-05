@@ -1,31 +1,34 @@
 /* ===================================================================
- * Ant Design Light Theme QSS for Desktop Applications
- * Based on Ant Design v5/v6 Specifications (design.md & 4 Design Values)
+ * Ant Design Light Theme QSS for Desktop Applications (v5.0 Spec)
+ * Surface Layout: #F5F5F5 | Surface Container: #FFFFFF | Border: #D9D9D9 / #F0F0F0
  * Primary: #1677FF | Base Font: 14px | Control Height: 32px | Radius: 6px
  * =================================================================== */
 
 /* --- 1. Global Reset & Typography --- */
 QWidget {
-    font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 14px;
-    line-height: 22px;
-    color: #1F1F1F; /* rgba(0, 0, 0, 0.88) */
-    background-color: transparent;
+    color: #1F1F1F;
     selection-background-color: #E6F4FF;
     selection-color: #1677FF;
-    outline: none;
 }
 
-QMainWindow, QDialog {
-    background-color: #F5F5F5; /* Surface bg-layout */
+QMainWindow, QDialog, QWidget#centralWidget {
+    background-color: #F5F5F5;
 }
 
-/* Secondary & Disabled Text utility */
+QDialog {
+    background-color: #FFFFFF;
+}
+
+/* Secondary & Sub Text */
 QLabel[type="secondary"] {
-    color: #595959; /* rgba(0, 0, 0, 0.65) */
+    color: #595959;
+    font-size: 13px;
 }
-QLabel[type="disabled"] {
-    color: #BFBFBF; /* rgba(0, 0, 0, 0.25) */
+QLabel[type="muted"] {
+    color: #8C8C8C;
+    font-size: 12px;
 }
 QLabel[type="title-lg"] {
     font-size: 20px;
@@ -38,7 +41,14 @@ QLabel[type="title-md"] {
     color: #1F1F1F;
 }
 
-/* --- 2. Push Buttons --- */
+/* --- 2. Containers & Cards --- */
+QFrame[type="card"] {
+    background-color: #FFFFFF;
+    border: 1px solid #E8E8E8;
+    border-radius: 8px;
+}
+
+/* --- 3. Buttons --- */
 QPushButton {
     min-height: 32px;
     max-height: 32px;
@@ -49,6 +59,7 @@ QPushButton {
     border: 1px solid #D9D9D9;
     background-color: #FFFFFF;
     color: #1F1F1F;
+    outline: none;
 }
 
 QPushButton:hover {
@@ -74,6 +85,7 @@ QPushButton[type="primary"] {
     background-color: #1677FF;
     border: 1px solid #1677FF;
     color: #FFFFFF;
+    font-weight: 500;
 }
 QPushButton[type="primary"]:hover {
     background-color: #4096FF;
@@ -96,16 +108,15 @@ QPushButton[type="danger"] {
     background-color: #FF4D4F;
     border: 1px solid #FF4D4F;
     color: #FFFFFF;
+    font-weight: 500;
 }
 QPushButton[type="danger"]:hover {
     background-color: #FF7875;
     border-color: #FF7875;
-    color: #FFFFFF;
 }
 QPushButton[type="danger"]:pressed {
     background-color: #D9363E;
     border-color: #D9363E;
-    color: #FFFFFF;
 }
 
 /* Dashed Button */
@@ -119,29 +130,51 @@ QPushButton[type="dashed"]:hover {
     color: #4096FF;
 }
 
-/* Text Button */
+/* Text & Link Button */
 QPushButton[type="text"] {
     border: none;
     background-color: transparent;
     color: #1F1F1F;
 }
 QPushButton[type="text"]:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgba(0, 0, 0, 0.05);
 }
-QPushButton[type="text"]:pressed {
-    background-color: rgba(0, 0, 0, 0.08);
+QPushButton[type="link"] {
+    border: none;
+    background-color: transparent;
+    color: #1677FF;
+}
+QPushButton[type="link"]:hover {
+    color: #4096FF;
 }
 
-/* --- 3. Inputs & Forms --- */
-QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit {
+/* Close Icon Button */
+QPushButton[type="close"] {
+    border: none;
+    background: transparent;
+    color: #8C8C8C;
+    font-size: 16px;
+    border-radius: 4px;
+}
+QPushButton[type="close"]:hover {
+    color: #1F1F1F;
+    background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* --- 4. Inputs & Forms (32px Height) --- */
+QLineEdit, QSpinBox, QDoubleSpinBox {
     min-height: 32px;
     max-height: 32px;
-    padding: 4px 11px;
+    padding: 0 11px;
     font-size: 14px;
     border: 1px solid #D9D9D9;
     border-radius: 6px;
     background-color: #FFFFFF;
     color: #1F1F1F;
+}
+
+QSpinBox, QDoubleSpinBox {
+    padding-right: 24px; /* Space for step buttons */
 }
 
 QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover {
@@ -152,10 +185,54 @@ QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
     border: 1px solid #1677FF;
 }
 
-QLineEdit:disabled, QSpinBox:disabled {
+QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
     background-color: #F5F5F5;
     color: #BFBFBF;
     border-color: #D9D9D9;
+}
+
+/* Ant Design SpinBox Step Buttons */
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 22px;
+    height: 15px;
+    border-left: 1px solid #D9D9D9;
+    border-bottom: 1px solid #D9D9D9;
+    border-top-right-radius: 5px;
+    background-color: #FAFAFA;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {
+    background-color: #E6F4FF;
+}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {
+    background-color: #BAE0FF;
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image: url(":/qss/icons/spin_up.png");
+    width: 9px;
+    height: 7px;
+}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 22px;
+    height: 15px;
+    border-left: 1px solid #D9D9D9;
+    border-bottom-right-radius: 5px;
+    background-color: #FAFAFA;
+}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: #E6F4FF;
+}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {
+    background-color: #BAE0FF;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image: url(":/qss/icons/spin_down.png");
+    width: 9px;
+    height: 7px;
 }
 
 QLineEdit[status="error"] {
@@ -165,35 +242,37 @@ QLineEdit[status="warning"] {
     border: 1px solid #FAAD14;
 }
 
-/* --- 4. Select / ComboBox --- */
+/* --- 5. ComboBox --- */
 QComboBox {
     min-height: 32px;
     max-height: 32px;
-    padding: 4px 11px;
+    padding: 0 11px;
     font-size: 14px;
     border: 1px solid #D9D9D9;
     border-radius: 6px;
     background-color: #FFFFFF;
     color: #1F1F1F;
 }
-
 QComboBox:hover {
     border-color: #4096FF;
 }
-
 QComboBox:focus, QComboBox:on {
     border: 1px solid #1677FF;
 }
-
 QComboBox::drop-down {
     subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 24px;
-    border-left: none;
+    subcontrol-position: center right;
+    width: 26px;
+    border: none;
 }
-
+QComboBox::down-arrow {
+    image: url(":/qss/icons/select_down.png");
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+}
 QComboBox QAbstractItemView {
-    border: 1px solid #F0F0F0;
+    border: 1px solid #E8E8E8;
     border-radius: 6px;
     background-color: #FFFFFF;
     selection-background-color: #E6F4FF;
@@ -201,113 +280,122 @@ QComboBox QAbstractItemView {
     padding: 4px;
     outline: none;
 }
-
 QComboBox QAbstractItemView::item {
-    min-height: 32px;
-    padding: 4px 12px;
+    min-height: 30px;
+    padding: 4px 10px;
     border-radius: 4px;
+    color: #1F1F1F;
 }
 
-/* --- 5. Table & List (Ant Design Minimalist Table) --- */
-QTableView, QTableWidget, QListView, QListWidget, QTreeView, QTreeWidget {
+/* --- 6. TableWidget (Ant Clean Minimalist Table) --- */
+QTableWidget, QTableView {
     background-color: #FFFFFF;
-    border: 1px solid #F0F0F0;
-    border-radius: 8px;
+    border: 1px solid #E8E8E8;
+    border-radius: 6px;
     gridline-color: #F0F0F0;
     outline: none;
+    selection-background-color: #E6F4FF;
+    selection-color: #1F1F1F;
 }
 
-QTableView::item, QTableWidget::item {
+QTableWidget::item {
     padding: 8px 12px;
     border-bottom: 1px solid #F0F0F0;
     color: #1F1F1F;
 }
 
-QTableView::item:hover, QTableWidget::item:hover, QListView::item:hover {
-    background-color: #E6F4FF; /* Row Hover Highlight */
+QTableWidget::item:hover {
+    background-color: #F5F7FA;
 }
 
-QTableView::item:selected, QTableWidget::item:selected, QListView::item:selected {
-    background-color: #BAE0FF;
+QTableWidget::item:selected {
+    background-color: #E6F4FF;
     color: #1F1F1F;
 }
 
-/* Modern Ant Table Header: #FAFAFA, 600 weight, 48px height */
 QHeaderView::section {
     background-color: #FAFAFA;
     color: #1F1F1F;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     border: none;
-    border-bottom: 1px solid #F0F0F0;
-    min-height: 48px;
-    max-height: 48px;
+    border-bottom: 1px solid #E8E8E8;
+    min-height: 44px;
+    max-height: 44px;
     padding-left: 12px;
-    padding-right: 12px;
 }
 
-/* --- 6. Tabs (Line Style with #1677FF active bar) --- */
-QTabWidget::pane {
-    border: 1px solid #F0F0F0;
-    border-radius: 8px;
+/* --- 6.1 TreeWidget & ListWidget --- */
+QTreeWidget, QListView, QListWidget {
     background-color: #FFFFFF;
-    top: -1px;
+    border: 1px solid #E8E8E8;
+    border-radius: 6px;
+    outline: none;
+    padding: 4px;
 }
 
-QTabBar::tab {
-    min-height: 36px;
-    padding: 0 16px;
-    font-size: 14px;
-    color: #595959;
-    background-color: transparent;
-    border: none;
-    margin-right: 8px;
-}
-
-QTabBar::tab:hover {
-    color: #4096FF;
-}
-
-QTabBar::tab:selected {
-    color: #1677FF;
-    font-weight: 600;
-    border-bottom: 2px solid #1677FF;
-}
-
-/* --- 7. Cards & Containers --- */
-QFrame[frameShape="StyledPanel"], QFrame[type="card"] {
-    background-color: #FFFFFF; /* Surface bg-container */
-    border: 1px solid #F0F0F0;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-QGroupBox {
-    font-size: 14px;
-    font-weight: 600;
+QTreeWidget::item, QListWidget::item {
+    min-height: 32px;
+    padding: 4px 8px;
+    border-radius: 4px;
     color: #1F1F1F;
-    border: 1px solid #F0F0F0;
-    border-radius: 8px;
-    background-color: #FFFFFF;
-    margin-top: 24px;
-    padding: 16px;
 }
 
-QGroupBox::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    left: 16px;
-    padding: 0 6px;
-    background-color: #FFFFFF;
+QTreeWidget::item:hover, QListWidget::item:hover {
+    background-color: #F5F7FA;
+    color: #1677FF;
 }
 
-/* --- 8. CheckBox & RadioButton --- */
+QTreeWidget::item:selected, QListWidget::item:selected {
+    background-color: #E6F4FF;
+    color: #1677FF;
+    font-weight: 500;
+}
+
+QTreeWidget::branch:has-children:!has-siblings:closed,
+QTreeWidget::branch:closed:has-children:has-siblings {
+    image: url(":/qss/icons/tree_closed.png");
+}
+QTreeWidget::branch:open:has-children:!has-siblings,
+QTreeWidget::branch:open:has-children:has-siblings {
+    image: url(":/qss/icons/tree_open.png");
+}
+
+/* --- 6.2 Pagination Controls --- */
+QPushButton[type="page-btn"] {
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid #D9D9D9;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+}
+QPushButton[type="page-btn"]:hover {
+    border-color: #1677FF;
+    color: #1677FF;
+}
+QPushButton[type="page-btn"][active="true"] {
+    border-color: #1677FF;
+    background-color: #1677FF;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+QPushButton[type="page-btn"]:disabled {
+    border-color: #E8E8E8;
+    background-color: #F5F5F5;
+    color: #BFBFBF;
+}
+
+/* --- 7. CheckBox & Radio --- */
 QCheckBox, QRadioButton {
     spacing: 8px;
     font-size: 14px;
     color: #1F1F1F;
 }
-
 QCheckBox::indicator {
     width: 16px;
     height: 16px;
@@ -315,16 +403,13 @@ QCheckBox::indicator {
     border-radius: 4px;
     background-color: #FFFFFF;
 }
-
 QCheckBox::indicator:hover {
     border-color: #1677FF;
 }
-
 QCheckBox::indicator:checked {
     border-color: #1677FF;
     background-color: #1677FF;
 }
-
 QRadioButton::indicator {
     width: 16px;
     height: 16px;
@@ -332,36 +417,83 @@ QRadioButton::indicator {
     border-radius: 8px;
     background-color: #FFFFFF;
 }
-
 QRadioButton::indicator:hover {
     border-color: #1677FF;
 }
-
 QRadioButton::indicator:checked {
     border-color: #1677FF;
     background-color: #1677FF;
 }
 
-/* --- 9. Clean Thin Scrollbar --- */
+/* --- 8. Status Tags --- */
+QLabel[tag="processing"] {
+    background-color: #E6F4FF;
+    border: 1px solid #91CAFF;
+    color: #1677FF;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+QLabel[tag="success"] {
+    background-color: #F6FFED;
+    border: 1px solid #B7EB8F;
+    color: #52C41A;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+QLabel[tag="warning"] {
+    background-color: #FFFBE6;
+    border: 1px solid #FFE58F;
+    color: #FAAD14;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+QLabel[tag="error"] {
+    background-color: #FFF2F0;
+    border: 1px solid #FFCCC7;
+    color: #FF4D4F;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+QLabel[tag="default"] {
+    background-color: #FAFAFA;
+    border: 1px solid #D9D9D9;
+    color: #595959;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* --- 9. Alert Banner --- */
+QFrame[type="alert-info"] {
+    background-color: #E6F4FF;
+    border: 1px solid #91CAFF;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+QFrame[type="alert-info"] QLabel {
+    color: #1F1F1F;
+}
+
+/* --- 10. Scrollbar --- */
 QScrollBar:vertical {
     border: none;
     background: transparent;
     width: 6px;
-    margin: 0;
 }
-
 QScrollBar::handle:vertical {
     background: #D9D9D9;
-    min-height: 24px;
     border-radius: 3px;
+    min-height: 24px;
 }
-
 QScrollBar::handle:vertical:hover {
     background: #BFBFBF;
-}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-    background: none;
-    border: none;
 }

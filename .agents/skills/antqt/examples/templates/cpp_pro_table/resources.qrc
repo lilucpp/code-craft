@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qss/icons/select_down.png</file>
+        <file>qss/icons/select_down_dark.png</file>
+        <file>qss/icons/spin_up.png</file>
+        <file>qss/icons/spin_down.png</file>
+        <file>qss/icons/spin_up_dark.png</file>
+        <file>qss/icons/spin_down_dark.png</file>
+        <file>qss/icons/tree_closed.png</file>
+        <file>qss/icons/tree_open.png</file>
+        <file>qss/icons/tree_closed_dark.png</file>
+        <file>qss/icons/tree_open_dark.png</file>
+        <file>qss/ant_light_theme.qss</file>
+        <file>qss/ant_dark_theme.qss</file>
+    </qresource>
+</RCC>

@@ -59,8 +59,17 @@ flowchart TD
    - **高级查询表格**：顶部折叠查询表单 + 批量操作栏 + 48px 表头纯净表格 + 右侧 380px 滑动详情抽屉。
    - **分步配置向导**：顶部步骤条 + 居中 600px 限制宽度卡片表单 + 底部吸底固定操作栏。详见 [pro_desktop_archetypes.md](./references/pro_desktop_archetypes.md)。
 5. **双技术栈资产开箱即用**：
-   - QtWidgets: 直接引入 [ant_light_theme.qss](./examples/qss/ant_light_theme.qss) 或 [ant_dark_theme.qss](./examples/qss/ant_dark_theme.qss)；
+   - QtWidgets: 直接引入 [ant_light_theme.qss](./examples/qss/ant_light_theme.qss) 或 [ant_dark_theme.qss](./examples/qss/ant_dark_theme.qss)，配套内置超采样 Ant 官方图标全家桶 [resources.qrc](./examples/qss/resources.qrc)；
+   - Qt 原生脚手架：直接复用 [C++ 原生 Pro Table 模板](./examples/templates/cpp_pro_table/main.cpp) 或 [PyQt6 查询表格模板](./examples/templates/pyqt6_query_table_demo.py)；
    - QtQuick: 引入 [AntTheme.qml](./examples/qml/AntTheme.qml) 与 [AntButton.qml](./examples/qml/AntButton.qml)。
+6. **实战黄金避坑七大铁律（强制执行）**：
+   - **高 DPI 实例化前启动**：必须在 `QApplication app` 实例化前设置 `AA_EnableHighDpiScaling` 与 `AA_UseHighDpiPixmaps`；
+   - **杜绝内联 CSS 背景覆盖**：严禁在父容器或 Dialog 上内联硬编码 `setStyleSheet("background-color: ...")`，防止子级 Primary 按钮文字隐形；
+   - **微调器禁止 CSS Border 三角**：必须采用内置的 Ant 官方 `spin_up.png`/`spin_down.png` 矢量资源，杜绝被 Qt 盒模型压扁成黑横线；
+   - **下拉框统一 DownOutlined**：采用 Ant 官方折角 V 细线折叠箭头，杜绝粗笨实心三角；
+   - **Tree 分支指示器必须绑定**：严禁误声明 `QTreeWidget::branch { image: none; }`，必须绑定 Ant 标准旋转指示小三角；
+   - **阴影统一 QGraphicsDropShadowEffect**：弥补 QSS 无 box-shadow 缺陷，卡片 12px 模糊 / 抽屉 20px 模糊；
+   - **动态属性即时刷新**：设置 `setProperty("type", "primary")` 后必须调用 `unpolish/polish`。详见 [qt_mechanics_and_gotchas.md](./references/qt_mechanics_and_gotchas.md)。
 
 ---
 
