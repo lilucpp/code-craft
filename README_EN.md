@@ -21,7 +21,7 @@ Leveraging the **Google Antigravity / Agent Customization Specification**, we tr
 
 ## 2. Architecture Topology
 
-Code-Craft establishes a comprehensive "One Horizontal, Fourteen Verticals" defense-in-depth engineering matrix:
+Code-Craft establishes a comprehensive "One Horizontal, Fifteen Verticals" defense-in-depth engineering matrix:
 
 ```mermaid
 flowchart TD
@@ -44,6 +44,7 @@ flowchart TD
         S12["【C++ Concurrency】cpp-concurrency<br/>Williams C++ Concurrency + Memory Model/Atomics + Fine-Grained Queue + Lock-Free CAS + Work Stealing"]
         S13["【C++ Testing】cpp-testing<br/>GoogleTest/Catch2 + GMock Dependency Injection + AAA Matrix + ASan/UBSan + Coverage Gates"]
         S14["【Requirements Engineering】software-requirements<br/>Wiegers Classic Requirements + 3 Levels + SIBV/Vision + Use Cases/INVEST + Planguage + Analytical Priority + RTM"]
+        S15["【Desktop UI & Aesthetics】antqt<br/>Ant Design 4 Values + 3-Layer Surface Topology + 32px/14px Metrics + Pro Desktop Archetypes + QSS/QML Dual Stacks"]
     end
 
     R --> S1
@@ -60,6 +61,7 @@ flowchart TD
     R --> S12
     R --> S13
     R --> S14
+    R --> S15
 ```
 
 ---
@@ -76,7 +78,7 @@ flowchart TD
   * **I/O Separation**: `stdout` is strictly reserved for machine-consumable data payloads; all logs, diagnostics, and telemetry go to `stderr`. Silence is golden on success;
   * **Empirical Safety**: Never speculate; construct runnable verification demos when resolving ambiguous edge cases. **Rule of Repair (Fail-Fast)**: never swallow exceptions silently. Git commits require explicit human confirmation.
 
-### 2. Fourteen Specialized Skills (`.agents/skills/`)
+### 2. Fifteen Specialized Skills (`.agents/skills/`)
 
 | Skill Directory | Focus Tier | Theoretical Source | Key Assets & Capabilities |
 | :--- | :---: | :--- | :--- |
@@ -94,6 +96,7 @@ flowchart TD
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **Concurrency**<br/>Multithreading & Lock-Free | Anthony Williams Bible<br/>*C++ Concurrency in Action* (2nd Ed) | - **Dual-Mode Engine**: Proactive concurrent architecture and race/deadlock diagnostic hunting<br/>- **Thread Lifecycle**: C++20 `jthread` cooperative cancellation & RAII join guarantees eliminating `std::terminate` crashes<br/>- **Mutex & Deadlock Defense**: `scoped_lock` multi-locking, hierarchical mutex cycles defense, reader-writer `shared_mutex`, `call_once`<br/>- **C++ Memory Model**: 6 memory orderings, acquire-release happens-before chains, relaxed counters, synchronization fences<br/>- **Concurrent Data Structures & Pools**: Fine-grained head/tail dummy queue, bucketed hash map, lock-free CAS stack with ABA defense, Work-Stealing thread pool |
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **Testing**<br/>Unit Test & Mocking | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **Dual-Mode Engine**: Proactive testing architecture and untestable legacy code decoupling<br/>- **Scaffolding & Sanitizers**: CMake `FetchContent` declarative dependencies, ASan/UBSan memory sanitization for testing builds<br/>- **Test Design & AAA**: Strict Arrange-Act-Assert pattern, 4-zone boundary matrix (empty/single/extremes/invalid), strong exception safety testing<br/>- **Mocking & Isolation**: Dependency injection interface extraction, modern GoogleMock `MOCK_METHOD` and `EXPECT_CALL` expectations<br/>- **Automated CI Pipeline**: Format $\to$ Clang-Tidy $\to$ ASan CTest execution $\to$ lcov/llvm-cov code coverage gate ($\ge 80\%$) |
 | **[`software-requirements`](./.agents/skills/software-requirements/)** | **Requirements**<br/>Business & Specification | Karl Wiegers Seminal Books<br/>*Software Requirements* (3rd Ed)<br/>*Software Requirements Essentials* | - **Dual-Mode Engine**: Proactive requirements specification and smell audit/impact analysis<br/>- **3 Levels & Scope**: Business Requirements (BR) $\to$ User Requirements (UR/Use Cases/INVEST) $\to$ Functional Requirements (FR), SIBV problem statements & vision formula<br/>- **Specification & Ambiguity Defense**: ISO/IEC/IEEE 29148 structure, mandatory "The system shall" active syntax, Table 11-2 25+ ambiguity dictionary & rewrites, boundary/symmetry defense<br/>- **Planguage Quality Quantification**: External/Internal quality attribute taxonomy, SCALE/METER/MUST/PLAN/FAIL metrics, quality trade-offs matrix<br/>- **Analytical Prioritization & Governance**: Wiegers Value-Cost-Risk formula, Formal Peer Inspection checklists, Forward/Backward RTM traceability, 5-step change impact protocol |
+| **[`antqt`](./.agents/skills/antqt/)** | **Desktop UI**<br/>Qt & Ant Design | Ant Design v5/v6<br/>Ant Design Pro<br/>4 Design Values | - **Dual-Mode Engine**: Proactive Ant-standard desktop architecture and diagnostic modernization for legacy Qt UI<br/>- **Visual Tokens & Palette**: Daybreak Blue `#1677FF` 10-step HSB scale, 3-layer surface topology (`bg-layout` `#F5F5F5` $\to$ `bg-container` `#FFFFFF` $\to$ `bg-elevated` shadows), neutral text opacity scales<br/>- **Desktop Metrics & Ratios**: 14px 50cm viewing base, strictly 400/600 weights, `tabular-nums` alignment, mandatory 32px control heights, standard radiuses (6px controls/8px containers/4px tags)<br/>- **Pro Desktop Archetypes**: Monitoring workbench dashboard, standard query table with right-side sliding drawer, step-by-step wizard, profile & timeline<br/>- **Dual Tech Stack Assets**: Ready-to-use `ant_light_theme.qss` / `ant_dark_theme.qss`, QML `AntTheme` / `AntButton`, automated compliance scanner `audit_qt_ui.py` and 10-step palette generator `generate_palette.py` |
 
 ### 3. Upstream Utility Skills (`.agents/skills/`)
 
@@ -263,6 +266,11 @@ code-craft/
 │       │   ├── references/                # Foundation & scope / Elicitation & rules / Specification & ambiguity / Planguage / Prioritization & validation / RTM & change control
 │       │   ├── examples/                  # Vision & scope template / SRS specification template / Use case & BDD examples
 │       │   └── scripts/                   # Analytical priority calculator (calc_priority.py) / Requirements smell detector (lint_requirements.py)
+│       ├── antqt/                         # Ant Design Desktop Enterprise UI Suite (QtWidgets / QML / Pro Archetypes)
+│       │   ├── SKILL.md                   # Dual-mode engine (Proactive Architecture / Diagnostic Modernization)
+│       │   ├── references/                # Token metrics / 60+ components dictionary / Pro desktop archetypes / Qt mechanics & gotchas
+│       │   ├── examples/                  # ant_light_theme.qss / ant_dark_theme.qss / AntTheme.qml / PyQt6 Pro Query Table Demo
+│       │   └── scripts/                   # 10-step palette generator (generate_palette.py) / Qt UI compliance auditor (audit_qt_ui.py)
 │       ├── docx/                          # [Upstream: anthropics/skills] Word document comments, revision & template tooling
 │       ├── frontend-design/               # [Upstream: anthropics/skills] Modern Web high-fidelity UI/UX design guide
 │       └── pdf/                           # [Upstream: anthropics/skills] PDF form extraction, field filling & bbox coordinates

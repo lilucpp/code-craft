@@ -22,7 +22,7 @@
 
 ## 2. 核心架构拓扑 (Architecture Topology)
 
-本项目采用**“一横十四纵”**的立体质量防护网：
+本项目采用**“一横十五纵”**的立体质量防护网：
 
 ```mermaid
 flowchart TD
@@ -45,6 +45,7 @@ flowchart TD
         S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
         S13["【C++测试体系】cpp-testing<br/>GoogleTest/Catch2 + GMock依赖注入 + AAA模式 + ASan/UBSan + 覆盖率门禁"]
         S14["【需求工程】software-requirements<br/>Karl Wiegers 经典需求 + 三层级模型 + SIBV/愿景 + 用例/INVEST故事 + 歧义防御 + Planguage量化 + 分析型优先级 + RTM追溯"]
+        S15["【桌面UI美学】antqt<br/>Ant Design 4大价值观 + 三层表面拓扑 + 32px/14px控件标尺 + Pro桌面模板 + QSS/QML双技术栈"]
     end
 
     R --> S1
@@ -61,6 +62,7 @@ flowchart TD
     R --> S12
     R --> S13
     R --> S14
+    R --> S15
 ```
 
 ---
@@ -77,7 +79,7 @@ flowchart TD
   * **I/O 分离铁律**：`stdout` 是机器消费流，严禁打印非业务提示；所有日志、诊断信息统一输出至 `stderr`；成功时保持绝对沉默；
   * **实证安全准则**：严禁凭空推论，遇歧义编写最小测试/Demo 验证；**补救原则 (Fail-Fast)** 严禁吞噬异常；代码改动必须经用户确认后方可提交。
 
-### 2. 十四门专项技能 (`.agents/skills/`)
+### 2. 十五门专项技能 (`.agents/skills/`)
 
 | 技能目录 (Skill) | 专注层级 | 理论基石 | 核心能力与包含资产 |
 | :--- | :---: | :--- | :--- |
@@ -95,6 +97,7 @@ flowchart TD
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **并发架构**<br/>多线程与无锁 | Anthony Williams 圣经<br/>《C++ Concurrency in Action》(第2版) | - **双模驱动**：包含高性能多线程主动架构与竞态/死锁诊断排障双引擎<br/>- **线程生命周期**：C++20 `jthread` 自动协作取消与析构加入、RAII 彻底终结 `std::terminate` 悬空引用崩溃<br/>- **互斥与死锁防御**：`scoped_lock` 变参一次性加锁、层级锁打破加锁死锁环路、`shared_mutex` 读写分离、`call_once` 安全单例<br/>- **底层内存模型**：6 种内存定序全解、Acquire-Release 构造 Happens-Before 同步链、Relaxed 极简计数、Fences 内存屏障<br/>- **并发容器与线程池**：分离头尾锁 Dummy 队列、分桶锁哈希表、无锁栈/队列与 ABA 防御、工作窃取（Work-Stealing）多核高吞吐线程池 |
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **质量工程**<br/>单元测试与Mock | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **双模驱动**：包含测试架构主动设计与测试坏味道/难测代码解耦双引擎<br/>- **脚手架与消毒剂**：CMake `FetchContent` 声明式拉取 GTest/Catch2、Debug 构建强制挂载 ASan/UBSan 提前引爆内存缺陷<br/>- **用例设计规范**：严格执行 AAA 模式（Arrange-Act-Assert）、边界矩阵覆盖（空/单/极值/非法）、强异常安全回滚断言<br/>- **依赖注入与Mock**：抽象纯虚接口解除高延迟/不可控外部依赖，使用 GoogleMock `MOCK_METHOD` 与 `EXPECT_CALL` 精准打桩<br/>- **自动化流水线**：格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan 单元测试 $\to$ lcov/llvm-cov 覆盖率门禁（$\ge 80\%$） |
 | **[`software-requirements`](./.agents/skills/software-requirements/)** | **需求工程**<br/>业务分析与规格 | Karl Wiegers 经典著作<br/>《软件需求》(第3版)<br/>《软件需求精髓》(20条实践) | - **双模驱动**：包含主动需求工程规格编制与需求审查诊断排障双引擎<br/>- **三层级与边界**：业务需求(BR) $\to$ 用户需求(UR/用例/INVEST故事) $\to$ 功能需求(FR)，SIBV 问题陈述模型与愿景公式<br/>- **规格与歧义防御**：ISO/IEC/IEEE 29148 结构、统一“系统应(shall)”句式、Table 11-2 25+ 歧义词典与重构、对称性/边界闭合防御<br/>- **Planguage 质量量化**：外部/内部质量属性体系、SCALE/METER/MUST/PLAN/FAIL、质量权衡冲突矩阵<br/>- **分析型优先级与治理**：价值-代价-风险量化模型（公式计算排期）、需求同行审查(Inspection)、RTM 双向可跟踪性、变更五步影响分析 |
+| **[`antqt`](./.agents/skills/antqt/)** | **桌面UI**<br/>Qt与Ant美学 | Ant Design v5/v6<br/>Ant Design Pro<br/>4大设计价值观 | - **双模驱动**：包含 PC 桌面端 Ant 规范主动架构与老旧 Qt 界面诊断整容双引擎<br/>- **视觉基石与Token**：Daybreak Blue `#1677FF` 10阶算法、三层表面拓扑（`bg-layout` `#F5F5F5` $\to$ `bg-container` `#FFFFFF` $\to$ `bg-elevated` 阴影）、中性透明文字梯度<br/>- **桌面排版与标尺**：14px 视距基准、严格 400/600 字重、`tabular-nums` 等宽对齐、控件强制锁定 32px 高度线，圆角规范（控件6px/容器8px/标签4px）<br/>- **Pro 桌面模板架构**：监控工作台大盘、标准查询表格+右侧滑动抽屉、分步业务向导、详情时间轴<br/>- **双技术栈实战支撑**：开箱即用 `ant_light_theme.qss` / `ant_dark_theme.qss`、QML `AntTheme` / `AntButton`、自动化违规审计 `audit_qt_ui.py` 与 10阶色盘生成 `generate_palette.py` |
 
 ### 3. 上游外部工具技能 (`.agents/skills/`)
 
@@ -264,6 +267,11 @@ code-craft/
 │       │   ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
 │       │   ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
 │       │   └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
+│       ├── antqt/                         # Ant Design 桌面端企业级 UI 美学与规范化套件 (QtWidgets / QML / Pro模板)
+│       │   ├── SKILL.md                   # 双模引擎 (主动架构模式 / 诊断美化重构模式)
+│       │   ├── references/                # Token尺寸标尺 / 60+组件字典 / Pro桌面模板 / Qt核心避坑指南
+│       │   ├── examples/                  # ant_light_theme.qss / ant_dark_theme.qss / AntTheme.qml / PyQt6 Pro 查询表格Demo
+│       │   └── scripts/                   # 10阶色盘生成器 (generate_palette.py) / 界面规范审计器 (audit_qt_ui.py)
 │       ├── docx/                          # [上游工具: anthropics/skills] Word 文档批注、修订与格式化处理
 │       ├── frontend-design/               # [上游工具: anthropics/skills] 现代 Web 高保真 UI/UX 界面设计指南
 │       └── pdf/                           # [上游工具: anthropics/skills] PDF 表单字段提取、自动填充与坐标渲染

@@ -1,0 +1,154 @@
+/* ===================================================================
+ * Ant Design Dark Theme QSS for Desktop Applications
+ * Surface Layout: #141414 | Surface Container: #1F1F1F | Elevated: #262626
+ * Primary: #1668DC | Base Font: 14px | Control Height: 32px | Radius: 6px
+ * =================================================================== */
+
+QWidget {
+    font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: rgba(255, 255, 255, 0.85);
+    background-color: transparent;
+    selection-background-color: #11356F;
+    selection-color: #FFFFFF;
+    outline: none;
+}
+
+QMainWindow, QDialog {
+    background-color: #141414; /* Surface bg-layout */
+}
+
+QLabel[type="secondary"] {
+    color: rgba(255, 255, 255, 0.65);
+}
+QLabel[type="disabled"] {
+    color: rgba(255, 255, 255, 0.25);
+}
+QLabel[type="title-lg"] {
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+QLabel[type="title-md"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+QPushButton {
+    min-height: 32px;
+    max-height: 32px;
+    padding: 4px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #424242;
+    background-color: #1F1F1F;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+QPushButton:hover {
+    color: #3C89E8;
+    border-color: #3C89E8;
+    background-color: #1F1F1F;
+}
+
+QPushButton:pressed {
+    color: #1554AD;
+    border-color: #1554AD;
+    background-color: #262626;
+}
+
+QPushButton:disabled {
+    color: rgba(255, 255, 255, 0.25);
+    border-color: #303030;
+    background-color: #141414;
+}
+
+QPushButton[type="primary"] {
+    background-color: #1668DC;
+    border: 1px solid #1668DC;
+    color: #FFFFFF;
+}
+QPushButton[type="primary"]:hover {
+    background-color: #3C89E8;
+    border-color: #3C89E8;
+}
+QPushButton[type="primary"]:pressed {
+    background-color: #1554AD;
+    border-color: #1554AD;
+}
+
+QPushButton[type="danger"] {
+    background-color: #D32029;
+    border: 1px solid #D32029;
+    color: #FFFFFF;
+}
+
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    min-height: 32px;
+    max-height: 32px;
+    padding: 4px 11px;
+    font-size: 14px;
+    border: 1px solid #424242;
+    border-radius: 6px;
+    background-color: #1F1F1F;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+QLineEdit:focus, QComboBox:focus, QComboBox:on {
+    border: 1px solid #1668DC;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #303030;
+    border-radius: 6px;
+    background-color: #1F1F1F;
+    selection-background-color: #11356F;
+    selection-color: #FFFFFF;
+    padding: 4px;
+}
+
+QTableView, QTableWidget, QListView, QTreeView {
+    background-color: #1F1F1F;
+    border: 1px solid #303030;
+    border-radius: 8px;
+    gridline-color: #303030;
+}
+
+QTableView::item:hover, QListView::item:hover {
+    background-color: #262626;
+}
+
+QTableView::item:selected, QListView::item:selected {
+    background-color: #11356F;
+    color: #FFFFFF;
+}
+
+QHeaderView::section {
+    background-color: #1D1D1D;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
+    border: none;
+    border-bottom: 1px solid #303030;
+    min-height: 48px;
+    max-height: 48px;
+    padding-left: 12px;
+}
+
+QFrame[frameShape="StyledPanel"], QFrame[type="card"], QGroupBox {
+    background-color: #1F1F1F;
+    border: 1px solid #303030;
+    border-radius: 8px;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 6px;
+}
+QScrollBar::handle:vertical {
+    background: #424242;
+    border-radius: 3px;
+    min-height: 24px;
+}

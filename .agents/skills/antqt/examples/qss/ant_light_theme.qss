@@ -1,0 +1,367 @@
+/* ===================================================================
+ * Ant Design Light Theme QSS for Desktop Applications
+ * Based on Ant Design v5/v6 Specifications (design.md & 4 Design Values)
+ * Primary: #1677FF | Base Font: 14px | Control Height: 32px | Radius: 6px
+ * =================================================================== */
+
+/* --- 1. Global Reset & Typography --- */
+QWidget {
+    font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: #1F1F1F; /* rgba(0, 0, 0, 0.88) */
+    background-color: transparent;
+    selection-background-color: #E6F4FF;
+    selection-color: #1677FF;
+    outline: none;
+}
+
+QMainWindow, QDialog {
+    background-color: #F5F5F5; /* Surface bg-layout */
+}
+
+/* Secondary & Disabled Text utility */
+QLabel[type="secondary"] {
+    color: #595959; /* rgba(0, 0, 0, 0.65) */
+}
+QLabel[type="disabled"] {
+    color: #BFBFBF; /* rgba(0, 0, 0, 0.25) */
+}
+QLabel[type="title-lg"] {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1F1F1F;
+}
+QLabel[type="title-md"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1F1F1F;
+}
+
+/* --- 2. Push Buttons --- */
+QPushButton {
+    min-height: 32px;
+    max-height: 32px;
+    padding: 4px 15px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 6px;
+    border: 1px solid #D9D9D9;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+}
+
+QPushButton:hover {
+    color: #4096FF;
+    border-color: #4096FF;
+    background-color: #FFFFFF;
+}
+
+QPushButton:pressed {
+    color: #0958D9;
+    border-color: #0958D9;
+    background-color: #F5F5F5;
+}
+
+QPushButton:disabled {
+    color: #BFBFBF;
+    border-color: #D9D9D9;
+    background-color: #F5F5F5;
+}
+
+/* Primary Button */
+QPushButton[type="primary"] {
+    background-color: #1677FF;
+    border: 1px solid #1677FF;
+    color: #FFFFFF;
+}
+QPushButton[type="primary"]:hover {
+    background-color: #4096FF;
+    border-color: #4096FF;
+    color: #FFFFFF;
+}
+QPushButton[type="primary"]:pressed {
+    background-color: #0958D9;
+    border-color: #0958D9;
+    color: #FFFFFF;
+}
+QPushButton[type="primary"]:disabled {
+    background-color: #F5F5F5;
+    border-color: #D9D9D9;
+    color: #BFBFBF;
+}
+
+/* Danger Button */
+QPushButton[type="danger"] {
+    background-color: #FF4D4F;
+    border: 1px solid #FF4D4F;
+    color: #FFFFFF;
+}
+QPushButton[type="danger"]:hover {
+    background-color: #FF7875;
+    border-color: #FF7875;
+    color: #FFFFFF;
+}
+QPushButton[type="danger"]:pressed {
+    background-color: #D9363E;
+    border-color: #D9363E;
+    color: #FFFFFF;
+}
+
+/* Dashed Button */
+QPushButton[type="dashed"] {
+    border: 1px dashed #D9D9D9;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+}
+QPushButton[type="dashed"]:hover {
+    border-color: #4096FF;
+    color: #4096FF;
+}
+
+/* Text Button */
+QPushButton[type="text"] {
+    border: none;
+    background-color: transparent;
+    color: #1F1F1F;
+}
+QPushButton[type="text"]:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+QPushButton[type="text"]:pressed {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* --- 3. Inputs & Forms --- */
+QLineEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit {
+    min-height: 32px;
+    max-height: 32px;
+    padding: 4px 11px;
+    font-size: 14px;
+    border: 1px solid #D9D9D9;
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+}
+
+QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover {
+    border-color: #4096FF;
+}
+
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
+    border: 1px solid #1677FF;
+}
+
+QLineEdit:disabled, QSpinBox:disabled {
+    background-color: #F5F5F5;
+    color: #BFBFBF;
+    border-color: #D9D9D9;
+}
+
+QLineEdit[status="error"] {
+    border: 1px solid #FF4D4F;
+}
+QLineEdit[status="warning"] {
+    border: 1px solid #FAAD14;
+}
+
+/* --- 4. Select / ComboBox --- */
+QComboBox {
+    min-height: 32px;
+    max-height: 32px;
+    padding: 4px 11px;
+    font-size: 14px;
+    border: 1px solid #D9D9D9;
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+}
+
+QComboBox:hover {
+    border-color: #4096FF;
+}
+
+QComboBox:focus, QComboBox:on {
+    border: 1px solid #1677FF;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: none;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #F0F0F0;
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    selection-background-color: #E6F4FF;
+    selection-color: #1677FF;
+    padding: 4px;
+    outline: none;
+}
+
+QComboBox QAbstractItemView::item {
+    min-height: 32px;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+/* --- 5. Table & List (Ant Design Minimalist Table) --- */
+QTableView, QTableWidget, QListView, QListWidget, QTreeView, QTreeWidget {
+    background-color: #FFFFFF;
+    border: 1px solid #F0F0F0;
+    border-radius: 8px;
+    gridline-color: #F0F0F0;
+    outline: none;
+}
+
+QTableView::item, QTableWidget::item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #F0F0F0;
+    color: #1F1F1F;
+}
+
+QTableView::item:hover, QTableWidget::item:hover, QListView::item:hover {
+    background-color: #E6F4FF; /* Row Hover Highlight */
+}
+
+QTableView::item:selected, QTableWidget::item:selected, QListView::item:selected {
+    background-color: #BAE0FF;
+    color: #1F1F1F;
+}
+
+/* Modern Ant Table Header: #FAFAFA, 600 weight, 48px height */
+QHeaderView::section {
+    background-color: #FAFAFA;
+    color: #1F1F1F;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-bottom: 1px solid #F0F0F0;
+    min-height: 48px;
+    max-height: 48px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+/* --- 6. Tabs (Line Style with #1677FF active bar) --- */
+QTabWidget::pane {
+    border: 1px solid #F0F0F0;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    top: -1px;
+}
+
+QTabBar::tab {
+    min-height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+    color: #595959;
+    background-color: transparent;
+    border: none;
+    margin-right: 8px;
+}
+
+QTabBar::tab:hover {
+    color: #4096FF;
+}
+
+QTabBar::tab:selected {
+    color: #1677FF;
+    font-weight: 600;
+    border-bottom: 2px solid #1677FF;
+}
+
+/* --- 7. Cards & Containers --- */
+QFrame[frameShape="StyledPanel"], QFrame[type="card"] {
+    background-color: #FFFFFF; /* Surface bg-container */
+    border: 1px solid #F0F0F0;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+QGroupBox {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1F1F1F;
+    border: 1px solid #F0F0F0;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    margin-top: 24px;
+    padding: 16px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 16px;
+    padding: 0 6px;
+    background-color: #FFFFFF;
+}
+
+/* --- 8. CheckBox & RadioButton --- */
+QCheckBox, QRadioButton {
+    spacing: 8px;
+    font-size: 14px;
+    color: #1F1F1F;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    background-color: #FFFFFF;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #1677FF;
+}
+
+QCheckBox::indicator:checked {
+    border-color: #1677FF;
+    background-color: #1677FF;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #D9D9D9;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #1677FF;
+}
+
+QRadioButton::indicator:checked {
+    border-color: #1677FF;
+    background-color: #1677FF;
+}
+
+/* --- 9. Clean Thin Scrollbar --- */
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 6px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #D9D9D9;
+    min-height: 24px;
+    border-radius: 3px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #BFBFBF;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+    border: none;
+}
