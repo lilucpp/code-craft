@@ -9,7 +9,7 @@ description: >-
 
 # C++ 代码质量、格式化与静态检查指南
 
-本技能专为现代 C++ 工程提供全套自动化质量守护，涵盖**环境自检、项目配置初始化、增量代码检查与全量静态分析**。
+本技能专为现代 C++ 工程提供全套自动化质量守护，涵盖**环境自检、权限防死锁、项目配置初始化、增量代码检查与全量静态分析**。
 
 ---
 
@@ -18,31 +18,48 @@ description: >-
 ```mermaid
 flowchart TD
     A["用户提出 C++ 质量诉求"] --> B["阶段 1：环境自检 (Pre-flight)"]
-    B -->|缺失关键工具| B1["运行 ./scripts/env_check.sh 输出安装命令并引导用户"]
+    B -->|缺失关键工具| B1["明确告知无root权限，输出宿主机安装命令或推荐Docker方案"]
     B -->|工具链就绪| C["阶段 2：项目配置自检"]
     
     C -->|缺失配置| C1["运行 ./scripts/init_config.sh 自动生成 .clang-format / .clang-tidy"]
-    C -->|已有配置| D{"阶段 3：识别执行场景"}
+    C -->|已有配置| D{"阶段 3：识别执行场景与编译载体"}
 
-    D -->|场景 A: 用户说'只查新代码' / 老项目| E["执行增量检查: ./scripts/run_check.sh --mode=diff"]
-    D -->|场景 B: 用户说'全量检查'| F["执行全量检查: ./scripts/run_check.sh --mode=all"]
-    D -->|场景 C: 用户要求'自动修复格式'| G["执行自动修复: ./scripts/run_check.sh --fix"]
+    D -->|场景 A: 本地工具就绪 / 原生执行| E["执行原生检查: ./scripts/run_check.sh [--mode=diff|all] [--fix]"]
+    D -->|场景 B: 无root权限 / 推荐Docker容器| F["执行容器检查: docker run 挂载工作区执行"]
+    D -->|场景 C: CI / GitHub Actions 流水线| G["参考 .github/workflows/ 配合 CI 门禁检查"]
 ```
 
 ---
 
-## 2. 常见场景执行指南
+## 2. 行为准则与权限防御原则（CRITICAL）
 
-### 场景 1：检查工具链环境
-当用户问 *“检查一下我环境里装没装 C++ 工具”* 或执行检查前自检：
-1. 执行内置脚本：
+1. **严禁盲目执行交互式 sudo**：
+   - 在非特权沙箱或无免密 sudo 的环境中，**严禁私自尝试调用 `sudo apt-get` 或 `sudo yum`**。
+   - 否则会引发交互式密码输入挂起，导致任务假死。
+2. **主动告知与实证输出**：
+   - 当检测到环境缺少 `clang-format`、`clang-tidy` 或 `cppcheck` 时，**必须第一时间主动明确告知用户**：
+     > *“当前环境缺少 root 权限，无法自动安装依赖。请您在宿主机终端手动执行安装命令，或使用 Docker 容器方案。”*
+   - 同时附带精确、单行可直接复制的包管理器安装命令。
+3. **构建环境感知（Native vs Docker vs CI）**：
+   - 复杂 C++ 项目可能采用宿主机本地编译、Docker 容器交叉编译、或 GitHub Actions 云端构建；
+   - 检查代码前切勿盲目覆写 CMake 配置或破坏现有的 build 缓存。
+
+---
+
+## 3. 常见场景执行指南
+
+### 场景 1：检查工具链环境 (Pre-flight)
+当用户要求 *“检查代码质量工具链”* 或正式检查前：
+1. 执行内置自检脚本：
    ```bash
    ./.agents/skills/cpp-code-quality/scripts/env_check.sh
    ```
-2. 若缺少工具，直接将输出的发行版安装命令清晰反馈给用户（如 Ubuntu: `sudo apt-get install -y clang-format clang-tidy cppcheck cmake`）。
+2. 若工具缺失且无 root 权限，明确汇报给用户：
+   * Ubuntu / Debian 宿主机安装：`sudo apt-get update && sudo apt-get install -y clang-format clang-tidy cppcheck`
+   * 或提示用户直接通过 Docker 容器免安装执行。
 
 ### 场景 2：初始化新项目或补全配置
-当用户要求 *“初始化 C++ 代码风格与检查配置”* 或项目根目录缺少配置文件时：
+当项目根目录缺少 `.clang-format` 或 `.clang-tidy` 时：
 1. 执行初始化脚本：
    ```bash
    ./.agents/skills/cpp-code-quality/scripts/init_config.sh .
@@ -54,25 +71,30 @@ flowchart TD
 
 ### 场景 3：老项目增量检查（只检查新代码）
 当用户要求 *“这是老项目，只查刚改动的代码”*、*“只对新增代码执行检查”* 时：
-1. 执行增量脚本：
+1. 增量排查：
    ```bash
    # 仅检查 git diff 变动文件与修改行
    ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff
    ```
-2. 若需自动修复格式：
+2. 增量自动排版修复：
    ```bash
    ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff --fix
    ```
 
-### 场景 4：全量项目扫描
-当用户要求 *“对整个项目执行全量静态分析”* 时：
-```bash
-./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=all
-```
+### 场景 4：全量项目扫描与格式化
+当用户要求 *“对整个项目执行全量静态分析与格式化”* 时：
+1. 检查格式并应用排版：
+   ```bash
+   ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=all --fix
+   ```
+2. 若宿主机未安装，采用 Docker 容器方式（零宿主污染）：
+   ```bash
+   docker run --rm -v "$(pwd):/src" -w /src ghcr.io/muttleyxd/clang-tools:18 clang-format -i $(git ls-files '*.cpp' '*.h' | grep -v 'third_party/')
+   ```
 
 ---
 
-## 3. 核心参考手册
+## 4. 核心参考手册
 
 - [代码格式化规范 (.clang-format)](./references/clang_format_spec.md)：Google C++ 规范基线、右对齐指针与 120 列宽深度解析。
 - [静态检查高信噪比规则集 (.clang-tidy)](./references/clang_tidy_rules.md)：内存安全、性能隐患、现代 C++ 最佳实践与误报抑制。

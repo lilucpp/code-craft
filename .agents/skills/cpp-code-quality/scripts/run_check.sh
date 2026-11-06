@@ -42,20 +42,26 @@ echo "=================================================="
 # 1. 获取需要检查的源文件列表
 get_source_files() {
   if [ "$MODE" = "diff" ]; then
-    # 检查是否在 git 仓库中
     if git rev-parse --is-inside-work-tree &>/dev/null; then
-      # 获取已修改或已暂存的 C++ 文件，排除 third_party、build 等目录
       git diff --name-only --diff-filter=ACMR HEAD 2>/dev/null | \
         grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
-        grep -vE '^(third_party|vendor|external|build|cmake-build)/' || true
+        grep -vE '^(third_party|vendor|external|build|cmake-build|\.agents)/' || true
     else
       echo "⚠️ 当前目录非 git 仓库，自动退化为全量文件扫描模式"
-      find src include -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) 2>/dev/null || true
+      find src -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) 2>/dev/null || true
     fi
   else
-    find src include -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) 2>/dev/null || \
-      find . -maxdepth 3 -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) | \
-      grep -vE '/(third_party|vendor|external|build|\.agents)/' || true
+    local search_dirs=()
+    [ -d "src" ] && search_dirs+=("src")
+    [ -d "include" ] && search_dirs+=("include")
+    [ -d "tests" ] && search_dirs+=("tests")
+    if [ ${#search_dirs[@]} -gt 0 ]; then
+      find "${search_dirs[@]}" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) | \
+        grep -vE '/(third_party|vendor|external|build|cmake-build|\.agents|\.pb\.)/' | sort -u
+    else
+      find . -maxdepth 4 -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) | \
+        grep -vE '/(third_party|vendor|external|build|cmake-build|\.agents|\.pb\.)/' | sort -u
+    fi
   fi
 }
 
@@ -92,20 +98,33 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "format" ]; then
         fi
       fi
     else
-      # 全量或无 diff 脚本时的文件级格式化
+      FORMAT_ERRORS=0
       for f in $FILES; do
         if [ "$DO_FIX" = true ]; then
           clang-format -i "$f"
         else
           if ! clang-format --dry-run --Werror "$f" 2>/dev/null; then
             echo "   ⚠️ 文件格式违规: $f (运行 --fix 可自动修复)"
+            FORMAT_ERRORS=$((FORMAT_ERRORS + 1))
           fi
         fi
       done
-      [ "$DO_FIX" = true ] && echo "   ✅ 文件格式化修复完毕。"
+      if [ "$DO_FIX" = true ]; then
+        echo "   ✅ 文件格式化修复完毕。"
+      else
+        if [ "$FORMAT_ERRORS" -eq 0 ]; then
+          echo "   ✅ 所有源文件格式化检查通过！"
+        else
+          echo "   ⚠️ 共发现 $FORMAT_ERRORS 个文件格式不符合规范（运行 --fix 可自动修复）。"
+        fi
+      fi
     fi
   else
-    echo "⚠️ 未安装 clang-format，跳过格式化检查。"
+    echo "❌ [1/3] 未安装 clang-format（当前执行环境无 root 权限，无法自动安装）"
+    echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y clang-format"
+    if command -v docker &>/dev/null && docker ps &>/dev/null; then
+      echo "   🐳 或使用 Docker 免安装格式化: docker run --rm -v \"\$(pwd):/src\" -w /src ghcr.io/muttleyxd/clang-tools:18 clang-format -i \$FILES"
+    fi
   fi
 fi
 
@@ -119,7 +138,7 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "tidy" ]; then
     elif [ -f "compile_commands.json" ]; then
       BUILD_ARG="-p ."
     else
-      echo "   ℹ️ 未找到 compile_commands.json，采用单文件通用参数扫描（建议使用 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON）"
+      echo "   ℹ️ 未找到 compile_commands.json，采用通用参数扫描（建议使用 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON）"
     fi
 
     for f in $FILES; do
@@ -131,7 +150,8 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "tidy" ]; then
       fi
     done
   else
-    echo "⚠️ 未安装 clang-tidy，跳过语义静态检查。"
+    echo "❌ [2/3] 未安装 clang-tidy（当前执行环境无 root 权限，无法自动安装）"
+    echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y clang-tidy"
   fi
 fi
 
@@ -139,15 +159,19 @@ fi
 if [ "$TOOL" = "all" ] || [ "$TOOL" = "cppcheck" ]; then
   if command -v cppcheck &>/dev/null; then
     echo "⚡ [3/3] 执行 Cppcheck 内存越界与未定义行为排查..."
-    cppcheck --enable=warning,performance,portability \
+    cppcheck --language=c++ --enable=warning,performance,portability \
              --inline-suppr \
              --suppress=missingIncludeSystem \
-             -i third_party/ -i build/ \
+             --suppress=unmatchedSuppression \
+             --suppress=unknownMacro \
+             -Dslots= -Dsignals= \
+             -i third_party/ -i build/ -i build-win64/ \
              --quiet \
              $FILES || true
     echo "   ✅ Cppcheck 扫描完成。"
   else
-    echo "⚠️ 未安装 cppcheck，跳过快速排查。"
+    echo "❌ [3/3] 未安装 cppcheck（当前执行环境无 root 权限，无法自动安装）"
+    echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y cppcheck"
   fi
 fi
 

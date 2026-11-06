@@ -50,14 +50,33 @@ check_tool "cmake" "cmake" "生成编译数据库供 clang-tidy 使用"
 
 echo "--------------------------------------------------"
 
+# 检测权限状态
+CAN_SUDO=false
+if [ "$(id -u)" -eq 0 ] || sudo -n true 2>/dev/null; then
+  CAN_SUDO=true
+fi
+
+# 检测 Docker 状态
+DOCKER_READY=false
+if command -v docker &>/dev/null && docker ps &>/dev/null; then
+  DOCKER_READY=true
+fi
+
 if [ ${#MISSING_TOOLS[@]} -eq 0 ]; then
   echo "🎉 恭喜！所有 C++ 代码质量核心工具均已就绪，可直接执行格式化与静态检查。"
   exit 0
 else
   echo "⚠️ 检测到部分核心工具缺失: ${MISSING_TOOLS[*]}"
   echo ""
-  echo "👉 推荐安装命令："
-  echo ""
+  if [ "$CAN_SUDO" = false ]; then
+    echo "🔒 [权限告知] 当前执行环境为普通用户（无 root / 无免密 sudo 特权）。"
+    echo "   AI 助手严禁擅自执行交互式提权命令。请由宿主机管理员手动在终端执行以下安装命令："
+    echo ""
+  else
+    echo "👉 推荐安装命令："
+    echo ""
+  fi
+
   echo "• Ubuntu / Debian:"
   echo "  sudo apt-get update && sudo apt-get install -y clang-format clang-tidy cppcheck cmake"
   echo ""
@@ -69,6 +88,15 @@ else
   echo ""
   echo "• macOS (Homebrew):"
   echo "  brew install clang-format llvm cppcheck cmake"
+
+  if [ "$DOCKER_READY" = true ]; then
+    echo ""
+    echo "--------------------------------------------------"
+    echo "🐳 [DOCKER 容器替代方案] 本机 Docker 守护进程已就绪！"
+    echo "   若不想在宿主机安装额外依赖，也可通过 Docker 容器免安装运行格式化或检查，例如："
+    echo "   docker run --rm -v \"\$(pwd):/src\" -w /src ghcr.io/muttleyxd/clang-tools:18 clang-format -i \$(git ls-files '*.cpp' '*.h')"
+  fi
+
   echo "=================================================="
   exit 1
 fi

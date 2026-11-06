@@ -26,5 +26,5 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 KeepEmptyLinesAtTheStartOfBlocks: false
-EmptyLineBeforeAccessModifier: LogicalKey
+EmptyLineBeforeAccessModifier: LogicalBlock
 ...

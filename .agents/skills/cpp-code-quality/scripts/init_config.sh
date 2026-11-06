@@ -44,7 +44,7 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 KeepEmptyLinesAtTheStartOfBlocks: false
-EmptyLineBeforeAccessModifier: LogicalKey
+EmptyLineBeforeAccessModifier: LogicalBlock
 ...
 EOF
   echo "  ✅ 已创建: $CLANG_FORMAT_FILE (Google风格 / 右对齐 / 120列)"
