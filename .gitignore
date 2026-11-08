@@ -20,6 +20,8 @@ Thumbs.db
 *.tmp
 build/
 bin/
+logs/
+*.log
 *.o
 *.a
 *.so
