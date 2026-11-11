@@ -37,7 +37,6 @@ flowchart TD
         S4["【宏观系统】unix-philosophy<br/>17条Unix哲学 + 机制策略分离 + 管道接口模式"]
         S5["【技术表达】tech-communication<br/>酷壳分享模型 + Stack Overflow MRE排障 + RCA复盘"]
         S6["【C++质量】cpp-code-quality<br/>Google风格定制 + 增量diff排版 + clang-tidy/cppcheck静态分析"]
-        S14["【C++智能】cpp-code-intelligence<br/>Clangd 18 + 编译数据库自动化 + MCP精准语义导航 + 架构拓扑感知"]
         S7["【系统数据】systems-data-design<br/>物理内存降序对齐 + 伪共享隔离 + 强类型/Typestate + OSDI14原子落盘"]
         S8["【数据存储】sql-craft<br/>B-Tree组合索引列序 + Keyset寻址分页 + 闭包表 + SQL反模式防御"]
         S9["【技能设计】skill-craft<br/>Anthropic官方最佳实践 + 双语双锚点元数据 + 渐进式披露 + 自由度分级"]
@@ -46,7 +45,6 @@ flowchart TD
         S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
         S13["【C++测试体系】cpp-testing<br/>GoogleTest/Catch2 + GMock依赖注入 + AAA模式 + ASan/UBSan + 覆盖率门禁"]
         S14["【需求工程】software-requirements<br/>Karl Wiegers 经典需求 + 三层级模型 + SIBV/愿景 + 用例/INVEST故事 + 歧义防御 + Planguage量化 + 分析型优先级 + RTM追溯"]
-        S15["【桌面UI美学】antqt<br/>Ant Design 4大价值观 + 三层表面拓扑 + 32px/14px控件标尺 + Pro桌面模板 + QSS/QML双技术栈"]
     end
 
     R --> S1
@@ -63,7 +61,6 @@ flowchart TD
     R --> S12
     R --> S13
     R --> S14
-    R --> S15
 ```
 
 ---
@@ -85,8 +82,7 @@ flowchart TD
         UNIX["unix-philosophy<br>• KISS / 管道组合 / 机制与策略分离"]
         DATA["systems-data-design<br>• 内存排布 / Cache / 状态机 / WAL 落盘"]
         SQL["sql-craft<br>• 关系模型 / B-Tree 物理索引 / 反模式治理"]
-        UI["antqt<br>• 桌面交互 / Ant Design 规范 / Pro 模板"]
-        DIR ~~~ UNIX ~~~ DATA ~~~ SQL ~~~ UI
+        DIR ~~~ UNIX ~~~ DATA ~~~ SQL
     end
 
     subgraph S3 ["阶段三：高质量规范实现 (Implementation)"]
@@ -127,7 +123,7 @@ flowchart TD
 | 研发阶段 (SDLC Phase) | 推荐调用的核心 Skills | 解决的核心工程问题 | 核心产出物与交付基线 |
 | :--- | :--- | :--- | :--- |
 | **阶段一：需求工程与业务分析**<br>*(Requirements Engineering)* | **`software-requirements`** | • 探究根本痛点 (SIBV)，拒绝直接画页面<br>• 划定 In/Out of Scope 排除范围，防御范围蔓延<br>• 产出三层级需求 (BR/UR/FR) 与 Given-When-Then BDD 故事<br>• 使用 Planguage 量化非功能指标，消除 Table 11-2 歧义 | • 愿景与范围说明书<br>• 软件需求规格说明书 (SRS)<br>• 业务规则独立目录 (Rules Catalog) |
-| **阶段二：架构设计与中微观建模**<br>*(Architecture & Design)* | **`code-design`**<br>*(中微观架构)*<br><br>**`unix-philosophy`**<br>*(宏观哲学)*<br><br>**`systems-data-design`**<br>*(系统内存/状态)*<br><br>**`sql-craft`**<br>*(关系存储)*<br><br>**`antqt`**<br>*(桌面人机交互)* | • **包拓扑划分**：遵循 CCP/CRP 原则，确保 ADP 无环依赖 (DAG)<br>• **面向对象契约**：接口隔离 (ISP)、开闭原则策略模式 (OCP)、契约式设计 (DbC)<br>• **Unix 哲学**：KISS 原则、机制与策略分离、管道文本协议<br>• **内存与存储设计**：Cache 伪共享隔离、状态机防非法跃迁、WAL 崩溃安全落盘、B-Tree 物理索引优化<br>• **桌面端 UI 拓扑**：32px 标尺、三层拓扑、Pro 查询表格与抽屉骨架 | • 架构包依赖 DAG 图<br>• 领域核心类图与接口契约<br>• 物理数据库 DDL 与复合索引<br>• 桌面端 UI 骨架与原型 |
+| **阶段二：架构设计与中微观建模**<br>*(Architecture & Design)* | **`code-design`**<br>*(中微观架构)*<br><br>**`unix-philosophy`**<br>*(宏观哲学)*<br><br>**`systems-data-design`**<br>*(系统内存/状态)*<br><br>**`sql-craft`**<br>*(关系存储)* | • **包拓扑划分**：遵循 CCP/CRP 原则，确保 ADP 无环依赖 (DAG)<br>• **面向对象契约**：接口隔离 (ISP)、开闭原则策略模式 (OCP)、契约式设计 (DbC)<br>• **Unix 哲学**：KISS 原则、机制与策略分离、管道文本协议<br>• **内存与存储设计**：Cache 伪共享隔离、状态机防非法跃迁、WAL 崩溃安全落盘、B-Tree 物理索引优化 | • 架构包依赖 DAG 图<br>• 领域核心类图与接口契约<br>• 物理数据库 DDL 与复合索引 |
 | **阶段三：高质量规范编码实现**<br>*(Implementation & Construction)* | **`effective-cpp`**<br>*(现代语言规范)*<br><br>**`cpp-idioms`**<br>*(设计模式进阶)*<br><br>**`cpp-concurrency`**<br>*(多线程并发)*<br><br>**`ub-mode`**<br>*(整洁自律实践)* | • **资源安全**：严格 RAII 资源管理、智能指针所有权、强异常安全保证 (Copy-and-Swap)<br>• **高级惯用法**：NVI 模板方法守护基类契约、CRTP 零成本静态多态、Type Erasure 值语义包装<br>• **高并发攻坚**：Acquire-Release 内存顺序、细粒度锁队列/哈希表、无锁 CAS/ABA 防御、TSan 调试<br>• **敏捷 Clean Code**：遵循单一抽象层级 (SLAP)、函数长度 $\le 30$ 行、卫语句优先、TDD 小步快跑 | • 现代 C++ 健壮源代码<br>• 高吞吐并发安全数据结构<br>• 符合设计契约的纯净实现 |
 | **阶段四：测试工程与质量门禁**<br>*(Testing & Quality Gates)* | **`cpp-testing`**<br>*(测试体系)*<br><br>**`cpp-code-quality`**<br>*(静态分析门禁)* | • **单元测试**：编写 AAA 模式用例，设计极值/非法边界矩阵<br>• **依赖隔离**：纯虚接口依赖注入，使用 GoogleMock (`MOCK_METHOD`) 精准打桩<br>• **内存消毒**：Debug 构建强制挂载 ASan/UBSan，提前引爆野指针与内存越界<br>• **静态质量卡点**：clang-format 增量 diff 格式化，clang-tidy 深度扫描拦截隐患 | • GoogleTest 自动化测试套件<br>• ASan 消毒剂零缺陷报告<br>• 代码覆盖率报告 ($\ge 80\%$) |
 | **阶段五：审查诊断与安全重构**<br>*(Review & Refactoring)* | **`code-review`**<br>*(体检与坏味道排查)*<br><br>**`refactoring`**<br>*(无损手术重构)* | • **代码体检**：排查 Martin Fowler 22 种代码坏味道（发散式变化、霰弹式修改、依恋情结）<br>• **架构债治理**：诊断循环依赖、上帝类与违背 SOLID 的硬编码逻辑<br>• **安全重构**：在测试用例守护下运用 68 种经典重构手法小步快跑，降低圈复杂度 | • 结构化代码审查报告<br>• 行为保持 (Behavior-Preserving) 重构代码<br>• 架构债务清除记录 |
@@ -157,7 +153,6 @@ flowchart TD
 | **[`unix-philosophy`](./.agents/skills/unix-philosophy/)** | **宏观**<br/>系统架构 | Eric S. Raymond《UNIX编程艺术》<br/>酷壳《应对多变的需求》 | - **17 条 Unix 哲学深度解析**（紧凑性 Miller 定律、正交性、表示原则数据驱动）<br/>- **10 大经典接口模式**（Filter 过滤器、Cantrip、引擎与接口分离、CLI Server 等）<br/>- **命令行与配置规范**（`-a`~`-z` 选项字典、5级配置覆盖模型、`--` 解析终结符） |
 | **[`tech-communication`](./.agents/skills/tech-communication/)** | **交互**<br/>表达文档 | 酷壳《如何做有质量的技术分享》<br/>Stack Overflow《How to Ask》 | - **酷壳技术分享模型**：问题模型 $\to$ 方案对比 $\to$ 源码机制 $\to$ 最佳实践<br/>- **Stack Overflow 提问规范**：MRE 最小可复现示例、预期 vs 实际现象、零代码截图<br/>- **工业级 README 模板**：痛点主张、架构拓扑、开箱即用、技术选型权衡<br/>- **架构师级答疑与复盘**：结论先行(TL;DR)、5-Whys 根因分析(RCA)、长效防线 |
 | **[`cpp-code-quality`](./.agents/skills/cpp-code-quality/)** | **工程**<br/>C++工具链 | Google C++ Style<br/>LLVM Clang-Tidy<br/>童子军增量法则 | - **自动化工具链检测**：环境自检脚本 `env_check.sh` 探测工具链，缺失时提供发行版安装指令<br/>- **一键配置初始化**：自动生成定制版 `.clang-format`（右对齐/120列）、`.clang-tidy`（高信噪比规则）与 `.clang-format-ignore`<br/>- **双模智能调度**：支持增量行级检查（`clang-format-diff` 适配老项目）与全量扫描，彻底屏蔽 `third_party/` |
-| **[`cpp-code-intelligence`](./.agents/skills/cpp-code-intelligence/)** | **C++智能**<br/>语义分析与架构 | LLVM Clangd 18<br/>LSP / MCP 协议<br/>编译数据库感知 | - **双模驱动**：包含 C++ 架构拓扑主动提炼与精准语义诊断双引擎<br/>- **编译数据库自动化**：自动检测/导出 `compile_commands.json` 软链接，支持 CMake Presets 与 Bear<br/>- **IDE级精准语义导航**：通过 Clangd MCP 提供跳转定义、全局引用搜索（影响面分析）、调用链与继承树提取<br/>- **三大工程 SOP 闭环**：新功能最小侵入挂载、安全重构零破坏、底层性能与伪共享基准测试验证 |
 | **[`systems-data-design`](./.agents/skills/systems-data-design/)** | **系统**<br/>内存与落盘 | Williams《并发实战》<br/>Gregg《系统性能》<br/>OSTEP 操作系统<br/>OSDI '14 顶会论文 | - **双模驱动**：包含 AI 主动设计防线与问答诊断优化双引擎<br/>- **物理内存对齐**：成员按 8-4-2-1 降序排布挤出 Padding，跨核变量 `alignas(64)` 隔离伪共享<br/>- **零开销强类型**：`StrongType` 消除参数混淆，`Typestate` 编译期掐死时序调用 Bug<br/>- **崩溃安全原子落盘**：OSDI 14 标准四步法（`write tmp -> fdatasync -> rename -> dir fsync`） |
 | **[`sql-craft`](./.agents/skills/sql-craft/)** | **存储**<br/>关系与索引 | Markus Winand 索引<br/>Bill Karwin《SQL反模式》 | - **双模驱动**：包含表结构设计主动防御与慢查询重构双引擎<br/>- **B-Tree 列序铁律**：复合索引严格遵守“等值在前、范围在后”，覆盖索引消除回表 I/O<br/>- **大表 Seek 分页**：Keyset Pagination 消除 `LIMIT OFFSET` 带来的百万行全表扫描雪崩<br/>- **反模式治理**：闭包表（Closure Table）终结树递归、交叉表干掉逗号乱穿马路、金额强制 DECIMAL |
 | **[`skill-craft`](./.agents/skills/skill-craft/)** | **元工程**<br/>Agent技能 | Anthropic 官方规范<br/>Claude Best Practices | - **双模驱动**：包含新技能规范化主动设计与现有技能体检优化双引擎<br/>- **双语双锚点**：第三人称英文定义 + Use when + 中文场景 + 命令词精准召回<br/>- **渐进式披露**：两级目录结构（`SKILL.md` + `references/`），强制单层引用深度，严禁套娃递归<br/>- **自由度控制**：高自由度启发式核对清单 vs 低自由度硬性脚本（正斜杠、零巫术常量） |
@@ -166,7 +161,6 @@ flowchart TD
 | **[`cpp-concurrency`](./.agents/skills/cpp-concurrency/)** | **并发架构**<br/>多线程与无锁 | Anthony Williams 圣经<br/>《C++ Concurrency in Action》(第2版) | - **双模驱动**：包含高性能多线程主动架构与竞态/死锁诊断排障双引擎<br/>- **线程生命周期**：C++20 `jthread` 自动协作取消与析构加入、RAII 彻底终结 `std::terminate` 悬空引用崩溃<br/>- **互斥与死锁防御**：`scoped_lock` 变参一次性加锁、层级锁打破加锁死锁环路、`shared_mutex` 读写分离、`call_once` 安全单例<br/>- **底层内存模型**：6 种内存定序全解、Acquire-Release 构造 Happens-Before 同步链、Relaxed 极简计数、Fences 内存屏障<br/>- **并发容器与线程池**：分离头尾锁 Dummy 队列、分桶锁哈希表、无锁栈/队列与 ABA 防御、工作窃取（Work-Stealing）多核高吞吐线程池 |
 | **[`cpp-testing`](./.agents/skills/cpp-testing/)** | **质量工程**<br/>单元测试与Mock | GoogleTest / Catch2<br/>GoogleMock / LLVM ASan | - **双模驱动**：包含测试架构主动设计与测试坏味道/难测代码解耦双引擎<br/>- **脚手架与消毒剂**：CMake `FetchContent` 声明式拉取 GTest/Catch2、Debug 构建强制挂载 ASan/UBSan 提前引爆内存缺陷<br/>- **用例设计规范**：严格执行 AAA 模式（Arrange-Act-Assert）、边界矩阵覆盖（空/单/极值/非法）、强异常安全回滚断言<br/>- **依赖注入与Mock**：抽象纯虚接口解除高延迟/不可控外部依赖，使用 GoogleMock `MOCK_METHOD` 与 `EXPECT_CALL` 精准打桩<br/>- **自动化流水线**：格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan 单元测试 $\to$ lcov/llvm-cov 覆盖率门禁（$\ge 80\%$） |
 | **[`software-requirements`](./.agents/skills/software-requirements/)** | **需求工程**<br/>业务分析与规格 | Karl Wiegers 经典著作<br/>《软件需求》(第3版)<br/>《软件需求精髓》(20条实践) | - **双模驱动**：包含主动需求工程规格编制与需求审查诊断排障双引擎<br/>- **三层级与边界**：业务需求(BR) $\to$ 用户需求(UR/用例/INVEST故事) $\to$ 功能需求(FR)，SIBV 问题陈述模型与愿景公式<br/>- **规格与歧义防御**：ISO/IEC/IEEE 29148 结构、统一“系统应(shall)”句式、Table 11-2 25+ 歧义词典与重构、对称性/边界闭合防御<br/>- **Planguage 质量量化**：外部/内部质量属性体系、SCALE/METER/MUST/PLAN/FAIL、质量权衡冲突矩阵<br/>- **分析型优先级与治理**：价值-代价-风险量化模型（公式计算排期）、需求同行审查(Inspection)、RTM 双向可跟踪性、变更五步影响分析 |
-| **[`antqt`](./.agents/skills/antqt/)** | **桌面UI**<br/>Qt与Ant美学 | Ant Design v5/v6<br/>Ant Design Pro<br/>4大设计价值观 | - **双模驱动**：包含 PC 桌面端 Ant 规范主动架构与老旧 Qt 界面诊断整容双引擎<br/>- **视觉基石与Token**：Daybreak Blue `#1677FF` 10阶算法、三层表面拓扑（`bg-layout` `#F5F5F5` $\to$ `bg-container` `#FFFFFF` $\to$ `bg-elevated` 阴影）、中性透明文字梯度<br/>- **桌面排版与标尺**：14px 视距基准、严格 400/600 字重、`tabular-nums` 等宽对齐、控件强制锁定 32px 高度线，圆角规范（控件6px/容器8px/标签4px）<br/>- **Pro 桌面模板架构**：监控工作台大盘、标准查询表格+右侧滑动抽屉、分步业务向导、详情时间轴<br/>- **双技术栈实战支撑**：开箱即用 `ant_light_theme.qss` / `ant_dark_theme.qss`、QML `AntTheme` / `AntButton`、自动化违规审计 `audit_qt_ui.py` 与 10阶色盘生成 `generate_palette.py` |
 
 ### 3. 上游外部工具技能 (`.agents/skills/`)
 
@@ -324,7 +318,6 @@ code-craft/
 │       ├── unix-philosophy/               # Unix哲学与系统设计技能
 │       ├── tech-communication/            # 技术表达、文档编写与排障答疑技能
 │       ├── cpp-code-quality/              # C++代码质量、增量格式化与静态检查技能
-│       ├── cpp-code-intelligence/        # C++代码智能、编译数据库生成与Clangd MCP语义分析技能
 │       ├── systems-data-design/           # 物理内存对齐、强类型/Typestate、OSDI14崩溃安全落盘技能
 │       ├── sql-craft/                     # 关系建模、B-Tree复合索引列序、Keyset分页与反模式防御
 │       ├── skill-craft/                   # Agent技能设计、双语双锚点元数据、渐进式披露与质量体检技能
@@ -337,11 +330,6 @@ code-craft/
 │       │   ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
 │       │   ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
 │       │   └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
-│       ├── antqt/                         # Ant Design 桌面端企业级 UI 美学与规范化套件 (QtWidgets / QML / Pro模板)
-│       │   ├── SKILL.md                   # 双模引擎 (主动架构模式 / 诊断美化重构模式)
-│       │   ├── references/                # Token尺寸标尺 / 60+组件字典 / Pro桌面模板 / Qt核心避坑指南
-│       │   ├── examples/                  # ant_light_theme.qss / ant_dark_theme.qss / AntTheme.qml / PyQt6 Pro 查询表格Demo
-│       │   └── scripts/                   # 10阶色盘生成器 (generate_palette.py) / 界面规范审计器 (audit_qt_ui.py)
 │       ├── docx/                          # [上游工具: anthropics/skills] Word 文档批注、修订与格式化处理
 │       ├── frontend-design/               # [上游工具: anthropics/skills] 现代 Web 高保真 UI/UX 界面设计指南
 │       └── pdf/                           # [上游工具: anthropics/skills] PDF 表单字段提取、自动填充与坐标渲染
