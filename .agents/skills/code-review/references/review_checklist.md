@@ -37,7 +37,16 @@
 
 ---
 
-## 4. 全局系统与回归验证层面 (Global Systems & Regression Level)
+## 4. 全局系统与并发安全回归层面 (Global Systems & Concurrency Level)
+- [ ] **数据竞争与同步归属 (Data Race Defense)**：
+  - 所有跨线程共享的可变状态（含标志位、计数器、缓存容器）是否均受同一把互斥锁或 `std::atomic` 保护？是否消除了跨线程裸 `bool`/普通变量读写？
+  - 涉及并发逻辑的变更是否通过 `ThreadSanitizer (-fsanitize=thread)` 验证无数据竞争？
+- [ ] **锁边界与 Check-Then-Act 防御 (Lock Scope & TOCTOU)**：
+  - 是否存在“锁内取指针/引用/迭代器，锁外解引用”的逃逸问题？（容器扩容或析构将直接引发 UAF）
+  - 是否存在“加锁检查 $\rightarrow$ 解锁 $\rightarrow$ 再加锁修改”的 Check-Then-Act 竞态？
+- [ ] **条件变量与线程生命周期 (Condition & Thread Lifetime)**：
+  - `condition_variable::wait` 是否强制配合谓词（`cv.wait(lk, pred)`）防止虚假唤醒与信号丢失？
+  - 后台线程/回调是否可能访问已析构的宿主对象（`this` 悬空）？线程退出前是否保证 `join`（或使用 `std::jthread`）？
 - [ ] **不可重入锁与自死锁防御 (Non-recursive Mutex Defense)**：
   - 是否消除了递归锁？公有加锁函数内部是否违规调用了其它加锁公有接口？
   - 内部方法是否规范沉降为无锁纯虚/私有实现（如 `_Unlocked` 系列）？
@@ -62,3 +71,18 @@
   - 新增翻译词条是否在中英文字典中均成对补充？是否存在英文模式下缺失回退或乱码问题？
 - [ ] **参数化占位符规范 (Parameterized Messages)**：
   - 动态文本是否规范使用了 `%1`, `%2` 标准占位符（`.arg(...)`），杜绝因语言语法差异导致字符串裸拼接语序错乱？
+
+---
+
+## 6. 边界条件与故障路径层面 (Boundary Conditions & Failure Paths)
+- [ ] **空值与零规模边界 (Null & Zero-Size)**：
+  - 是否处理了 `nullptr`、空字符串 `""`、空容器（`empty()`）及 `size == 0`？
+  - 是否有 `size - 1`、`end - 1` 类无符号减法在 `size == 0` 时下溢为 `SIZE_MAX` 的风险？
+- [ ] **Off-by-One 与区间开闭 (Interval & Index Bounds)**：
+  - 循环与下标判断 `<` / `<=` 是否准确？字符串是否预留了 `\0` 终结符？半开区间 `[begin, end)` 是否存在尾元素越界？
+- [ ] **极值与算术边界 (Numeric Extremes & Overflow)**：
+  - 是否验证了 `0`、`-1`、`INT_MIN`（取负溢出）、`INT_MAX` / `SIZE_MAX` 算术溢出与截断？
+  - 是否消除了有符号 `int` 与无符号 `size_t` 的直接混用比较？除数与模数是否为零已前置校验？
+- [ ] **I/O、超时与异常早退边界 (I/O, Timeout & Error Paths)**：
+  - `read`/`write`/`recv`/`send` 是否处理了部分读写（short read/write）与 `EINTR` 中断？
+  - 超时参数为 `0`、负值或极大值时行为是否明确？错误/异常早退分支是否正确释放了已申请资源并保持对象状态一致？
