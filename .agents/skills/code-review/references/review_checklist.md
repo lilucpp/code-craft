@@ -4,7 +4,11 @@
 
 ---
 
-## 1. 包与组件依赖架构层面 (Package & Component Level)
+## 1. 系统架构与包组件依赖层面 (Architecture & Package Level)
+- [ ] **系统架构基线对照 (Architecture Conformance)**：新增模块、接口与调用链路是否符合项目既定架构/详设文档、ADR 决策及构建依赖拓扑（如 `CMakeLists.txt` target 依赖）？是否存在未经评审的架构漂移（Architecture Drift）？
+- [ ] **分层依赖方向与防跨层穿透 (Layering & DIP)**：依赖方向是否严格单向合规（表现层 $\rightarrow$ 应用/服务层 $\rightarrow$ 领域层 $\leftarrow$ 基础设施层）？是否杜绝了 UI 直接操作数据库/底层 IO、或核心领域层反向 `#include` 具体基础设施与框架类型？
+- [ ] **模块边界与私有实现隔离 (Module Boundary)**：模块间通信是否仅通过公开契约接口进行？是否杜绝了跨模块直接 `#include` 对方 `internal/`、`detail/` 私有头文件或直连他方私有数据表？
+- [ ] **关注点分离与防腐层隔离 (SoC & Anti-Corruption Layer)**：核心业务逻辑是否与日志、存储协议、重型三方库具体类型解耦（通过抽象接口或 Adapter 隔离，避免换库牵动全局）？
 - [ ] **无环依赖 (ADP)**：模块/包之间是否存在循环依赖（`A -> B -> C -> A`）？若有，是否通过 DIP 接口倒置或抽取公共包解开？
 - [ ] **共同封闭 (CCP)**：新增业务变动时，修改点是否集中在单一包内？是否存在跨多个包的霰弹式修改？
 - [ ] **共同重用 (CRP)**：包内是否存在互不相关的工具类被强行打包，迫使调用方为不需要的依赖买单？
