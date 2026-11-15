@@ -84,4 +84,5 @@ flowchart TD
 ## 4. 深入参考手册
 
 - [并发减法与生命期管理模式](./references/concurrency_and_lifetime.md)：One Loop Per Thread、CoW、双缓冲、临界区 `swap`、`weak_ptr` 弱回调与防自毁实现。
+- [Linux 多线程系统编程精要与 C++ 工程心得](./references/system_programming_and_notes.md)：多线程 `fork()`/`signal` 禁区、`eventfd`/`timerfd`/`signalfd`、值语义取舍与高频工程避坑原则。
 - [C++17 现代化演进与工程习惯](./references/cpp17_evolution_and_idioms.md)：Muduo 到 C++17 对照表、编译防火墙、链接期 Mock、`diff`/`grep` 友好排版与 Clang TSA 注解。
