@@ -65,7 +65,10 @@ class CrashSafeWriter {
       return {err, std::generic_category()};
     }
 
-    sync_parent_dir(parent_dir);
+    const std::error_code dir_err = sync_parent_dir(parent_dir);
+    if (dir_err) {
+      return dir_err;
+    }
     return {};
   } catch (const std::bad_alloc &) {
     return std::make_error_code(std::errc::not_enough_memory);
@@ -95,12 +98,24 @@ class CrashSafeWriter {
     return {};
   }
 
-  static void sync_parent_dir(const std::filesystem::path &parent_dir) noexcept {
+  [[nodiscard]] static std::error_code sync_parent_dir(const std::filesystem::path &parent_dir) noexcept {
     const int dir_fd = ::open(parent_dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-    if (dir_fd >= 0) {
-      ::fsync(dir_fd);
-      ::close(dir_fd);
+    if (dir_fd < 0) {
+      if (errno == EINVAL || errno == ENOTSUP || errno == EROFS) {
+        return {};
+      }
+      return {errno, std::generic_category()};
     }
+    if (::fsync(dir_fd) < 0) {
+      const int err = errno;
+      ::close(dir_fd);
+      if (err == EINVAL || err == ENOTSUP || err == EROFS) {
+        return {};
+      }
+      return {err, std::generic_category()};
+    }
+    ::close(dir_fd);
+    return {};
   }
 };
 

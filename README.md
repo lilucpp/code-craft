@@ -45,6 +45,7 @@ flowchart TD
         S12["【C++并发编程】cpp-concurrency<br/>Williams C++ Concurrency + 内存模型/原子序 + 细粒度锁队列 + 无锁CAS/ABA + 工作窃取"]
         S13["【C++测试体系】cpp-testing<br/>GoogleTest/Catch2 + GMock依赖注入 + AAA模式 + ASan/UBSan + 覆盖率门禁"]
         S14["【需求工程】software-requirements<br/>Karl Wiegers 经典需求 + 三层级模型 + SIBV/愿景 + 用例/INVEST故事 + 歧义防御 + Planguage量化 + 分析型优先级 + RTM追溯"]
+        S15["【流程编排】cpp-verification-playbook<br/>Poteto信任金字塔 + 4-Gate剧本 + 总控门禁verify_gate.sh + 盲审Verifier + 花园除草"]
     end
 
     R --> S1
@@ -61,6 +62,7 @@ flowchart TD
     R --> S12
     R --> S13
     R --> S14
+    R --> S15
 ```
 
 ---
@@ -96,9 +98,10 @@ flowchart TD
 
     subgraph S4 ["阶段四：测试工程与质量门禁 (Testing & Quality Gates)"]
         direction LR
-        TEST["cpp-testing<br>• GoogleTest / Catch2 / GMock 打桩<br>• ASan / UBSan 内存检测 / 覆盖率"]
-        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy 增量扫描"]
-        TEST ~~~ QUALITY
+        TEST["cpp-testing<br>• GoogleTest / Catch2 / RapidCheck<br>• ASan / UBSan / TSan / Diff覆盖率"]
+        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy / 红线扫描"]
+        PLAYBOOK["cpp-verification-playbook<br>• 4-Gate剧本 / verify_gate.sh<br>• 盲审Verifier / 花园除草"]
+        TEST ~~~ QUALITY ~~~ PLAYBOOK
     end
 
     subgraph S5 ["阶段五：审查诊断与安全重构 (Review & Refactoring)"]
@@ -331,6 +334,7 @@ code-craft/
 │       │   ├── references/                # 需求基础与范围/用例与规则/规格与歧义防御/Planguage质量量化/优先级与审查/RTM与变更控制
 │       │   ├── examples/                  # 愿景与范围模板 / SRS规格模板 / 用例与敏捷BDD范例
 │       │   └── scripts/                   # 分析型优先级计算器 (calc_priority.py) / 需求歧义坏味道检测器 (lint_requirements.py)
+│       ├── cpp-verification-playbook/     # Poteto信任金字塔 C++17 4-Gate编排、verify_gate.sh与盲审模板
 │       ├── docx/                          # [上游工具: anthropics/skills] Word 文档批注、修订与格式化处理
 │       ├── frontend-design/               # [上游工具: anthropics/skills] 现代 Web 高保真 UI/UX 界面设计指南
 │       └── pdf/                           # [上游工具: anthropics/skills] PDF 表单字段提取、自动填充与坐标渲染

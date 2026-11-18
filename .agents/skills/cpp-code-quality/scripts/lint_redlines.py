@@ -66,6 +66,10 @@ RAW_STR_START_RE = re.compile(r'R"([^\s()\\]{0,16})\(')
 
 EMPTY_CATCH_RE = re.compile(r"\bcatch\s*\([^)]*\)\s*\{\s*\}", re.MULTILINE)
 FRAGILE_CWD_RE = re.compile(r"(?:\.\.?/)+(?:cmake-)?build(?:-[^/\"'\s]+)?/")
+ADD_OVERFLOW_BOUNDS_RE = re.compile(
+    r"\b(?:offset|pos|cursor|read_pos|write_pos)\w*\s*\+\s*[A-Za-z_]\w*\s*>=?\s*[A-Za-z_][\w.:>]*\.(?:size|length|capacity)\s*\(\s*\)"
+)
+FS_EXISTS_EC_RE = re.compile(r"\b(?:filesystem::|fs::)exists\s*\([^;,\n]+,\s*([A-Za-z_]\w*)\s*\)")
 UI_HARDCODED_CJK_RE = re.compile(
     r"\b(?:QMessageBox::\w+|setText|setWindowTitle|setToolTip|setPlaceholderText|showMessage)\s*\([^;\n]*[\u4e00-\u9fff]"
 )
@@ -328,6 +332,43 @@ def scan_file(file_path: str, check_ui_i18n: bool) -> List[Violation]:
                 line=line_no,
                 rule_id="redline-ui-hardcoded-text",
                 message="表现层控件/弹窗禁止硬编码中文字符串；请统一接入国际化字典 Tr(...)",
+            )
+        )
+
+  # R5: Addition-overflow prone bounds checks (`offset + len > buf.size()`)
+  code_lines = code_only.splitlines()
+  for line_no, raw_line in enumerate(code_lines, start=1):
+    if exempt_lines.get(line_no):
+      continue
+    if ADD_OVERFLOW_BOUNDS_RE.search(raw_line):
+      violations.append(
+          Violation(
+              file_path=file_path,
+              line=line_no,
+              rule_id="redline-addition-overflow-bounds",
+              message="边界校验禁止 'offset + len > buf.size()' 加法溢出写法；请改用安全减法比较: 'offset > buf.size() || len > buf.size() - offset'",
+          )
+      )
+
+  # R6: Unchecked std::error_code after std::filesystem::exists(path, ec)
+  for idx, raw_line in enumerate(code_lines):
+    line_no = idx + 1
+    if exempt_lines.get(line_no):
+      continue
+    for match in FS_EXISTS_EC_RE.finditer(raw_line):
+      ec_name = match.group(1)
+      lookahead = raw_line[match.end() :] + "\n" + "\n".join(code_lines[idx + 1 : idx + 7])
+      ec_esc = re.escape(ec_name)
+      ec_checked_re = re.compile(
+          rf"(?:if\s*\([^;\n]*\b{ec_esc}\b|!\s*{ec_esc}\b|\b{ec_esc}\s*(?:&&|\|\||[!=]=|\?|\.value\()|return\s+[^;\n]*\b{ec_esc}\b|(?:assert|EXPECT_|REQUIRE)[^;\n]*\b{ec_esc}\b)"
+      )
+      if not ec_checked_re.search(lookahead):
+        violations.append(
+            Violation(
+                file_path=file_path,
+                line=line_no,
+                rule_id="redline-ignored-fs-error-code",
+                message=f"调用 filesystem::exists(..., {ec_name}) 后未检查错误码 '{ec_name}'；需显式区分不存在与 EACCES/ENOTDIR",
             )
         )
 

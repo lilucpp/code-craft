@@ -14,7 +14,8 @@
 * **`bugprone-infinite-loop`**：检测循环变量未正确递增导致的死循环。
 * **`bugprone-easily-swappable-parameters`**：捕捉相邻同类型参数（如 `int user_id, int order_id`），倒逼落地 `StrongType` 或参数对象。
 
-### 2. `cert-*` 与 `concurrency-*`（安全与并发红线）
+### 2. `cert-*`、`concurrency-*` 与 `clang-analyzer-*`（安全、并发与符号执行）
+* **`clang-analyzer-core.*` / `cplusplus.*` / `unix.*` / `security.*`**：Clang 静态分析器路径敏感符号执行（拦截空指针解引用、除零、内存/句柄泄漏、栈地址逃逸），与 `optin.performance.Padding`（结构体对齐空洞）协同工作。
 * **`cert-env33-c` / `cert-msc50-cpp`**：拦截危险命令执行 `system()` 与不安全伪随机 `rand()`。
 * **`cert-err33-c`**：拦截忽略 `snprintf` / `fread` / `fwrite` 等标准函数返回值的隐患。
 * **`concurrency-mt-unsafe`**：拦截多线程环境下不安全的 C 库函数（如 `strtok`、`localtime`、`getenv`、`strerror`）。

@@ -8,6 +8,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPTS_QUALITY="${REPO_ROOT}/.agents/skills/cpp-code-quality/scripts"
 SCRIPTS_DESIGN="${REPO_ROOT}/.agents/skills/code-design/scripts"
+SCRIPTS_PLAYBOOK="${REPO_ROOT}/.agents/skills/cpp-verification-playbook/scripts"
 EXAMPLES_SYS="${REPO_ROOT}/.agents/skills/systems-data-design/examples"
 
 WORK_DIR="$(mktemp -d)"
@@ -30,10 +31,11 @@ echo "=================================================="
 echo "🧪 Code-Craft Self-Test Verification Harness"
 echo "=================================================="
 
-echo "[1/6] 脚本语法、Skill 元数据与全仓 Markdown 链接检查..."
+echo "[1/7] 脚本语法、Skill 元数据与全仓 Markdown 链接检查..."
 bash -n "${SCRIPTS_QUALITY}/env_check.sh"
 bash -n "${SCRIPTS_QUALITY}/init_config.sh"
 bash -n "${SCRIPTS_QUALITY}/run_check.sh"
+bash -n "${SCRIPTS_PLAYBOOK}/verify_gate.sh"
 bash -n "${REPO_ROOT}/scripts/self_test.sh"
 python3 -m py_compile "${SCRIPTS_QUALITY}/lint_redlines.py" "${SCRIPTS_DESIGN}/check_include_dag.py"
 
@@ -70,7 +72,7 @@ PY
 echo "  ✅ [PASS] 脚本语法、Skill Frontmatter 与全仓 Markdown 链接校验通过"
 PASS_COUNT=$((PASS_COUNT + 1))
 
-echo "[2/6] 工具链环境与 init_config.sh 一致性检查..."
+echo "[2/7] 工具链环境与 init_config.sh 一致性检查..."
 "${SCRIPTS_QUALITY}/env_check.sh" >/dev/null
 assert_eq $? 0 "env_check.sh 工具链就绪"
 
@@ -82,7 +84,7 @@ assert_eq $? 0 "init_config.sh 生成的 .clang-tidy 与根目录一致"
 diff -u "${REPO_ROOT}/.clang-format" "${INIT_DIR}/.clang-format"
 assert_eq $? 0 "init_config.sh 生成的 .clang-format 与根目录一致"
 
-echo "[3/6] run_check.sh 严格门禁 / --warn-only / 0-commit / Monorepo 子目录检查..."
+echo "[3/7] run_check.sh 严格门禁 / --warn-only / 0-commit / Monorepo 子目录检查..."
 ZERO_DIR="${WORK_DIR}/zero_repo"
 mkdir -p "${ZERO_DIR}/src"
 cp "${REPO_ROOT}/.clang-format" "${REPO_ROOT}/.clang-tidy" "${ZERO_DIR}/"
@@ -105,6 +107,7 @@ assert_eq $? 0 "0-commit git add 干净文件 + Tr(...) 通过"
 cat << 'EOF' > "${ZERO_DIR}/src/bad.cpp"
 #include <cstdlib>
 int BadFn(int p1, int p2, int p3, int p4){int arr[2]={0,1};if(p1==p1){return std::system("ls");}return arr[2]+p2+p3+p4;}
+int NullDeref(const int *ptr, bool cond){if(cond && ptr == nullptr){return *ptr;}return 0;}
 EOF
 set +e
 "${SCRIPTS_QUALITY}/run_check.sh" --mode=diff --dir="${ZERO_DIR}" >/dev/null 2>&1
@@ -155,7 +158,7 @@ assert_eq $? 0 "Monorepo 子目录 --mode=diff --fix + modules/*/include 通过"
 "${SCRIPTS_QUALITY}/run_check.sh" --mode=all --dir="${MONO_DIR}/subproj" >/dev/null
 assert_eq $? 0 "Monorepo 子目录 --mode=all 通过"
 
-echo "[4/6] lint_redlines.py 红线正反例回归测试..."
+echo "[4/7] lint_redlines.py 红线正反例回归测试..."
 RED_DIR="${WORK_DIR}/redline"
 mkdir -p "${RED_DIR}"
 cat << 'EOF' > "${RED_DIR}/clean.cpp"
@@ -175,6 +178,13 @@ int Clean(const CustomRng &rng) {
   const int n = atoi("7");
   const char *p = "../build/tool";  // NOLINT(redline): fixture
   lbl->setText(Tr("确定"));
+  std::error_code fs_ec;
+  if (!std::filesystem::exists(p, fs_ec)) {
+    if (fs_ec) return -1;
+  }
+  const std::size_t offset = 1;
+  const std::size_t len = 2;
+  if (len > doc.size() - offset) return -1;
   return spaced_arrow + n + static_cast<int>(doc.size()) + (raw[0] != '\0') + (p[0] != '\0');
 }
 EOF
@@ -199,6 +209,15 @@ void Bad(const char *s, int factor) {
   }
   const char *p = "../build/bin";
   lbl->setText("硬编码文案");
+  std::size_t offset = 0;
+  std::size_t len = 4;
+  if (offset + len > s_buf.size()) {
+    offset = 0;
+  }
+  std::error_code fs_ec;
+  if (!std::filesystem::exists(p, fs_ec)) {
+    return;
+  }
   (void)p;
 }
 EOF
@@ -207,16 +226,16 @@ RED_OUT=$(python3 "${SCRIPTS_QUALITY}/lint_redlines.py" --check-ui-i18n "${RED_D
 RC_RED_BAD=$?
 set -e
 assert_eq "$RC_RED_BAD" 1 "lint_redlines.py 检出反例阻断"
-for expected_rule in "strcpy()" "atoi()" "rand()" "system()" "redline-swallowed-catch" "redline-fragile-cwd-path" "redline-ui-hardcoded-text"; do
+for expected_rule in "strcpy()" "atoi()" "rand()" "system()" "redline-swallowed-catch" "redline-fragile-cwd-path" "redline-ui-hardcoded-text" "redline-addition-overflow-bounds" "redline-ignored-fs-error-code"; do
   if ! printf '%s' "$RED_OUT" | grep -q "$expected_rule"; then
     echo "❌ [FAIL] lint_redlines.py 未匹配预期规则: ${expected_rule}" >&2
     exit 1
   fi
 done
-echo "  ✅ [PASS] lint_redlines.py 7 类违例全部精准命中"
+echo "  ✅ [PASS] lint_redlines.py 9 类违例全部精准命中"
 PASS_COUNT=$((PASS_COUNT + 1))
 
-echo "[5/6] check_include_dag.py 架构边界与环路回归测试..."
+echo "[5/7] check_include_dag.py 架构边界与环路回归测试..."
 DAG_DIR="${WORK_DIR}/dag"
 mkdir -p "${DAG_DIR}"/{include/{core,domain,infra/detail},src/{domain,infra,app}}
 cat << 'EOF' > "${DAG_DIR}/.arch-boundaries.json"
@@ -261,7 +280,7 @@ done
 echo "  ✅ [PASS] check_include_dag.py 4 类边界违例全部精准命中"
 PASS_COUNT=$((PASS_COUNT + 1))
 
-echo "[6/6] C++17 基础设施原语 (ASan/UBSan + 四关质量门禁) 回归测试..."
+echo "[6/7] C++17 基础设施原语 (ASan/UBSan + 四关质量门禁) 回归测试..."
 CPP_DIR="${WORK_DIR}/cpp17_core"
 mkdir -p "${CPP_DIR}"/{include/core,src,real_data}
 ln -s "${CPP_DIR}/real_data" "${CPP_DIR}/linked_data"
@@ -335,6 +354,68 @@ rm -f "${CPP_DIR}/verify_bin"
 
 "${SCRIPTS_QUALITY}/run_check.sh" --mode=all --dir="${CPP_DIR}" >/dev/null
 assert_eq $? 0 "C++17 原语通过 run_check.sh 四关严格门禁"
+
+echo "[7/7] verify_gate.sh 单入口总控门禁 (CMake + ASan/UBSan + TSan + Evidence Bundle)..."
+GATE_DIR="${WORK_DIR}/gate_proj"
+mkdir -p "${GATE_DIR}/src"
+"${SCRIPTS_QUALITY}/init_config.sh" "${GATE_DIR}" >/dev/null
+cat << 'EOF' > "${GATE_DIR}/CMakeLists.txt"
+cmake_minimum_required(VERSION 3.16)
+project(GateSmoke LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+option(ENABLE_TSAN "Enable TSan" OFF)
+if(ENABLE_TSAN)
+  add_compile_options(-fsanitize=thread -g)
+  add_link_options(-fsanitize=thread)
+else()
+  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=address,undefined)
+endif()
+enable_testing()
+add_executable(smoke_test src/smoke_test.cpp)
+add_test(NAME smoke_test COMMAND smoke_test)
+EOF
+cat << 'EOF' > "${GATE_DIR}/src/smoke_test.cpp"
+#include <atomic>
+#include <thread>
+
+int main() {
+  std::atomic<int> count{0};
+  std::thread t1([&count]() { count.fetch_add(1, std::memory_order_relaxed); });
+  std::thread t2([&count]() { count.fetch_add(1, std::memory_order_relaxed); });
+  t1.join();
+  t2.join();
+  return count.load() == 2 ? 0 : 1;
+}
+EOF
+clang-format -i "${GATE_DIR}/src/smoke_test.cpp"
+cmake -S "${GATE_DIR}" -B "${GATE_DIR}/build" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON >/dev/null 2>&1
+cmake -S "${GATE_DIR}" -B "${GATE_DIR}/build-tsan" -DENABLE_TSAN=ON >/dev/null 2>&1
+
+GATE_OUT=$("${SCRIPTS_PLAYBOOK}/verify_gate.sh" --dir="${GATE_DIR}" --mode=all --require-tests --tsan-repeat=3 2>&1)
+assert_eq $? 0 "verify_gate.sh 串联 DAG + 四关静态 + CTest(ASan) + TSan(repeat=3) 通过"
+for expected_eb in "Evidence Bundle (verify_gate.sh)" "物理边界 & Include DAG" "静态规范 & 红线扫描" "全量 CTest (ASan/UBSan)" "TSan 并发压测"; do
+  if ! printf '%s' "$GATE_OUT" | grep -qF "$expected_eb"; then
+    echo "❌ [FAIL] verify_gate.sh 未输出预期 Evidence Bundle 字段: ${expected_eb}" >&2
+    exit 1
+  fi
+done
+echo "  ✅ [PASS] verify_gate.sh Evidence Bundle 表格输出完整"
+PASS_COUNT=$((PASS_COUNT + 1))
+
+cat << 'EOF' > "${GATE_DIR}/src/smoke_test.cpp"
+int main() { return 1; }
+EOF
+clang-format -i "${GATE_DIR}/src/smoke_test.cpp"
+set +e
+"${SCRIPTS_PLAYBOOK}/verify_gate.sh" --dir="${GATE_DIR}" --mode=all --warn-only >/dev/null 2>&1
+RC_FAIL_TEST=$?
+"${SCRIPTS_PLAYBOOK}/verify_gate.sh" --dir="${GATE_DIR}" --build-dir="nonexistent_build" >/dev/null 2>&1
+RC_BAD_DIR=$?
+set -e
+assert_eq "$RC_FAIL_TEST" 1 "verify_gate.sh 在 --warn-only 下仍阻断失败的 CTest"
+assert_eq "$RC_BAD_DIR" 2 "verify_gate.sh 拒绝不存在的显式 --build-dir"
 
 echo "=================================================="
 echo "🎉 Self-Test 全部通过 (${PASS_COUNT} 项核心断言全绿)！"

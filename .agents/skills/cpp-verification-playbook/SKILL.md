@@ -15,39 +15,49 @@ description: >-
 
 ---
 
+## 0. 任务复杂度分档分流（防过度流程化）
+
+| 档位 | 适用范围 | 必须执行的流程 |
+| :---: | :--- | :--- |
+| **T0** | 纯文档、注释、链接修复（零代码变更） | 跳过本剧本，仅核对 `git diff` 与链接有效性 |
+| **T1** | 单模块小改（$\le 3$ 文件、无跨层/并发/落盘改动） | 单上下文内完成：复现或边界测试 $\to$ 最小修复 $\to$ 运行 `verify_gate.sh` |
+| **T2** | 跨模块特性、并发锁/原子变量、持久化、大重构 | **完整 4-Gate + 独立上下文盲审 Verifier + Evidence Bundle** |
+
+---
+
 ## 1. 端到端四阶硬门禁剧本 (4-Gate Playbook)
 
 ```mermaid
 flowchart TD
-    G1["Gate 1: 契约与失败测试先行<br/>(Headers + StrongType/Result + Failing Test)"] --> G2["Gate 2: 小步实现与机器修剪<br/>(Minimal Diff + run_check.sh --mode=diff)"]
-    G2 --> G3["Gate 3: 独立上下文 Verifier 验收<br/>(Fresh Subagent: CTest ASan/UBSan/TSan + DAG)"]
+    G1["Gate 1: 契约与失败测试先行<br/>(Headers + StrongType/Result + Failing Test)"] --> G2["Gate 2: 小步实现与单入口门禁<br/>(Minimal Diff + verify_gate.sh)"]
+    G2 --> G3["Gate 3: 独立上下文盲审 Verifier<br/>(Fresh Subagent + Evidence Bundle)"]
     G3 -->|任一门禁失败| G2
     G3 -->|全部客观通过| G4["Gate 4: 证据包交付<br/>(Evidence Bundle + 待用户确认 Commit)"]
 ```
 
 ### Gate 1：契约与失败测试先行（Contract & Failing Test First）
 1. **先落盘边界与头文件**：优先从 `include/core/` 复用 `StrongType`、`Result<T, E>`、`ScopeGuard`、`ChannelHandle`（Typestate）；新模块头文件严格隔离在 `include/<mod>/` 与 `src/`（CMake `PUBLIC`/`PRIVATE`）。
-2. **先写失败测试**：先写覆盖边界矩阵的 AAA 单测或 RapidCheck 属性不变式测试，确认在未实现前编译/运行失败。
+2. **先写失败测试**：先写覆盖边界矩阵的 AAA 单测或 RapidCheck 属性不变式测试，确认在未实现前编译/运行失败；**若涉及二进制格式或持久化，强制包含 Header 元数据（版本/`count`/flags）位翻转与恶意超大 `count` 畸形包拒载测试**。
 3. **前置边界校验**：运行 `check_include_dag.py` 确认新接口不引入环路或跨层越权。
 
-### Gate 2：小步实现与机器修剪（Baby Steps & Automated Gates）
+### Gate 2：小步实现与总控门禁（Baby Steps & Single-Entry Gate）
 1. **最小增量实现**：只写通过当前测试所需的最小 C++17 代码，严禁顺手堆砌 YAGNI 抽象。
-2. **强制机器门禁**（默认严格阻断；仅当用户明确指示“这是老项目”时追加 `--warn-only`）：
+2. **运行总控门禁脚本**（默认严格阻断；仅当用户明确指示“这是老项目”时追加 `--warn-only`）：
    ```bash
-   ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff
+   ./.agents/skills/cpp-verification-playbook/scripts/verify_gate.sh --dir=. --mode=diff
    ```
+   （并发改动可追加 `--tsan-repeat=20`；完整验收建议附加 `--require-tests`）
 3. **错误驱动棘轮**：凡在 Gate 2 反复踩坑的 AI 错误，按 `skill-craft` 棘轮法则下沉为 `.clang-tidy` / `lint_redlines.py` / 编译选项，禁止仅往 Markdown 追加叮嘱。
 
-### Gate 3：独立上下文 Verifier 交叉验收（Fresh-Context Verifier）
-> **防确认偏误铁律**：写代码的上下文自带作者盲区。大型或高风险改动交付前，必须由**独立新上下文的 Verifier 子 Agent**（或独立测试命令流程）执行以下核验：
-1. **全量编译与三消毒剂实跑**：
-   - Debug 构建开启 `-Wall -Wextra -Werror` + **ASan + UBSan** 跑全量 `ctest`；
-   - 涉及多线程/锁/原子操作时，额外以 **TSan** 构建并执行 `--gtest_repeat=50 --gtest_shuffle`（Ubuntu 24.04+ 高位 ASLR 环境使用 `setarch x86_64 -R`）。
-2. **架构边界与红线复核**：运行 `check_include_dag.py --root .` 与 `run_check.sh --mode=diff` 确认零告警、零未豁免红线。
-3. **负面路径与边界审计**：核查是否只有 Happy-Path 测试，补充越界、空输入、故障注入（如写盘中途失败）验证。
+### Gate 3：独立上下文盲审与归零闭环（Fresh-Context Blind Review Loop）
+> **防确认偏误铁律**：T2 级改动交付前，必须通过 `invoke_subagent`（或 `swarm` 中的只读 `verifier`）在干净上下文执行两段式盲审，严禁向其透传“我已修复/通过”的作者暗示：
+1. **3A — 门禁独立重跑**：Verifier 自行执行 `verify_gate.sh`（自动串联 Include DAG、`clang-analyzer` + 四关静态扫描、ASan/UBSan 全量 `ctest` 及可选 `setarch x86_64 -R` TSan 压测）。
+2. **3B — 深度语义与安全审计**：按 `code-review` 与 `secure-cpp` 逐文件审查（测试是否篡改、边界与负面路径、协议校验和覆盖 Header、反序列化 `reserve(count)` 物理上界校验、锁拓扑与资源泄漏）。
+3. **硬性打回循环**：**只要存在任何 Blocker 或 Major，Gate 3 必须判 `BLOCKED` 打回 Gate 2**（先补失败测试 $\to$ 修复 $\to$ 重跑 `verify_gate.sh` $\to$ 重新盲审），**循环直到 Blocker = 0 且 Major = 0 方可进入 Gate 4**。
+- 详细派单 Prompt 与多模块并行 Swarm 模板见：[盲审 Verifier 与并行 Swarm 调度模板](./references/verifier_dispatch_templates.md)
 
 ### Gate 4：证据包交付与确认门（Evidence Bundle & Human Sign-off）
-- 输出精简的 **Evidence Bundle**（静态门禁退出码、实跑 `ctest` 用例数与消毒剂类型、`sizeof`/基准或冒烟日志），让人类审查者**看证据而非肉眼扫数百行语法**。
+- 原样附上 `verify_gate.sh` 生成的 **Evidence Bundle** 汇总表（严禁伪造或补全未输出数字），让人类审查者看客观证据。
 - 严禁私自 `git commit`，向用户汇报变更与证据后等待明确确认。
 
 ---

@@ -44,6 +44,7 @@ flowchart TD
         S12["【C++ Concurrency】cpp-concurrency<br/>Williams C++ Concurrency + Memory Model/Atomics + Fine-Grained Queue + Lock-Free CAS + Work Stealing"]
         S13["【C++ Testing】cpp-testing<br/>GoogleTest/Catch2 + GMock Dependency Injection + AAA Matrix + ASan/UBSan + Coverage Gates"]
         S14["【Requirements Engineering】software-requirements<br/>Wiegers Classic Requirements + 3 Levels + SIBV/Vision + Use Cases/INVEST + Planguage + Analytical Priority + RTM"]
+        S15["【Orchestration】cpp-verification-playbook<br/>Poteto Trust Pyramid + 4-Gate Playbook + verify_gate.sh + Blind Verifier + Garden Pruning"]
     end
 
     R --> S1
@@ -60,6 +61,7 @@ flowchart TD
     R --> S12
     R --> S13
     R --> S14
+    R --> S15
 ```
 
 ---
@@ -95,9 +97,10 @@ flowchart TD
 
     subgraph S4 ["Phase 4: Testing Engineering & Quality Gates (Testing & Quality Gates)"]
         direction LR
-        TEST["cpp-testing<br>• GoogleTest / Catch2 / GMock Isolation<br>• ASan / UBSan Memory Sanitizers / Coverage"]
-        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy Incremental Scans"]
-        TEST ~~~ QUALITY
+        TEST["cpp-testing<br>• GoogleTest / Catch2 / RapidCheck<br>• ASan / UBSan / TSan / Diff Coverage"]
+        QUALITY["cpp-code-quality<br>• clang-format / clang-tidy / Redlines"]
+        PLAYBOOK["cpp-verification-playbook<br>• 4-Gate Playbook / verify_gate.sh<br>• Blind Verifier / Garden Pruning"]
+        TEST ~~~ QUALITY ~~~ PLAYBOOK
     end
 
     subgraph S5 ["Phase 5: Review Diagnostics & Safe Refactoring (Review & Refactoring)"]
@@ -330,6 +333,7 @@ code-craft/
 │       │   ├── references/                # Foundation & scope / Elicitation & rules / Specification & ambiguity / Planguage / Prioritization & validation / RTM & change control
 │       │   ├── examples/                  # Vision & scope template / SRS specification template / Use case & BDD examples
 │       │   └── scripts/                   # Analytical priority calculator (calc_priority.py) / Requirements smell detector (lint_requirements.py)
+│       ├── cpp-verification-playbook/     # Poteto Trust Pyramid C++17 4-Gate Playbook, verify_gate.sh & Blind Verifier
 │       ├── docx/                          # [Upstream: anthropics/skills] Word document comments, revision & template tooling
 │       ├── frontend-design/               # [Upstream: anthropics/skills] Modern Web high-fidelity UI/UX design guide
 │       └── pdf/                           # [Upstream: anthropics/skills] PDF form extraction, field filling & bbox coordinates
