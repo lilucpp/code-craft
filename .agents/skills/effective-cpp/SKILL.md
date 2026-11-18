@@ -52,7 +52,8 @@ flowchart TD
 当用户要求设计新类、编写业务代码或实现底层模块时，**无需用户提醒，必须在第一时间主动应用以下 6 条铁律**：
 
 1. **资源管理与构造安全（RAII & Constructor Exception Safety）**：
-   - 杜绝裸 `new`/`delete`；默认使用 `std::unique_ptr`；使用 `std::make_unique` 构建；
+   - 杜绝裸 `new`/`delete`；默认使用 `std::unique_ptr`；使用 `std::make_unique` 构建；对无现成类封装的 POSIX 句柄或事务回滚动作，强制使用 C++17 `ScopeGuard`（参见 [scope_guard.hpp](../systems-data-design/examples/scope_guard.hpp)）；
+   - 错误返回优先采用 `[[nodiscard]]` + `Result<T, E>`（参见 [result_and_typestate.hpp](../systems-data-design/examples/result_and_typestate.hpp)），避免 `bool` + 出参或吞异常；
    - 构造函数初始化多个资源时，成员变量强制直接使用智能指针管理（防中途抛异常导致析构函数不被执行而发生资源泄漏），详见 [references/resource_management_and_raii.md](./references/resource_management_and_raii.md) 与 [references/operators_and_exceptions_mec.md](./references/operators_and_exceptions_mec.md)。
 2. **多态与运算符重载底线（Polymorphism & Operator Guardrails）**：
    - **绝不要对数组进行多态处理**（数组下标按 `sizeof(Base)` 步进，派生类数组指针步长错位引发内存践踏）；

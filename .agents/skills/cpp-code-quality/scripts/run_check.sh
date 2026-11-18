@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # C++ 格式化与静态检查调度脚本 (Run C++ Checks: Diff vs All)
+# 默认启用严格门禁（发现错误返回非零退出码）；老项目渐进扫描可使用 --warn-only
 # ==============================================================================
 set -euo pipefail
 
-MODE="diff"      # diff (增量模式) 或 all (全量模式)
-DO_FIX=false     # 是否自动应用修复 (clang-format -i)
-TOOL="all"       # all, format, tidy, cppcheck
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+MODE="diff"        # diff (增量模式) 或 all (全量模式)
+DO_FIX=false       # 是否自动应用修复 (clang-format -i)
+WARN_ONLY=false    # true: 仅扫描汇报不阻断 (exit 0)；false: 严格门禁 (默认)
+CHECK_UI_I18N=false # 是否开启表现层硬编码中文字符串校验
+TOOL="all"         # all, format, tidy, cppcheck, redline
+CPP_STD="c++17"    # 默认 C++ 标准 (无 compile_commands.json 时生效)
 TARGET_DIR="."
 
 show_help() {
   echo "用法: $0 [选项]"
   echo "选项:"
-  echo "  --mode=diff      增量模式（默认）：仅检查 git diff 修改的文件/行（适合老项目）"
+  echo "  --mode=diff      增量模式（默认）：仅检查 git 变动及未跟踪的新增文件"
   echo "  --mode=all       全量模式：对项目中所有的业务源码执行全面检查"
   echo "  --fix            自动修复（应用 clang-format 排版）"
-  echo "  --tool=<name>    指定运行工具：all (默认), format, tidy, cppcheck"
+  echo "  --warn-only      仅扫描汇报不阻断（返回 exit 0，适合历史老项目摸底）"
+  echo "  --check-ui-i18n  开启表现层控件/弹窗硬编码中文字符串拦截"
+  echo "  --std=<std>      指定无编译数据库时的 C++ 标准（默认: c++17）"
+  echo "  --tool=<name>    指定运行工具：all (默认), format, tidy, cppcheck, redline"
   echo "  --dir=<path>     指定目标项目根目录（默认当前目录）"
   echo "  -h, --help       显示帮助信息"
   exit 0
@@ -23,158 +32,266 @@ show_help() {
 
 for arg in "$@"; do
   case "$arg" in
-    --mode=diff) MODE="diff" ;;
-    --mode=all)  MODE="all" ;;
-    --fix)       DO_FIX=true ;;
-    --tool=*)    TOOL="${arg#*=}" ;;
-    --dir=*)     TARGET_DIR="${arg#*=}" ;;
-    -h|--help)   show_help ;;
+    --mode=diff)     MODE="diff" ;;
+    --mode=all)      MODE="all" ;;
+    --fix)           DO_FIX=true ;;
+    --warn-only)     WARN_ONLY=true ;;
+    --check-ui-i18n) CHECK_UI_I18N=true ;;
+    --std=*)         CPP_STD="${arg#*=}" ;;
+    --tool=*)        TOOL="${arg#*=}" ;;
+    --dir=*)         TARGET_DIR="${arg#*=}" ;;
+    -h|--help)       show_help ;;
     *) echo "未知参数: $arg"; show_help ;;
   esac
 done
 
+case "$TOOL" in
+  all|format|tidy|cppcheck|redline) ;;
+  *) echo "❌ 无效的 --tool 参数: $TOOL (可选: all, format, tidy, cppcheck, redline)" >&2; exit 2 ;;
+esac
+
 cd "$TARGET_DIR"
 
+GATE_LABEL="严格门禁(阻塞)"
+if [ "$WARN_ONLY" = true ]; then
+  GATE_LABEL="仅告警(--warn-only)"
+fi
+
 echo "=================================================="
-echo "🛡️  执行 C++ 质量检查 [模式: $MODE | 工具: $TOOL | 自动修复: $DO_FIX]"
+echo "🛡️  执行 C++ 质量检查 [模式: $MODE | 工具: $TOOL | 修复: $DO_FIX | 门禁: $GATE_LABEL | 标准: $CPP_STD]"
 echo "=================================================="
 
+EXCLUDE_REGEX='(^|/)(third_party|vendor|external|build|build-[^/]+|cmake-build[^/]*|_deps|\.agents|\.git)/|\.pb\.(cc|h)$'
+
 # 1. 获取需要检查的源文件列表
-get_source_files() {
-  if [ "$MODE" = "diff" ]; then
-    if git rev-parse --is-inside-work-tree &>/dev/null; then
-      git diff --name-only --diff-filter=ACMR HEAD 2>/dev/null | \
-        grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
-        grep -vE '^(third_party|vendor|external|build|cmake-build|\.agents)/' || true
-    else
-      echo "⚠️ 当前目录非 git 仓库，自动退化为全量文件扫描模式"
-      find src -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) 2>/dev/null || true
-    fi
+get_tracked_diff_files() {
+  if git rev-parse --verify HEAD &>/dev/null; then
+    git diff --relative --name-only --diff-filter=ACMR HEAD 2>/dev/null | \
+      grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
+      grep -vE "$EXCLUDE_REGEX" || true
   else
-    local search_dirs=()
-    [ -d "src" ] && search_dirs+=("src")
-    [ -d "include" ] && search_dirs+=("include")
-    [ -d "tests" ] && search_dirs+=("tests")
-    if [ ${#search_dirs[@]} -gt 0 ]; then
-      find "${search_dirs[@]}" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) | \
-        grep -vE '/(third_party|vendor|external|build|cmake-build|\.agents|\.pb\.)/' | sort -u
-    else
-      find . -maxdepth 4 -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" \) | \
-        grep -vE '/(third_party|vendor|external|build|cmake-build|\.agents|\.pb\.)/' | sort -u
-    fi
+    git diff --relative --cached --name-only --diff-filter=ACMR 2>/dev/null | \
+      grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
+      grep -vE "$EXCLUDE_REGEX" || true
   fi
 }
 
-FILES=$(get_source_files)
+get_untracked_files() {
+  git ls-files --others --exclude-standard 2>/dev/null | \
+    grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
+    grep -vE "$EXCLUDE_REGEX" || true
+}
 
-if [ -z "$FILES" ]; then
+get_source_files() {
+  if [ "$MODE" = "diff" ]; then
+    if git rev-parse --is-inside-work-tree &>/dev/null; then
+      {
+        get_tracked_diff_files
+        get_untracked_files
+      } | sort -u
+    else
+      echo "⚠️ 当前目录非 git 仓库，自动退化为全量文件扫描模式" >&2
+      find . -maxdepth 6 -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cxx" \) | \
+        sed 's|^\./||' | grep -vE "$EXCLUDE_REGEX" | sort -u || true
+    fi
+  else
+    find . -maxdepth 6 -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cxx" \) | \
+      sed 's|^\./||' | grep -vE "$EXCLUDE_REGEX" | sort -u || true
+  fi
+}
+
+mapfile -t FILES < <(get_source_files)
+
+if [ ${#FILES[@]} -eq 0 ]; then
   echo "✅ 没有发现需要检查的 C++ 源文件（在当前模式下无变动或已被忽略）。"
   exit 0
 fi
 
-echo "📋 待处理的目标文件清单:"
-echo "$FILES" | sed 's/^/   - /'
+echo "📋 待处理的目标文件清单 (${#FILES[@]} 个):"
+printf '   - %s\n' "${FILES[@]}"
 echo "--------------------------------------------------"
+
+FORMAT_ERRORS=0
+TIDY_ERRORS=0
+CPPCHECK_ERRORS=0
+REDLINE_ERRORS=0
+MISSING_TOOL_ERRORS=0
+
+check_files_format_full() {
+  local target_files=("$@")
+  for f in "${target_files[@]}"; do
+    [ -f "$f" ] || continue
+    if [ "$DO_FIX" = true ]; then
+      clang-format -i "$f"
+    else
+      if ! clang-format --dry-run --Werror "$f"; then
+        echo "   ❌ 文件格式违规: $f (运行 --fix 可自动修复)"
+        FORMAT_ERRORS=$((FORMAT_ERRORS + 1))
+      fi
+    fi
+  done
+}
 
 # 2. 执行 clang-format 代码格式化
 if [ "$TOOL" = "all" ] || [ "$TOOL" = "format" ]; then
   if command -v clang-format &>/dev/null; then
-    echo "🎨 [1/3] 执行 clang-format 格式化校验..."
-    if [ "$MODE" = "diff" ] && (command -v clang-format-diff &>/dev/null || command -v clang-format-diff.py &>/dev/null); then
+    echo "🎨 [1/4] 执行 clang-format 格式化校验..."
+    if [ "$MODE" = "diff" ] && git rev-parse --is-inside-work-tree &>/dev/null && \
+       (command -v clang-format-diff &>/dev/null || command -v clang-format-diff.py &>/dev/null); then
       CMD="clang-format-diff"
       command -v clang-format-diff &>/dev/null || CMD="clang-format-diff.py"
-      if [ "$DO_FIX" = true ]; then
-        echo "   -> 正在使用 $CMD 增量修复修改行..."
-        git diff -U0 --no-color HEAD | $CMD -p1 -i
-        echo "   ✅ 变动行格式化修复完毕。"
-      else
-        DIFF_OUT=$(git diff -U0 --no-color HEAD | $CMD -p1 || true)
-        if [ -n "$DIFF_OUT" ]; then
-          echo "   ⚠️ 检测到代码格式不符合规范的改动行:"
-          echo "$DIFF_OUT" | head -n 30
-          echo "   💡 提示: 可添加 --fix 参数自动修复这些改动行"
-        else
-          echo "   ✅ 所有变动行代码格式均符合规范！"
-        fi
-      fi
-    else
-      FORMAT_ERRORS=0
-      for f in $FILES; do
+
+      mapfile -t TRACKED_FILES < <(get_tracked_diff_files)
+      mapfile -t UNTRACKED_FILES < <(get_untracked_files)
+
+      if [ ${#TRACKED_FILES[@]} -gt 0 ]; then
+        DIFF_TARGET="--cached"
+        git rev-parse --verify HEAD &>/dev/null && DIFF_TARGET="HEAD"
         if [ "$DO_FIX" = true ]; then
-          clang-format -i "$f"
+          echo "   -> 正在使用 $CMD 增量修复已跟踪文件的修改行..."
+          git diff --relative -U0 --no-color "$DIFF_TARGET" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 -i
         else
-          if ! clang-format --dry-run --Werror "$f" 2>/dev/null; then
-            echo "   ⚠️ 文件格式违规: $f (运行 --fix 可自动修复)"
+          DIFF_OUT=$(git diff --relative -U0 --no-color "$DIFF_TARGET" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 || true)
+          if [ -n "$DIFF_OUT" ]; then
+            echo "   ❌ 检测到代码格式不符合规范的改动行:"
+            echo "$DIFF_OUT" | head -n 40
+            echo "   💡 提示: 可添加 --fix 参数自动修复这些改动行"
             FORMAT_ERRORS=$((FORMAT_ERRORS + 1))
           fi
         fi
-      done
+      fi
+
+      if [ ${#UNTRACKED_FILES[@]} -gt 0 ]; then
+        echo "   -> 检测到 ${#UNTRACKED_FILES[@]} 个未跟踪的新增文件，执行全文件格式校验..."
+        check_files_format_full "${UNTRACKED_FILES[@]}"
+      fi
+
+      if [ "$DO_FIX" = true ]; then
+        echo "   ✅ 增量及新增文件格式化修复完毕。"
+      elif [ "$FORMAT_ERRORS" -eq 0 ]; then
+        echo "   ✅ 所有变动行及新增文件代码格式均符合规范！"
+      fi
+    else
+      check_files_format_full "${FILES[@]}"
       if [ "$DO_FIX" = true ]; then
         echo "   ✅ 文件格式化修复完毕。"
-      else
-        if [ "$FORMAT_ERRORS" -eq 0 ]; then
-          echo "   ✅ 所有源文件格式化检查通过！"
-        else
-          echo "   ⚠️ 共发现 $FORMAT_ERRORS 个文件格式不符合规范（运行 --fix 可自动修复）。"
-        fi
+      elif [ "$FORMAT_ERRORS" -eq 0 ]; then
+        echo "   ✅ 所有源文件格式化检查通过！"
       fi
     fi
   else
-    echo "❌ [1/3] 未安装 clang-format（当前执行环境无 root 权限，无法自动安装）"
+    echo "❌ [1/4] 未安装 clang-format（当前执行环境无 root 权限，无法自动安装）"
     echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y clang-format"
     if command -v docker &>/dev/null && docker ps &>/dev/null; then
       echo "   🐳 或使用 Docker 免安装格式化: docker run --rm -v \"\$(pwd):/src\" -w /src ghcr.io/muttleyxd/clang-tools:18 clang-format -i \$FILES"
     fi
+    MISSING_TOOL_ERRORS=$((MISSING_TOOL_ERRORS + 1))
   fi
 fi
 
 # 3. 执行 clang-tidy 静态语义分析
 if [ "$TOOL" = "all" ] || [ "$TOOL" = "tidy" ]; then
   if command -v clang-tidy &>/dev/null; then
-    echo "🔍 [2/3] 执行 clang-tidy 静态分析..."
-    BUILD_ARG=""
+    echo "🔍 [2/4] 执行 clang-tidy 静态分析..."
+    BUILD_ARGS=()
     if [ -f "build/compile_commands.json" ]; then
-      BUILD_ARG="-p build"
+      BUILD_ARGS=(-p build)
     elif [ -f "compile_commands.json" ]; then
-      BUILD_ARG="-p ."
+      BUILD_ARGS=(-p .)
     else
-      echo "   ℹ️ 未找到 compile_commands.json，采用通用参数扫描（建议使用 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON）"
+      echo "   ℹ️ 未找到 compile_commands.json，采用通用参数扫描 (-std=$CPP_STD，建议使用 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON)"
     fi
 
-    for f in $FILES; do
+    FALLBACK_ARGS=("-std=$CPP_STD")
+    for inc_dir in include src modules/*/include modules/*/src libs/*/include libs/*/src packages/*/include packages/*/src components/*/include components/*/src; do
+      [ -d "$inc_dir" ] && FALLBACK_ARGS+=("-I$inc_dir")
+    done
+
+    for f in "${FILES[@]}"; do
+      [ -f "$f" ] || continue
       echo "   正在分析: $f"
-      if [ -n "$BUILD_ARG" ]; then
-        clang-tidy $BUILD_ARG "$f" --quiet || true
+      if [ ${#BUILD_ARGS[@]} -gt 0 ]; then
+        if ! clang-tidy "${BUILD_ARGS[@]}" "$f" --quiet; then
+          echo "   ❌ clang-tidy 发现阻断性错误: $f"
+          TIDY_ERRORS=$((TIDY_ERRORS + 1))
+        fi
       else
-        clang-tidy "$f" --quiet -- -std=c++17 -Iinclude -Isrc || true
+        if ! clang-tidy "$f" --quiet -- "${FALLBACK_ARGS[@]}"; then
+          echo "   ❌ clang-tidy 发现阻断性错误: $f"
+          TIDY_ERRORS=$((TIDY_ERRORS + 1))
+        fi
       fi
     done
+
+    if [ "$TIDY_ERRORS" -eq 0 ]; then
+      echo "   ✅ clang-tidy 静态分析检查通过！"
+    fi
   else
-    echo "❌ [2/3] 未安装 clang-tidy（当前执行环境无 root 权限，无法自动安装）"
+    echo "❌ [2/4] 未安装 clang-tidy（当前执行环境无 root 权限，无法自动安装）"
     echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y clang-tidy"
+    MISSING_TOOL_ERRORS=$((MISSING_TOOL_ERRORS + 1))
   fi
 fi
 
 # 4. 执行 Cppcheck 轻量排查
 if [ "$TOOL" = "all" ] || [ "$TOOL" = "cppcheck" ]; then
   if command -v cppcheck &>/dev/null; then
-    echo "⚡ [3/3] 执行 Cppcheck 内存越界与未定义行为排查..."
-    cppcheck --language=c++ --enable=warning,performance,portability \
-             --inline-suppr \
-             --suppress=missingIncludeSystem \
-             --suppress=unmatchedSuppression \
-             --suppress=unknownMacro \
-             -Dslots= -Dsignals= \
-             -i third_party/ -i build/ -i build-win64/ \
-             --quiet \
-             $FILES || true
-    echo "   ✅ Cppcheck 扫描完成。"
+    echo "⚡ [3/4] 执行 Cppcheck 内存越界与未定义行为排查..."
+    if ! cppcheck --language=c++ --std="$CPP_STD" \
+                  --enable=warning,performance,portability \
+                  --error-exitcode=1 \
+                  --inline-suppr \
+                  --suppress=missingIncludeSystem \
+                  --suppress=unmatchedSuppression \
+                  --suppress=unknownMacro \
+                  -Dslots= -Dsignals= \
+                  -i third_party/ -i vendor/ -i external/ -i build/ -i build-win64/ \
+                  --quiet \
+                  "${FILES[@]}"; then
+      echo "   ❌ Cppcheck 检出阻断性缺陷！"
+      CPPCHECK_ERRORS=$((CPPCHECK_ERRORS + 1))
+    else
+      echo "   ✅ Cppcheck 扫描通过。"
+    fi
   else
-    echo "❌ [3/3] 未安装 cppcheck（当前执行环境无 root 权限，无法自动安装）"
+    echo "❌ [3/4] 未安装 cppcheck（当前执行环境无 root 权限，无法自动安装）"
     echo "   👉 请在宿主机终端手动运行: sudo apt-get install -y cppcheck"
+    MISSING_TOOL_ERRORS=$((MISSING_TOOL_ERRORS + 1))
   fi
 fi
 
+# 5. 执行红线反模式静态扫描 (lint_redlines.py)
+if [ "$TOOL" = "all" ] || [ "$TOOL" = "redline" ]; then
+  if command -v python3 &>/dev/null && [ -f "$SCRIPT_DIR/lint_redlines.py" ]; then
+    echo "🚨 [4/4] 执行 C++ 红线反模式静态扫描..."
+    REDLINE_ARGS=()
+    [ "$CHECK_UI_I18N" = true ] && REDLINE_ARGS+=("--check-ui-i18n")
+    if ! python3 "$SCRIPT_DIR/lint_redlines.py" "${REDLINE_ARGS[@]}" "${FILES[@]}"; then
+      REDLINE_ERRORS=$((REDLINE_ERRORS + 1))
+    fi
+  else
+    echo "❌ [4/4] 未找到 python3 或 lint_redlines.py，无法执行红线静态扫描"
+    MISSING_TOOL_ERRORS=$((MISSING_TOOL_ERRORS + 1))
+  fi
+fi
+
+TOTAL_ERRORS=$((FORMAT_ERRORS + TIDY_ERRORS + CPPCHECK_ERRORS + REDLINE_ERRORS + MISSING_TOOL_ERRORS))
+
 echo "=================================================="
-echo "🎉 C++ 质量检查流程执行完毕！"
-echo "=================================================="
+if [ "$TOTAL_ERRORS" -eq 0 ]; then
+  echo "🎉 C++ 质量检查门禁全部通过！"
+  echo "=================================================="
+  exit 0
+fi
+
+echo "📊 检查汇总: format=$FORMAT_ERRORS, tidy=$TIDY_ERRORS, cppcheck=$CPPCHECK_ERRORS, redline=$REDLINE_ERRORS, missing_tools=$MISSING_TOOL_ERRORS"
+if [ "$WARN_ONLY" = true ]; then
+  echo "⚠️  [--warn-only] 检测到 $TOTAL_ERRORS 项问题，按老项目只扫描不阻断模式放行 (exit 0)。"
+  echo "=================================================="
+  exit 0
+else
+  echo "❌ 质量门禁未通过（共 $TOTAL_ERRORS 项阻断问题），禁止交付！"
+  echo "   💡 若为历史老项目初次摸底，可显式追加 --warn-only 参数只扫描不阻断。"
+  echo "=================================================="
+  exit 1
+fi

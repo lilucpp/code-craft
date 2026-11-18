@@ -57,12 +57,14 @@ flowchart TD
    - 凡是被不同 CPU 核心高频读写的独立变量（如并发计数器、工作线程状态），强制标注 `alignas(64)` 或使用硬件隔离宏，详见 [references/memory_layout_and_cache.md](./references/memory_layout_and_cache.md)。
 3. **关键标量强类型化（Strong Typing）**：
    - 杜绝裸 `int` / `uint64_t` 表达核心 ID（`UserId`、`ConnectionId`）与单位物理量（`ByteOffset`、`Milliseconds`）；
-   - 主动引入零开销强类型包装模板，详见 [references/zero_cost_strong_typing.md](./references/zero_cost_strong_typing.md) 与 [examples/strong_type.hpp](./examples/strong_type.hpp)。
-4. **状态机编译期拦截（Typestate Pattern）**：
-   - 涉及多阶段生命周期的资源（如网络连接、事务句柄），主动将阶段建模为独立类型参数，杜绝运行时的 `if (state != ...) return err;`，详见 [references/zero_cost_strong_typing.md](./references/zero_cost_strong_typing.md)。
-5. **本地文件落盘崩溃安全（Crash-Safe Atomic Write）**：
+   - 主动引入 C++17 零开销强类型包装模板，详见 [references/zero_cost_strong_typing.md](./references/zero_cost_strong_typing.md) 与 [examples/strong_type.hpp](./examples/strong_type.hpp)。
+4. **状态机编译期拦截与 Result 返回值（Typestate & `Result<T, E>`）**：
+   - 涉及多阶段生命周期的资源（如网络连接、事务句柄），主动将阶段建模为独立类型参数，杜绝运行时的 `if (state != ...) return err;`，详见 [references/zero_cost_strong_typing.md](./references/zero_cost_strong_typing.md) 与 [examples/result_and_typestate.hpp](./examples/result_and_typestate.hpp)。
+5. **本地文件落盘崩溃安全与作用域守卫（Crash-Safe & ScopeGuard）**：
    - 凡涉及文件持久化保存，严禁使用原地覆写（in-place overwrite）；
-   - 主动使用 **`Write-Temp -> fdatasync -> Atomic Rename -> Dir fsync`** 四步法，详见 [references/crash_consistency_and_wal.md](./references/crash_consistency_and_wal.md) 与 [examples/crash_safe_writer.hpp](./examples/crash_safe_writer.hpp)。
+   - 主动使用 **`Write-Temp -> fdatasync -> Atomic Rename -> Dir fsync`** 四步法及 RAII `ScopeGuard` 回滚守卫，详见 [references/crash_consistency_and_wal.md](./references/crash_consistency_and_wal.md)、[examples/crash_safe_writer.hpp](./examples/crash_safe_writer.hpp) 与 [examples/scope_guard.hpp](./examples/scope_guard.hpp)。
+6. **低阻力正确路径（Paved Road 先行原则）**：
+   - 开启新 C++17 工程或模块时，优先将 `strong_type.hpp`、`scope_guard.hpp`、`result_and_typestate.hpp`、`crash_safe_writer.hpp` 落盘至项目基础层（如 `include/core/`），让业务代码直接 `#include` 正确原语，避免手搓裸整数或 `bool` 错码。
 
 ---
 

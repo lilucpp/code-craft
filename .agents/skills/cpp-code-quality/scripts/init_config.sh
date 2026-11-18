@@ -80,37 +80,59 @@ if [ -f "$CLANG_TIDY_FILE" ]; then
 else
   cat << 'EOF' > "$CLANG_TIDY_FILE"
 ---
-# 启用工业级高信噪比 C++ 静态分析规则集
+# 启用工业级高信噪比 C++17 静态分析规则集
 Checks: >
   -*,
   bugprone-*,
-  -bugprone-easily-swappable-parameters,
+  cert-*,
+  concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-magic-numbers,
   modernize-*,
   -modernize-use-trailing-return-type,
   performance-*,
   google-*,
   -google-runtime-references,
+  -google-readability-function-size,
   readability-*,
-  -readability-magic-numbers,
   misc-*
 
-# 将关键隐患直接视作编译错误阻止合入
-WarningsAsErrors: 'bugprone-*,performance-*'
+# 将高危隐患与硬工程红线直接视作编译错误阻止合入
+WarningsAsErrors: >
+  bugprone-*,
+  cert-*,
+  concurrency-*,
+  cppcoreguidelines-explicit-virtual-functions,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-virtual-class-destructor,
+  google-explicit-constructor,
+  misc-redundant-expression,
+  modernize-use-nullptr,
+  performance-*,
+  readability-function-cognitive-complexity,
+  readability-function-size
 
-# 仅检查业务源码头文件，彻底屏蔽第三方三方库头文件产生的警告
-HeaderFilterRegex: '^(src|include)/.*'
+# 仅检查业务源码头文件，彻底屏蔽第三方库头文件产生的警告
+HeaderFilterRegex: '^(src|include|modules|libs|packages|components)/.*'
 
-# 检查项特定配置
+# 检查项特定配置 (LLVM / clang-tidy CheckOptions 格式)
 CheckOptions:
-  google-explicit-constructor: true
-  modernize-use-nullptr: true
-  performance-move-const-arg: true
+  bugprone-easily-swappable-parameters.MinimumLength: '2'
+  performance-move-const-arg.CheckMoveToConstRef: 'true'
+  performance-move-const-arg.CheckTriviallyCopyableMove: 'true'
+  readability-function-cognitive-complexity.Threshold: '15'
+  readability-function-size.LineThreshold: '60'
+  readability-function-size.ParameterThreshold: '3'
+  readability-function-size.NestingThreshold: '3'
+  readability-identifier-length.IgnoredVariableNames: '^(id|fd|rc|ip|db|io|ok|x|y|z)$'
+  readability-identifier-length.IgnoredParameterNames: '^(id|fd|rc|ip|db|io|ok|n|x|y|z)$'
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: 'true'
+  readability-magic-numbers.IgnoredIntegerValues: '-1;0;1;2;'
 ...
 EOF
-  echo "  ✅ 已创建: $CLANG_TIDY_FILE (高信噪比检查 / 自动屏蔽三方库)"
+  echo "  ✅ 已创建: $CLANG_TIDY_FILE (高信噪比强门禁 / 自动屏蔽三方库)"
 fi
 
 echo "=================================================="

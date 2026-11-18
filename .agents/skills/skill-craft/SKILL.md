@@ -56,9 +56,9 @@ flowchart TD
 3. **任务自由度精准分级（Degrees of Freedom）**：
    - **低自由度**：对于脆弱、高危、顺序敏感任务（构建部署、环境检查、原子写），提供确定性脚本，锁定参数；
    - **高自由度**：对于架构设计、代码审查、技术方案，提供启发式检查清单与思考维度，激发模型推理能力。详见 [references/degrees_of_freedom_and_guardrails.md](./references/degrees_of_freedom_and_guardrails.md)。
-4. **Token 极简原则（Context Window Hygiene）**：
+4. **Token 极简与错误驱动棘轮原则（Context Hygiene & Slop-to-Rule Ratchet）**：
    - **默认假设模型已经掌握行业标准知识**，严禁在文档中花费 Token 解释通用常识（如“什么是 RESTful”、“什么是 B-Tree”）；
-   - 只写入**当前工程的特有规范、踩坑护栏、脚本参数与硬性边界**。
+   - **能机器强检，绝不靠文本叮嘱**：发现可由编译器、`.clang-tidy`、构建边界或扫描脚本判定的错误时，优先下沉到工具链报错，禁止无限膨胀 Always-On Rules（`GEMINI.md` / `coding-standards.md`），详见 [references/degrees_of_freedom_and_guardrails.md](./references/degrees_of_freedom_and_guardrails.md)。
 5. **跨平台与路径规范（Zero Magic Constants）**：
    - 所有路径一律使用正斜杠（`/`），杜绝 Windows 反斜杠；
    - 所有数值配置（超时、列宽、对齐字节数）必须给出明确工程依据。
@@ -73,9 +73,9 @@ flowchart TD
    - 检查 `description` 是否使用了第一人称（如 "I can help you..." $\to$ 违规，降低召回率）；
    - 检查是否缺少 `Use when...` 或 `当用户要求...时触发` 明确场景；
    - 检查不同技能间 `description` 是否存在关键词碰撞导致模型选择困难。
-2. **正文 Token 膨胀诊断**：
-   - 识别是否存在长篇大论的“背景介绍”和“概念科普”；
-   - 输出优化前后的 Token 预估对比，将冗长段落重构成“代码块 + 极简要点”。
+2. **正文与常驻规则膨胀诊断**：
+   - 识别是否存在长篇大论的“背景介绍”、概念科普，或已被 Lint/编译器接管却仍在 Always-On Rules 重复唠叨的细则；
+   - 输出优化前后的 Token/字节对比，将可自动化的细则下沉为脚本/配置，正文重构成“代码块 + 极简要点”。
 3. **引用拓扑健康度诊断**：
    - 扫描是否存在死链（Broken Links）、多级嵌套引用（File A $\to$ File B $\to$ File C）；
    - 整理扁平化单层引用矩阵。

@@ -1,80 +1,107 @@
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <span>
-#include <filesystem>
-#include <system_error>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
+#include <new>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <vector>
 
 namespace systems_craft {
 
 /**
- * @brief 符合 OSDI 2014 顶会规范的崩溃安全原子文件写入器
- * 
+ * @brief 符合 OSDI 2014 顶会规范的 C++17 崩溃安全原子文件写入器
+ *
  * 严格执行四步法：
- * 1. 写入临时文件 (<target>.tmp.<pid>)
+ * 1. 通过 mkstemp 原子创建临时文件并写入全部字节
  * 2. fdatasync 强制将脏页与文件内容刷入物理存储介质
- * 3. rename 原子替换旧文件
- * 4. 关键！对父目录执行 fsync，确保目录项元数据落盘防丢
+ * 3. rename 原子替换目标文件
+ * 4. 对父目录执行 fsync，确保目录项元数据落盘防丢
  */
 class CrashSafeWriter {
-public:
-    static std::error_code write_atomically(const std::filesystem::path& target_path,
-                                           std::span<const uint8_t> data) noexcept {
-        const auto parent_dir = target_path.parent_path().empty() ? "." : target_path.parent_path();
-        const auto temp_path = target_path.string() + ".tmp." + std::to_string(getpid());
-
-        // 步骤 1: 创建并写入临时文件
-        int fd = ::open(temp_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
-        if (fd < 0) {
-            return std::error_code(errno, std::generic_category());
-        }
-
-        size_t written_total = 0;
-        while (written_total < data.size()) {
-            ssize_t res = ::write(fd, data.data() + written_total, data.size() - written_total);
-            if (res < 0) {
-                if (errno == EINTR) continue;
-                int err = errno;
-                ::close(fd);
-                ::unlink(temp_path.c_str());
-                return std::error_code(err, std::generic_category());
-            }
-            written_total += static_cast<size_t>(res);
-        }
-
-        // 步骤 2: 强制文件数据与必要元数据刷盘
-        if (::fdatasync(fd) < 0) {
-            int err = errno;
-            ::close(fd);
-            ::unlink(temp_path.c_str());
-            return std::error_code(err, std::generic_category());
-        }
-
-        if (::close(fd) < 0) {
-            int err = errno;
-            ::unlink(temp_path.c_str());
-            return std::error_code(err, std::generic_category());
-        }
-
-        // 步骤 3: POSIX 目录项原子重命名替换
-        if (::rename(temp_path.c_str(), target_path.c_str()) < 0) {
-            int err = errno;
-            ::unlink(temp_path.c_str());
-            return std::error_code(err, std::generic_category());
-        }
-
-        // 步骤 4: 刷新包含该文件的父目录元数据（防 ext4/btrfs 延迟分配导致孤儿或零字节文件）
-        int dir_fd = ::open(parent_dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-        if (dir_fd >= 0) {
-            ::fsync(dir_fd);
-            ::close(dir_fd);
-        }
-
-        return {};
+ public:
+  [[nodiscard]] static std::error_code write_atomically(const std::filesystem::path &target_path, const void *data,
+                                                        std::size_t size) noexcept try {
+    if (size > 0 && data == nullptr) {
+      return std::make_error_code(std::errc::invalid_argument);
     }
+
+    const std::filesystem::path parent_dir =
+        target_path.parent_path().empty() ? std::filesystem::path{"."} : target_path.parent_path();
+    std::string temp_template = target_path.string() + ".tmp.XXXXXX";
+    std::vector<char> temp_buf(temp_template.begin(), temp_template.end());
+    temp_buf.push_back('\0');
+
+    const int fd = ::mkstemp(temp_buf.data());
+    if (fd < 0) {
+      return {errno, std::generic_category()};
+    }
+
+    const std::string temp_path(temp_buf.data());
+    const std::error_code write_err = write_all_and_sync(fd, static_cast<const std::uint8_t *>(data), size);
+    if (write_err) {
+      ::close(fd);
+      ::unlink(temp_path.c_str());
+      return write_err;
+    }
+
+    if (::close(fd) < 0) {
+      const int err = errno;
+      ::unlink(temp_path.c_str());
+      return {err, std::generic_category()};
+    }
+
+    if (::rename(temp_path.c_str(), target_path.c_str()) < 0) {
+      const int err = errno;
+      ::unlink(temp_path.c_str());
+      return {err, std::generic_category()};
+    }
+
+    sync_parent_dir(parent_dir);
+    return {};
+  } catch (const std::bad_alloc &) {
+    return std::make_error_code(std::errc::not_enough_memory);
+  }
+
+  [[nodiscard]] static std::error_code write_atomically(const std::filesystem::path &target_path,
+                                                        std::string_view text) noexcept {
+    return write_atomically(target_path, text.data(), text.size());
+  }
+
+ private:
+  [[nodiscard]] static std::error_code write_all_and_sync(int fd, const std::uint8_t *data, std::size_t size) noexcept {
+    std::size_t written_total = 0;
+    while (written_total < size) {
+      const ssize_t res = ::write(fd, data + written_total, size - written_total);
+      if (res < 0 && errno == EINTR) {
+        continue;
+      }
+      if (res < 0) {
+        return {errno, std::generic_category()};
+      }
+      written_total += static_cast<std::size_t>(res);
+    }
+    if (::fdatasync(fd) < 0) {
+      return {errno, std::generic_category()};
+    }
+    return {};
+  }
+
+  static void sync_parent_dir(const std::filesystem::path &parent_dir) noexcept {
+    const int dir_fd = ::open(parent_dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (dir_fd >= 0) {
+      ::fsync(dir_fd);
+      ::close(dir_fd);
+    }
+  }
 };
 
-} // namespace systems_craft
+}  // namespace systems_craft

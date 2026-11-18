@@ -1,15 +1,23 @@
 cmake_minimum_required(VERSION 3.20)
 project(ModernCppTestingSuite LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- 1. Testing & Verification Options ---
 option(BUILD_TESTING "Build unit tests" ON)
 option(ENABLE_SANITIZERS "Enable AddressSanitizer & UBSan" ON)
+option(ENABLE_TSAN "Enable ThreadSanitizer (mutually exclusive with ASan/UBSan)" OFF)
 option(ENABLE_COVERAGE "Enable code coverage flags" OFF)
+option(ENABLE_RAPIDCHECK "Enable RapidCheck property-based testing" OFF)
+option(ENABLE_FUZZER "Enable Clang libFuzzer targets (Clang only)" OFF)
 
-# --- 2. Dual Sanitizers Configuration ---
+if(ENABLE_SANITIZERS AND ENABLE_TSAN)
+    message(FATAL_ERROR "ENABLE_SANITIZERS (ASan) and ENABLE_TSAN cannot be enabled simultaneously.")
+endif()
+
+# --- 2. Sanitizers Configuration ---
 if(ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     message(STATUS "[Security] AddressSanitizer and UndefinedBehaviorSanitizer ENABLED")
     add_compile_options(
@@ -19,6 +27,10 @@ if(ENABLE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         -g
     )
     add_link_options(-fsanitize=address,undefined)
+elseif(ENABLE_TSAN AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "[Concurrency] ThreadSanitizer ENABLED")
+    add_compile_options(-fsanitize=thread -fno-omit-frame-pointer -g)
+    add_link_options(-fsanitize=thread)
 endif()
 
 # --- 3. Code Coverage Configuration ---
@@ -28,7 +40,7 @@ if(ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_link_options(--coverage)
 endif()
 
-# --- 4. GoogleTest via FetchContent ---
+# --- 4. GoogleTest & Optional RapidCheck via FetchContent ---
 if(BUILD_TESTING)
     enable_testing()
 
@@ -38,14 +50,22 @@ if(BUILD_TESTING)
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG        v1.14.0
     )
-    # Prevent GoogleTest from installing alongside target project
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
+    if(ENABLE_RAPIDCHECK)
+        set(RC_ENABLE_GTEST ON CACHE BOOL "" FORCE)
+        FetchContent_Declare(
+            rapidcheck
+            GIT_REPOSITORY https://github.com/emil-e/rapidcheck.git
+            GIT_TAG        master
+        )
+        FetchContent_MakeAvailable(rapidcheck)
+    endif()
+
     include(GoogleTest)
 
-    # --- 5. Reusable Test Registration Function (fmt-style) ---
     function(add_unit_test test_name)
         add_executable(${test_name} ${ARGN})
 
@@ -54,15 +74,22 @@ if(BUILD_TESTING)
             GTest::gmock
             GTest::gtest_main
         )
+        if(ENABLE_RAPIDCHECK)
+            target_link_libraries(${test_name} PRIVATE rapidcheck rapidcheck_gtest)
+        endif()
 
-        # Automatic CTest Discovery
         gtest_discover_tests(${test_name}
             PROPERTIES
             TIMEOUT 30
         )
     endfunction()
 
-    # --- 6. Declare Test Binaries ---
     add_unit_test(test_account_service tests/test_account_service_gmock.cpp)
     add_unit_test(test_parameterized tests/test_parameterized_suite.cpp)
+
+    if(ENABLE_FUZZER AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        add_executable(fuzz_parser tests/fuzz_parser.cpp)
+        target_compile_options(fuzz_parser PRIVATE -fsanitize=fuzzer,address,undefined -g)
+        target_link_options(fuzz_parser PRIVATE -fsanitize=fuzzer,address,undefined)
+    endif()
 endif()

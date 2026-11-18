@@ -75,6 +75,10 @@ flowchart TD
 当用户要求“对这段 C/C++ 代码做安全审计”、“检查有没有内存/注入漏洞”或“修复安全隐患”时，按以下 4 步执行：
 
 1. **高危 API 与注入面快速扫描**：
+   - 优先执行确定性红线扫描脚本（自动拦截禁用函数、空 `catch` 与脆弱路径）：
+     ```bash
+     ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=all --tool=redline
+     ```
    - 检索 [禁用函数与安全替代对照表](./references/banned-functions-and-cheatsheet.md) 中的红线函数；
    - 检查非常量格式化字符串、拼接构造的 `system()`/`popen()`、未规范化的路径拼接（`../` 目录穿越）。
 2. **污点数据流追踪（Taint & Bounds Trace）**：

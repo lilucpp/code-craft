@@ -28,6 +28,12 @@ export UBSAN_OPTIONS="print_stacktrace=1:halt_on_error=1"
 
 # Execute test suite with active sanitizers
 ./build/tests/unit_tests
+
+# TSan Concurrency Stress Settings (separate build with -DENABLE_SANITIZERS=OFF -DENABLE_TSAN=ON)
+export TSAN_OPTIONS="halt_on_error=1:second_deadlock_stack=1:history_size=7"
+./build-tsan/tests/unit_tests --gtest_repeat=50 --gtest_shuffle
+# Note: On Linux kernels with 32-bit ASLR (e.g., Ubuntu 24.04) hitting "unexpected memory mapping":
+setarch x86_64 -R ./build-tsan/tests/unit_tests --gtest_repeat=50 --gtest_shuffle
 ```
 
 ### Key Options
@@ -109,10 +115,13 @@ jobs:
           cmake --build build
           ctest --test-dir build --output-on-failure
 
-      # Stage 4: Code Coverage Gate
-      - name: Stage 4 - Coverage Gate Check
+      # Stage 4: Code Coverage & Diff Coverage Gate
+      - name: Stage 4 - Coverage & Diff Coverage Gate
         run: |
           lcov --capture --directory build --output-file coverage.raw.info
           lcov --remove coverage.raw.info '/usr/*' '*/_deps/*' '*/tests/*' --output-file coverage.info
           lcov --summary coverage.info
+          # Prevent legacy 90% coverage from hiding 0% tested new AI code:
+          gcovr --xml-pretty --exclude-unreachable-branches --exclude 'tests/.*' -o coverage.xml build
+          diff-cover coverage.xml --compare-branch=origin/main --fail-under=85
 ```

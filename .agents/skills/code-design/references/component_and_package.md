@@ -71,3 +71,47 @@ flowchart LR
 #### 手术刀 2：提取公共核心包 (Extract Common Package)
 * 如果包 A、B、C 形成环状依赖，找出引起循环的共同底层实体/数据传输对象（DTO），剥离出来放入一个新的底层包 D。
 * 原先的三个包全部单向依赖于包 D，将环形网状依赖降级为严格分层的单向无环拓扑。
+
+---
+
+## 4. C++ 物理边界硬隔离与 Include DAG 门禁
+
+自然语言约束挡不住 Agent 顺手 `#include "../../infra/db_impl.hpp"`；在 C++ 工程中，必须靠**构建系统可见性**与**自动化拓扑扫描**把架构边界变成编译期/门禁硬报错：
+
+### 4.1 CMake 物理隔离规范（让越权引用直接编译失败）
+1. **目录结构分离**：每个模块显式区分公开头（`include/<mod>/`）与私有实现（`src/` 或 `detail/` / `internal/`）。
+2. **`PUBLIC` / `PRIVATE` 目标作用域隔离**：
+   ```cmake
+   # domain 模块：仅暴露 include/，私有头锁死在 src/ 内
+   add_library(domain STATIC
+     src/order_service.cpp
+     src/detail/order_calc.hpp
+   )
+   target_include_directories(domain
+     PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+   )
+   target_link_libraries(domain PUBLIC core) # 仅允许依赖 core，物理上看不见 infra
+   ```
+   > **效果**：如果 `domain` 试图引用 `infra/src/sqlite_repo.hpp` 或越层调用未链接的 `infra` 目标，编译器直接以 `No such file or directory` / 链接未定义阻断。
+
+### 4.2 自动化 `#include` DAG 与穿透门禁
+使用内置脚本 [check_include_dag.py](../scripts/check_include_dag.py) 检查以下四项硬边界：
+* **`arch-cyclic-dependency`**：检测模块级循环 `#include` 环路（强制 ADP）；
+* **`arch-private-header-leak`**：拦截跨模块直引 `detail/` 或 `internal/` 私有头文件；
+* **`arch-relative-parent-include`**：禁止跨模块使用 `../other_mod/...` 相对路径穿透；
+* **`arch-layer-violation`**：配合项目根目录可选 `.arch-boundaries.json` 强制分层流向：
+  ```json
+  {
+    "modules": {
+      "core": { "allow": [] },
+      "domain": { "allow": ["core"] },
+      "infra": { "allow": ["core", "domain"] },
+      "app": { "allow": ["core", "domain", "infra"] }
+    }
+  }
+  ```
+执行方式：
+```bash
+python3 ./.agents/skills/code-design/scripts/check_include_dag.py --root . --dump-graph
+```

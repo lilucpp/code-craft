@@ -186,3 +186,48 @@ EXPECT_NO_THROW({
 });
 static_assert(std::is_nothrow_move_constructible_v<Entity>);
 ```
+
+---
+
+## 7. Property-Based Testing (RapidCheck) & Fuzzing (libFuzzer)
+
+AI-generated unit tests often mirror the author's flawed assumptions ("happy-path confirmation bias"). For parsers, codecs, state machines, and containers, verify **universal invariants** across hundreds of generated/mutated inputs instead of only hardcoded examples.
+
+### 1. Property-Based Testing with RapidCheck + GoogleTest
+```cpp
+#include <gtest/gtest.h>
+#include <rapidcheck/gtest.h>
+#include <string>
+
+RC_GTEST_PROP(CodecPropertyTest, EncodeDecodeRoundTripPreservesPayload, (const std::string& raw)) {
+    const auto encoded = Codec::encode(raw);
+    const auto decoded = Codec::decode(encoded);
+    RC_ASSERT(decoded.has_value());
+    RC_ASSERT(decoded.value() == raw);
+}
+```
+* **Key Invariant Classes**: Round-trip (`decode(encode(x)) == x`), idempotency (`f(f(x)) == f(x)`), conservation (`sum_before == sum_after`), and differential oracle (`fast_impl(x) == naive_ref_impl(x)`).
+
+### 2. Coverage-Guided Fuzzing with libFuzzer (Clang + ASan/UBSan)
+```cpp
+#include <cstddef>
+#include <cstdint>
+
+extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size) {
+    // Must never crash, leak, or trigger ASan/UBSan regardless of malformed bytes
+    (void)PacketParser::parse(data, size);
+    return 0;
+}
+```
+```bash
+# Run time-boxed fuzz smoke gate in CI (e.g., 30 seconds)
+./build/fuzz_parser -max_total_time=30 -rss_limit_mb=2048
+```
+
+---
+
+## 8. Persistence & Fault-Injection Verification (OSDI 14 / Crash Consistency)
+
+For atomic file writes, WAL logs, and transactional storage (`systems-data-design`), verify failure paths via dependency-injected VFS or fault injection:
+* **Write Failure / Mid-Write Abort**: Inject `ENOSPC` or `EIO` after $k$ bytes written -> verify **old target file content remains byte-for-byte intact** and **no orphan `.tmp.*` files remain**.
+* **Multi-Threaded Concurrency Stress**: Run concurrent tests under **TSan** with `--gtest_repeat=50 --gtest_shuffle` to expose lock-order inversions and data races that single deterministic runs miss.

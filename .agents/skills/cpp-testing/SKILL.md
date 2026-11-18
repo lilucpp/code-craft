@@ -46,22 +46,21 @@ flowchart TD
 
 在为任何 C++ 项目设计测试或编写用例时，**无需用户提醒，必须第一时间主动落实以下 4 大核心规范**：
 
-1. **工程脚手架与双消毒剂防护（Scaffolding & Sanitizers）**：
-   - 优先通过 CMake `FetchContent` 声明式拉取 GoogleTest / Catch2，保持项目构建自包含，零外部环境强依赖；
+1. **工程脚手架与三消毒剂防护（C++17 Scaffolding & Sanitizers）**：
+   - 以 **C++17** 为基线，通过 CMake `FetchContent` 声明式拉取 GoogleTest / Catch2（及按需拉取 RapidCheck），保持构建自包含；
    - 测试构建必须原生集成 CTest（`enable_testing()` 与 `add_test()`）；
-   - Debug / Test 目标构建强制开启 **AddressSanitizer + UndefinedBehaviorSanitizer**（`-fsanitize=address,undefined -fno-omit-frame-pointer`），在测试期提前炸毁内存泄漏、越界访问与未定义行为，详见 [references/cmake_and_test_toolchains.md](./references/cmake_and_test_toolchains.md)。
-2. **测试用例 AAA 模式与边界矩阵（Test Design & AAA Pattern）**：
-   - 用例结构必须严格按照 **Arrange（准备上下文） $\to$ Act（执行待测动作） $\to$ Assert（验证状态与返回值）** 三段排布；
-   - **坚持黑盒测试**：仅针对公开 API（Public Interface）设计断言；**严禁为了测试私有方法随意声明 `friend`**；
-   - 覆盖核心边界矩阵：**空输入（Empty）、单元素（Single）、海量极值（Max/Min）、非法参数（Invalid）**；
-   - 验证异常安全契约：对抛出异常的路径，必须使用 `EXPECT_THROW` / `REQUIRE_THROWS_AS` 验证基本保证与强保证，详见 [references/test_design_and_aaa_pattern.md](./references/test_design_and_aaa_pattern.md)。
+   - Debug / Test 构建默认开启 **ASan + UBSan**（`-fsanitize=address,undefined -fno-omit-frame-pointer`）；多线程/并发模块额外配置独立 **TSan** 构建（`-DENABLE_TSAN=ON`）配合 `--gtest_repeat=50 --gtest_shuffle` 高压循环，详见 [references/cmake_and_test_toolchains.md](./references/cmake_and_test_toolchains.md) 与 [references/sanitizers_and_ci_pipeline.md](./references/sanitizers_and_ci_pipeline.md)。
+2. **测试用例 AAA 模式、属性测试与故障注入（AAA, Property Testing & Fault Injection）**：
+   - 用例结构必须严格按照 **Arrange $\to$ Act $\to$ Assert** 三段排布，坚持黑盒测试公开 API（**严禁滥用 `friend` 测私有方法**）；
+   - 覆盖核心边界矩阵（空输入、单元素、极值、非法参数）与异常安全保证；
+   - **破解 AI 自嗨测试**：对解析器、编解码、状态机与并发容器，优先使用 **RapidCheck 属性测试** 或 **libFuzzer** 校验不变式（Round-trip、幂等、无崩溃）；对文件持久化与 I/O 路径补充**故障注入测试**（模拟 `ENOSPC`/`EIO` 验证旧文件完整且无残留临时文件），详见 [references/test_design_and_aaa_pattern.md](./references/test_design_and_aaa_pattern.md)。
 3. **依赖注入与 Mock 隔离策略（Mocking & Isolation）**：
    - 待测业务与高延迟/不可控外部依赖（数据库、文件 I/O、RPC、系统时钟）通过抽象接口（Interface Class）解耦；
    - 依赖项通过构造函数或模板参数注入（Dependency Injection）；
    - 使用 GoogleMock `MOCK_METHOD` 宏定义桩类，通过 `EXPECT_CALL` 严格约束调用次数（`Times`）、参数匹配器（`Eq`, `StrEq`, `Gt`）与模拟返回值（`WillOnce(Return(...))`），详见 [references/mocking_and_dependency_injection.md](./references/mocking_and_dependency_injection.md)。
-4. **CI/CD 流水线与覆盖率门禁（Pipeline Integration）**：
-   - 建立四阶渐进式 CI 门禁：**代码排版格式化 $\to$ Clang-Tidy 静态分析 $\to$ ASan/UBSan 测试运行 $\to$ 代码覆盖率（llvm-cov/lcov）统计**；
-   - 设置行覆盖率基准线（如 $\ge 80\%$），防止未经验证的逻辑溜入生产，详见 [references/sanitizers_and_ci_pipeline.md](./references/sanitizers_and_ci_pipeline.md)。
+4. **CI/CD 流水线与增量覆盖率门禁（Pipeline & Diff Coverage Gate）**：
+   - 建立渐进式 CI 门禁：**`run_check.sh` 四关静态检查 $\to$ ASan/UBSan 全量测试 $\to$ 并发模块 TSan 压测 $\to$ 覆盖率门禁**；
+   - 同时卡住**全量行覆盖率 $\ge 80\%$** 与 **增量 Diff 覆盖率 $\ge 85\%$**（`diff-cover`），防止老代码高覆盖率掩盖新增 AI 分支零覆盖，详见 [references/sanitizers_and_ci_pipeline.md](./references/sanitizers_and_ci_pipeline.md)。
 
 ---
 

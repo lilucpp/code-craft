@@ -24,7 +24,7 @@ flowchart TD
     C -->|缺失配置| C1["运行 ./scripts/init_config.sh 自动生成 .clang-format / .clang-tidy"]
     C -->|已有配置| D{"阶段 3：识别执行场景与编译载体"}
 
-    D -->|场景 A: 本地工具就绪 / 原生执行| E["执行原生检查: ./scripts/run_check.sh [--mode=diff|all] [--fix]"]
+    D -->|场景 A: 本地工具就绪 / 原生执行| E["执行原生检查: ./scripts/run_check.sh [--mode=diff|all] [--fix] [--warn-only]"]
     D -->|场景 B: 无root权限 / 推荐Docker容器| F["执行容器检查: docker run 挂载工作区执行"]
     D -->|场景 C: CI / GitHub Actions 流水线| G["参考 .github/workflows/ 配合 CI 门禁检查"]
 ```
@@ -40,8 +40,9 @@ flowchart TD
    - 当检测到环境缺少 `clang-format`、`clang-tidy` 或 `cppcheck` 时，**必须第一时间主动明确告知用户**：
      > *“当前环境缺少 root 权限，无法自动安装依赖。请您在宿主机终端手动执行安装命令，或使用 Docker 容器方案。”*
    - 同时附带精确、单行可直接复制的包管理器安装命令。
-3. **构建环境感知（Native vs Docker vs CI）**：
-   - 复杂 C++ 项目可能采用宿主机本地编译、Docker 容器交叉编译、或 GitHub Actions 云端构建；
+3. **构建环境感知与严格门禁（Strict by Default）**：
+   - `run_check.sh` 默认采用**严格门禁模式**（默认标准为 `c++17`，可用 `--std=<std>` 覆盖）：任何格式违规、`clang-tidy` 阻断错误或 `cppcheck` 告警均返回**非零退出码**；
+   - 若用户明确说明是**历史老项目**且只需摸底排查，必须显式追加 `--warn-only` 参数（只扫描汇报不阻断）；
    - 检查代码前切勿盲目覆写 CMake 配置或破坏现有的 build 缓存。
 
 ---
@@ -70,24 +71,31 @@ flowchart TD
    * `.clang-tidy`：开启 `bugprone-*`, `cppcoreguidelines-*`, `performance-*` 等高信噪比规则，并通过 `HeaderFilterRegex` 屏蔽三方库头文件。
 
 ### 场景 3：老项目增量检查（只检查新代码）
-当用户要求 *“这是老项目，只查刚改动的代码”*、*“只对新增代码执行检查”* 时：
-1. 增量排查：
+当用户要求 *“这是老项目，只查刚改动的代码”*、*“这是老项目，先扫描不阻断”* 时：
+1. 增量严格门禁（检查 git 变动及未跟踪的新增文件，发现阻断缺陷即返回非零退出码）：
    ```bash
-   # 仅检查 git diff 变动文件与修改行
    ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff
    ```
-2. 增量自动排版修复：
+2. 老项目摸底扫描（仅报告不阻断，返回 `exit 0`）：
+   ```bash
+   ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff --warn-only
+   ```
+3. 增量自动排版修复：
    ```bash
    ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff --fix
    ```
 
-### 场景 4：全量项目扫描与格式化
+### 场景 4：全量项目扫描、格式化与红线检查
 当用户要求 *“对整个项目执行全量静态分析与格式化”* 时：
-1. 检查格式并应用排版：
+1. 全量严格检查并自动修复排版（依次执行 `clang-format`、`clang-tidy`、`cppcheck` 与红线扫描 `lint_redlines.py`）：
    ```bash
    ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=all --fix
    ```
-2. 若宿主机未安装，采用 Docker 容器方式（零宿主污染）：
+2. 仅执行高危红线扫描（拦截 `strcpy`/`system`/`fork`/`rand`、空 `catch`、`./build/` 脆弱路径；GUI 项目可追加 `--check-ui-i18n`）：
+   ```bash
+   ./.agents/skills/cpp-code-quality/scripts/run_check.sh --mode=diff --tool=redline
+   ```
+3. 若宿主机未安装，采用 Docker 容器方式（零宿主污染）：
    ```bash
    docker run --rm -v "$(pwd):/src" -w /src ghcr.io/muttleyxd/clang-tools:18 clang-format -i $(git ls-files '*.cpp' '*.h' | grep -v 'third_party/')
    ```

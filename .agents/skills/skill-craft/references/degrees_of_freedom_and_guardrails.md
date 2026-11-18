@@ -57,3 +57,21 @@ quadrantChart
    - 第一步：列举观察到的具体事实与代码行号；
    - 第二步：指出违反的具体软件工程原则（如 SRP、OCP、DbC）；
    - 第三步：给出 Before vs After 重构示例代码。
+
+---
+
+## 4. 错误驱动棘轮原则（Error-Driven Correction / Slop-to-Rule Ratchet）
+
+> **核心铁律**：不要在“如何写更长、更委婉的 Prompt”上内卷；把每一次对 AI 的吐槽，下沉为一条机器可强执行的硬约束。
+
+### 4.1 确定性下沉阶梯（按优先级从高到低）
+当发现 Agent 反复犯同一类错误（Slop）时，**禁止优先往 `GEMINI.md` / `AGENTS.md` / Always-On Rules 追加自然语言警告**，必须优先按以下阶梯固化：
+1. **编译器与类型系统**：`-Werror`、C++17 `[[nodiscard]]`、`explicit`、`StrongType`、Typestate 状态机；
+2. **AST 静态检查**：启用 `.clang-tidy` 对应规则并加入 `WarningsAsErrors`；
+3. **构建边界与扫描脚本**：CMake `PUBLIC`/`PRIVATE` 隔离、`check_include_dag.py`、`lint_redlines.py`；
+4. **自动化测试与不变式**：RapidCheck 属性测试、libFuzzer、故障注入、ASan/UBSan/TSan 压测；
+5. **Markdown 规则（兜底）**：仅保留静态工具与测试无法自动判定的高层设计哲学与协作准则。
+
+### 4.2 常驻规则瘦身审计（Always-On Context Hygiene）
+* 常驻规则（如 `coding-standards.md`）每多一条冗余细则，都会稀释模型对真正重要原则的注意力；
+* 一旦某条规范已被 `.clang-format` / `.clang-tidy` / 脚本 100% 强制拦截，应从常驻 Markdown 中删去细节复述，只保留一句工具入口指针。
