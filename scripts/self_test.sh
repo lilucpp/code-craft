@@ -40,21 +40,49 @@ bash -n "${REPO_ROOT}/scripts/self_test.sh"
 python3 -m py_compile "${SCRIPTS_QUALITY}/lint_redlines.py" "${SCRIPTS_DESIGN}/check_include_dag.py"
 
 python3 - "${REPO_ROOT}" << 'PY'
-import glob, os, re, sys, yaml
+import glob, os, re, sys
 
 root = sys.argv[1]
 os.chdir(root)
+
+def parse_frontmatter(text):
+    try:
+        import yaml
+        return yaml.safe_load(text)
+    except ImportError:
+        name_m = re.search(r"^name:\s*(\S+)", text, re.MULTILINE)
+        desc_m = re.search(r"^description:\s*>-\n((?:  .*\n?)+)", text, re.MULTILINE)
+        if not desc_m:
+            desc_m = re.search(r"^description:\s*(.+)", text, re.MULTILINE)
+        return {
+            "name": name_m.group(1).strip() if name_m else "",
+            "description": re.sub(r"\s+", " ", desc_m.group(1)).strip() if desc_m else "",
+        }
 
 for skill_md in sorted(glob.glob(".agents/skills/*/SKILL.md")):
     with open(skill_md, "r", encoding="utf-8") as f:
         raw = f.read()
     m = re.match(r"^---\n(.*?)\n---\n", raw, re.DOTALL)
     assert m, f"Missing YAML frontmatter in {skill_md}"
-    meta = yaml.safe_load(m.group(1))
+    meta = parse_frontmatter(m.group(1))
     name = meta.get("name", "")
     desc = meta.get("description", "")
     assert re.match(r"^[a-z0-9-]+$", name) and len(name) <= 64, f"Invalid name in {skill_md}: {name}"
     assert len(desc) <= 1024, f"Description > 1024 chars in {skill_md}: {len(desc)}"
+
+# Enforce Complexity Freeze on lint_redlines.py (<= 5 rule classes, <= 380 LOC)
+redline_path = ".agents/skills/cpp-code-quality/scripts/lint_redlines.py"
+with open(redline_path, "r", encoding="utf-8") as f:
+    redline_src = f.read()
+redline_loc = len(redline_src.splitlines())
+redline_rules = set(re.findall(r'rule_id="(redline-[a-z0-9-]+)"', redline_src))
+if len(redline_rules) > 5 or redline_loc > 380:
+    print(
+        f"❌ [FAIL] lint_redlines.py 触发复杂度冻结红线 (当前: {len(redline_rules)} 类规则 / {redline_loc} 行; 上限: 5 类规则 / 380 行)！\n"
+        "   禁止用正则模拟 AST 语义分析：语法/类型/控制流问题请配置 .clang-tidy；协议/业务不变式请写入 coding-standards.md 事前心智与 Gate 3 盲审清单。",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 md_files = sorted(glob.glob(".agents/skills/*/SKILL.md") + glob.glob(".agents/rules/*.md") + ["README.md", "README_EN.md"])
 for md in md_files:
@@ -158,6 +186,25 @@ assert_eq $? 0 "Monorepo 子目录 --mode=diff --fix + modules/*/include 通过"
 "${SCRIPTS_QUALITY}/run_check.sh" --mode=all --dir="${MONO_DIR}/subproj" >/dev/null
 assert_eq $? 0 "Monorepo 子目录 --mode=all 通过"
 
+# Verify post-commit HEAD~1..HEAD fallback in --mode=diff
+(
+  cd "${MONO_DIR}"
+  cat << 'EOF' > subproj/modules/auth/src/token.cpp
+#include "auth/token.hpp"
+#include <cstdlib>
+int ValidateToken(std::string_view token) {
+  return token.empty() ? std::system("ls") : 0;
+}
+EOF
+  clang-format -i subproj/modules/auth/src/token.cpp
+  git add . && git commit -q -m "bad commit"
+)
+set +e
+"${SCRIPTS_QUALITY}/run_check.sh" --mode=diff --dir="${MONO_DIR}/subproj" >/dev/null 2>&1
+RC_POST_COMMIT=$?
+set -e
+assert_eq "$RC_POST_COMMIT" 1 "--mode=diff 在已 commit 后自动回退对比 HEAD~1..HEAD 并拦截违规"
+
 echo "[4/7] lint_redlines.py 红线正反例回归测试..."
 RED_DIR="${WORK_DIR}/redline"
 mkdir -p "${RED_DIR}"
@@ -209,11 +256,6 @@ void Bad(const char *s, int factor) {
   }
   const char *p = "../build/bin";
   lbl->setText("硬编码文案");
-  std::size_t offset = 0;
-  std::size_t len = 4;
-  if (offset + len > s_buf.size()) {
-    offset = 0;
-  }
   std::error_code fs_ec;
   if (!std::filesystem::exists(p, fs_ec)) {
     return;
@@ -226,13 +268,13 @@ RED_OUT=$(python3 "${SCRIPTS_QUALITY}/lint_redlines.py" --check-ui-i18n "${RED_D
 RC_RED_BAD=$?
 set -e
 assert_eq "$RC_RED_BAD" 1 "lint_redlines.py 检出反例阻断"
-for expected_rule in "strcpy()" "atoi()" "rand()" "system()" "redline-swallowed-catch" "redline-fragile-cwd-path" "redline-ui-hardcoded-text" "redline-addition-overflow-bounds" "redline-ignored-fs-error-code"; do
+for expected_rule in "strcpy()" "atoi()" "rand()" "system()" "redline-swallowed-catch" "redline-fragile-cwd-path" "redline-ui-hardcoded-text" "redline-ignored-fs-error-code"; do
   if ! printf '%s' "$RED_OUT" | grep -q "$expected_rule"; then
     echo "❌ [FAIL] lint_redlines.py 未匹配预期规则: ${expected_rule}" >&2
     exit 1
   fi
 done
-echo "  ✅ [PASS] lint_redlines.py 9 类违例全部精准命中"
+echo "  ✅ [PASS] lint_redlines.py 5 类冻结词法规则 (8 处违例) 全部精准命中"
 PASS_COUNT=$((PASS_COUNT + 1))
 
 echo "[5/7] check_include_dag.py 架构边界与环路回归测试..."
@@ -279,6 +321,16 @@ for expected_arch in "arch-cyclic-dependency" "arch-private-header-leak" "arch-r
 done
 echo "  ✅ [PASS] check_include_dag.py 4 类边界违例全部精准命中"
 PASS_COUNT=$((PASS_COUNT + 1))
+
+# Verify single-library flat src/ layout (include/mylib/detail/x.hpp + src/detail/local.hpp + src/x.cpp)
+SINGLE_LIB_DIR="${WORK_DIR}/single_lib"
+mkdir -p "${SINGLE_LIB_DIR}/include/mylib/detail" "${SINGLE_LIB_DIR}/src/detail"
+echo '#pragma once' > "${SINGLE_LIB_DIR}/include/mylib/detail/x_detail.hpp"
+echo '#pragma once' > "${SINGLE_LIB_DIR}/src/detail/local_detail.hpp"
+echo '#pragma once' > "${SINGLE_LIB_DIR}/include/mylib/x.hpp"
+printf '#include "mylib/x.hpp"\n#include "mylib/detail/x_detail.hpp"\n#include "detail/local_detail.hpp"\n' > "${SINGLE_LIB_DIR}/src/x.cpp"
+python3 "${SCRIPTS_DESIGN}/check_include_dag.py" --root "${SINGLE_LIB_DIR}" >/dev/null
+assert_eq $? 0 "check_include_dag.py 单库扁平 src/ 引用自身 detail/ 零误报"
 
 echo "[6/7] C++17 基础设施原语 (ASan/UBSan + 四关质量门禁) 回归测试..."
 CPP_DIR="${WORK_DIR}/cpp17_core"

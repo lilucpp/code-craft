@@ -44,10 +44,10 @@ flowchart TD
 1. **最小增量实现**：只写通过当前测试所需的最小 C++17 代码，严禁顺手堆砌 YAGNI 抽象。
 2. **运行总控门禁脚本**（默认严格阻断；仅当用户明确指示“这是老项目”时追加 `--warn-only`）：
    ```bash
-   ./.agents/skills/cpp-verification-playbook/scripts/verify_gate.sh --dir=. --mode=diff
+   ./.agents/skills/cpp-verification-playbook/scripts/verify_gate.sh --dir=. --mode=diff --require-tests
    ```
-   （并发改动可追加 `--tsan-repeat=20`；完整验收建议附加 `--require-tests`）
-3. **错误驱动棘轮**：凡在 Gate 2 反复踩坑的 AI 错误，按 `skill-craft` 棘轮法则下沉为 `.clang-tidy` / `lint_redlines.py` / 编译选项，禁止仅往 Markdown 追加叮嘱。
+   （并发改动可追加 `--tsan-repeat=20`）
+3. **错误驱动棘轮与准入边界**：凡在 Gate 2 反复踩坑的 AI 错误，按 `skill-craft` 四步路由下沉：AST/类型问题进 `.clang-tidy`；模块依赖进 `check_include_dag.py`；`lint_redlines.py` 冻结在 $\le 5$ 类纯词法/API 黑名单（严禁写算术/变量名猜测正则）；复杂协议与算术边界写入 `coding-standards.md` 事前心智与 Gate 3 盲审清单。
 
 ### Gate 3：独立上下文盲审与归零闭环（Fresh-Context Blind Review Loop）
 > **防确认偏误铁律**：T2 级改动交付前，必须通过 `invoke_subagent`（或 `swarm` 中的只读 `verifier`）在干净上下文执行两段式盲审，严禁向其透传“我已修复/通过”的作者暗示：

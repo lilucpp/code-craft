@@ -14,19 +14,21 @@ CHECK_UI_I18N=false # 是否开启表现层硬编码中文字符串校验
 TOOL="all"         # all, format, tidy, cppcheck, redline
 CPP_STD="c++17"    # 默认 C++ 标准 (无 compile_commands.json 时生效)
 TARGET_DIR="."
+CUSTOM_BUILD_DIR=""
 
 show_help() {
   echo "用法: $0 [选项]"
   echo "选项:"
-  echo "  --mode=diff      增量模式（默认）：仅检查 git 变动及未跟踪的新增文件"
-  echo "  --mode=all       全量模式：对项目中所有的业务源码执行全面检查"
-  echo "  --fix            自动修复（应用 clang-format 排版）"
-  echo "  --warn-only      仅扫描汇报不阻断（返回 exit 0，适合历史老项目摸底）"
-  echo "  --check-ui-i18n  开启表现层控件/弹窗硬编码中文字符串拦截"
-  echo "  --std=<std>      指定无编译数据库时的 C++ 标准（默认: c++17）"
-  echo "  --tool=<name>    指定运行工具：all (默认), format, tidy, cppcheck, redline"
-  echo "  --dir=<path>     指定目标项目根目录（默认当前目录）"
-  echo "  -h, --help       显示帮助信息"
+  echo "  --mode=diff        增量模式（默认）：检查未提交改动；若工作区干净则自动对比 HEAD~1..HEAD"
+  echo "  --mode=all         全量模式：对项目中所有的业务源码执行全面检查"
+  echo "  --fix              自动修复（应用 clang-format 排版）"
+  echo "  --warn-only        仅扫描汇报不阻断（返回 exit 0，适合历史老项目摸底）"
+  echo "  --check-ui-i18n    开启表现层控件/弹窗硬编码中文字符串拦截"
+  echo "  --std=<std>        指定无编译数据库时的 C++ 标准（默认: c++17）"
+  echo "  --build-dir=<dir>  指定含 compile_commands.json 的构建目录（默认自动探测 build/build-asan/build-debug）"
+  echo "  --tool=<name>      指定运行工具：all (默认), format, tidy, cppcheck, redline"
+  echo "  --dir=<path>       指定目标项目根目录（默认当前目录）"
+  echo "  -h, --help         显示帮助信息"
   exit 0
 }
 
@@ -38,6 +40,7 @@ for arg in "$@"; do
     --warn-only)     WARN_ONLY=true ;;
     --check-ui-i18n) CHECK_UI_I18N=true ;;
     --std=*)         CPP_STD="${arg#*=}" ;;
+    --build-dir=*)   CUSTOM_BUILD_DIR="${arg#*=}" ;;
     --tool=*)        TOOL="${arg#*=}" ;;
     --dir=*)         TARGET_DIR="${arg#*=}" ;;
     -h|--help)       show_help ;;
@@ -50,6 +53,7 @@ case "$TOOL" in
   *) echo "❌ 无效的 --tool 参数: $TOOL (可选: all, format, tidy, cppcheck, redline)" >&2; exit 2 ;;
 esac
 
+CALLER_PWD="$PWD"
 cd "$TARGET_DIR"
 
 GATE_LABEL="严格门禁(阻塞)"
@@ -64,20 +68,32 @@ echo "=================================================="
 EXCLUDE_REGEX='(^|/)(third_party|vendor|external|build|build-[^/]+|cmake-build[^/]*|_deps|\.agents|\.git)/|\.pb\.(cc|h)$'
 
 # 1. 获取需要检查的源文件列表
-get_tracked_diff_files() {
-  if git rev-parse --verify HEAD &>/dev/null; then
-    git diff --relative --name-only --diff-filter=ACMR HEAD 2>/dev/null | \
-      grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
-      grep -vE "$EXCLUDE_REGEX" || true
-  else
-    git diff --relative --cached --name-only --diff-filter=ACMR 2>/dev/null | \
-      grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
-      grep -vE "$EXCLUDE_REGEX" || true
-  fi
-}
-
 get_untracked_files() {
   git ls-files --others --exclude-standard 2>/dev/null | \
+    grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
+    grep -vE "$EXCLUDE_REGEX" || true
+}
+
+DIFF_BASE_REF="HEAD"
+if [ "$MODE" = "diff" ] && git rev-parse --is-inside-work-tree &>/dev/null; then
+  if ! git rev-parse --verify HEAD &>/dev/null; then
+    DIFF_BASE_REF="--cached"
+  else
+    DIRTY_CPP=$(
+      {
+        git diff --relative --name-only --diff-filter=ACMR HEAD 2>/dev/null || true
+        get_untracked_files
+      } | grep -E '\.(cpp|cc|cxx|h|hpp)$' | grep -vE "$EXCLUDE_REGEX" || true
+    )
+    if [ -z "$DIRTY_CPP" ] && git rev-parse --verify HEAD~1 &>/dev/null; then
+      DIFF_BASE_REF="HEAD~1"
+      echo "ℹ️  当前工作区无未提交 C++ 改动，自动回退检查最近一次提交 (HEAD~1..HEAD)"
+    fi
+  fi
+fi
+
+get_tracked_diff_files() {
+  git diff --relative --name-only --diff-filter=ACMR "$DIFF_BASE_REF" 2>/dev/null | \
     grep -E '\.(cpp|cc|cxx|h|hpp)$' | \
     grep -vE "$EXCLUDE_REGEX" || true
 }
@@ -145,13 +161,11 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "format" ]; then
       mapfile -t UNTRACKED_FILES < <(get_untracked_files)
 
       if [ ${#TRACKED_FILES[@]} -gt 0 ]; then
-        DIFF_TARGET="--cached"
-        git rev-parse --verify HEAD &>/dev/null && DIFF_TARGET="HEAD"
         if [ "$DO_FIX" = true ]; then
           echo "   -> 正在使用 $CMD 增量修复已跟踪文件的修改行..."
-          git diff --relative -U0 --no-color "$DIFF_TARGET" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 -i
+          git diff --relative -U0 --no-color "$DIFF_BASE_REF" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 -i
         else
-          DIFF_OUT=$(git diff --relative -U0 --no-color "$DIFF_TARGET" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 || true)
+          DIFF_OUT=$(git diff --relative -U0 --no-color "$DIFF_BASE_REF" -- "${TRACKED_FILES[@]}" | "$CMD" -p1 || true)
           if [ -n "$DIFF_OUT" ]; then
             echo "   ❌ 检测到代码格式不符合规范的改动行:"
             echo "$DIFF_OUT" | head -n 40
@@ -194,11 +208,24 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "tidy" ]; then
   if command -v clang-tidy &>/dev/null; then
     echo "🔍 [2/4] 执行 clang-tidy 静态分析..."
     BUILD_ARGS=()
-    if [ -f "build/compile_commands.json" ]; then
-      BUILD_ARGS=(-p build)
-    elif [ -f "compile_commands.json" ]; then
-      BUILD_ARGS=(-p .)
-    else
+    if [ -n "$CUSTOM_BUILD_DIR" ]; then
+      if [ -f "$CUSTOM_BUILD_DIR/compile_commands.json" ]; then
+        BUILD_ARGS=(-p "$CUSTOM_BUILD_DIR")
+      elif [ -f "$CALLER_PWD/$CUSTOM_BUILD_DIR/compile_commands.json" ]; then
+        BUILD_ARGS=(-p "$CALLER_PWD/$CUSTOM_BUILD_DIR")
+      else
+        echo "   ⚠️ 指定的 --build-dir ($CUSTOM_BUILD_DIR) 下未找到 compile_commands.json，尝试自动探测..."
+      fi
+    fi
+    if [ ${#BUILD_ARGS[@]} -eq 0 ]; then
+      for cand in build build-asan build-debug .; do
+        if [ -f "$cand/compile_commands.json" ]; then
+          BUILD_ARGS=(-p "$cand")
+          break
+        fi
+      done
+    fi
+    if [ ${#BUILD_ARGS[@]} -eq 0 ]; then
       echo "   ℹ️ 未找到 compile_commands.json，采用通用参数扫描 (-std=$CPP_STD，建议使用 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON)"
     fi
 

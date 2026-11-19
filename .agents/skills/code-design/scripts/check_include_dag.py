@@ -148,7 +148,7 @@ def collect_files(root: str, extra_excludes: Set[str]) -> List[str]:
   return files
 
 
-def infer_module(rel_path: str, module_roots: List[str]) -> str:
+def infer_module(rel_path: str, module_roots: List[str], single_include_mod: Optional[str] = None) -> str:
   """Infer module name from path patterns like include/<mod>/..., src/<mod>/..., or modules/<mod>/..."""
   norm = rel_path.replace("\\", "/")
   parts = norm.split("/")
@@ -165,10 +165,33 @@ def infer_module(rel_path: str, module_roots: List[str]) -> str:
       continue
     prefix_parts = prefix_norm.split("/")
     if parts[: len(prefix_parts)] == prefix_parts and len(parts) > len(prefix_parts) + 1:
-      return parts[len(prefix_parts)]
+      candidate_mod = parts[len(prefix_parts)]
+      if candidate_mod not in PRIVATE_SEGMENTS:
+        return candidate_mod
+
+  # Pattern 3: Single-library layout where headers live in include/<single_mod>/...
+  # and implementation/private files sit under src/<file>.cpp or src/detail/...
+  if single_include_mod and parts[0] in ("src", "include"):
+    if len(parts) == 2 or (len(parts) >= 3 and parts[1] in PRIVATE_SEGMENTS):
+      return single_include_mod
 
   # Fallback: top-level directory or root
   return parts[0] if len(parts) > 1 else "_root"
+
+
+def detect_single_include_module(all_files: List[str]) -> Optional[str]:
+  """If include/ has exactly one top-level module directory and src/ has no module subdirectories, return that module name."""
+  inc_mods: Set[str] = set()
+  src_subdirs: Set[str] = set()
+  for rel in all_files:
+    parts = rel.replace("\\", "/").split("/")
+    if len(parts) >= 3 and parts[0] == "include" and parts[1] not in PRIVATE_SEGMENTS:
+      inc_mods.add(parts[1])
+    elif len(parts) >= 3 and parts[0] == "src" and parts[1] not in PRIVATE_SEGMENTS:
+      src_subdirs.add(parts[1])
+  if len(inc_mods) == 1 and not src_subdirs:
+    return next(iter(inc_mods))
+  return None
 
 
 def discover_include_roots(root: str, all_files: List[str], configured_roots: List[str]) -> List[str]:
@@ -293,6 +316,7 @@ def main(argv: List[str]) -> int:
 
   file_set = set(all_files)
   include_roots = discover_include_roots(root, all_files, module_roots)
+  single_inc_mod = detect_single_include_module(all_files)
 
   edges: List[IncludeEdge] = []
   adj: Dict[str, Set[str]] = defaultdict(set)
@@ -300,7 +324,7 @@ def main(argv: List[str]) -> int:
   violations: List[BoundaryViolation] = []
 
   for rel_path in all_files:
-    src_mod = infer_module(rel_path, module_roots)
+    src_mod = infer_module(rel_path, module_roots, single_inc_mod)
     adj.setdefault(src_mod, set())
     abs_path = os.path.join(root, rel_path)
     with open(abs_path, "r", encoding="utf-8", errors="replace") as fh:
@@ -314,7 +338,7 @@ def main(argv: List[str]) -> int:
       dst_rel = resolve_include(rel_path, raw_inc, quote_kind, include_roots, file_set)
       if dst_rel is None:
         continue
-      dst_mod = infer_module(dst_rel, module_roots)
+      dst_mod = infer_module(dst_rel, module_roots, single_inc_mod)
 
       if src_mod == dst_mod:
         continue

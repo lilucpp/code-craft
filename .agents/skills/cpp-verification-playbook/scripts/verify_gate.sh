@@ -66,12 +66,17 @@ if ! [[ "$TSAN_REPEAT" =~ ^[1-9][0-9]*$ ]]; then
   exit 2
 fi
 
+CALLER_PWD="$PWD"
 TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
 
 resolve_dir() {
   local raw="$1"
   if [[ "$raw" = /* ]]; then
     printf '%s' "$raw"
+  elif [ -d "${TARGET_DIR}/${raw}" ]; then
+    printf '%s' "${TARGET_DIR}/${raw}"
+  elif [ -d "${CALLER_PWD}/${raw}" ]; then
+    (cd "${CALLER_PWD}/${raw}" && pwd)
   else
     printf '%s' "${TARGET_DIR}/${raw}"
   fi
@@ -145,6 +150,7 @@ fi
 # ------------------------------------------------------------------------------
 echo "▶ [Gate 2/4] 执行静态质量与红线扫描 (run_check.sh)..."
 QUALITY_ARGS=(--mode="$MODE" --std="$CPP_STD" --dir="$TARGET_DIR")
+[ -n "$BUILD_DIR" ] && QUALITY_ARGS+=(--build-dir="$BUILD_DIR")
 [ "$WARN_ONLY" = true ] && QUALITY_ARGS+=(--warn-only)
 [ "$CHECK_UI_I18N" = true ] && QUALITY_ARGS+=(--check-ui-i18n)
 T_START=$(date +%s)

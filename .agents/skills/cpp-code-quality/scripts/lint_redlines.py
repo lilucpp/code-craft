@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
-"""Static redline linter for C++17 codebases.
+"""Static redline linter for C++17 codebases (Frozen Lexical/API Scope).
 
-Catches high-risk patterns that clang-tidy/cppcheck often miss in C++ mode:
-1. R1 (banned-c-api): Banned/unsafe C APIs (strcpy, sprintf, system, fork, rand, atoi, etc.)
-2. R2 (swallowed-catch): Empty catch blocks silently swallowing exceptions
-3. R3 (fragile-cwd-path): Fragile CWD-relative build paths ("./build/", "../build/")
-4. R4 (ui-hardcoded-text, opt-in via --check-ui-i18n): Unwrapped CJK literals in Qt/GUI calls
+Catches high-risk lexical patterns that clang-tidy/cppcheck often miss in C++ mode:
+1. R1 (redline-banned-c-api): Banned/unsafe C APIs (strcpy, sprintf, system, fork, rand, atoi, etc.)
+2. R2 (redline-swallowed-catch): Empty catch blocks silently swallowing exceptions
+3. R3 (redline-fragile-cwd-path): Fragile CWD-relative build paths ("./build/", "../build/")
+4. R4 (redline-ui-hardcoded-text, opt-in via --check-ui-i18n): Unwrapped CJK literals in Qt/GUI calls
+5. R6 (redline-ignored-fs-error-code): Unchecked std::error_code after std::filesystem::exists(path, ec)
+
+[COMPLEXITY FREEZE & 4-STEP ADMISSION PROTOCOL - ENFORCED BY scripts/self_test.sh]
+- Budget Cap: Max 5 distinct `redline-*` rule IDs, Max 380 total lines of code.
+- Before adding ANY rule here, follow the 4-step routing gate:
+  Step 1 (AST/Compiler): Check `clang-tidy --list-checks` and compiler `-W...` flags first.
+  Step 2 (Module DAG): Put `#include` / directory layering rules in `check_include_dag.py`.
+  Step 3 (Lexical Redline): Only pure API/literal blacklists (zero variable-name guessing or arithmetic
+         dataflow heuristics) may enter this file, within the 5-rule / 380-line cap.
+  Step 4 (Semantic/Protocol): Put protocol checksums, arithmetic bounds (`len > size - offset`), and
+         lock topology into `coding-standards.md` upfront heuristics + `cpp-verification-playbook` Gate 3.
 """
 
 from __future__ import annotations
@@ -66,9 +77,6 @@ RAW_STR_START_RE = re.compile(r'R"([^\s()\\]{0,16})\(')
 
 EMPTY_CATCH_RE = re.compile(r"\bcatch\s*\([^)]*\)\s*\{\s*\}", re.MULTILINE)
 FRAGILE_CWD_RE = re.compile(r"(?:\.\.?/)+(?:cmake-)?build(?:-[^/\"'\s]+)?/")
-ADD_OVERFLOW_BOUNDS_RE = re.compile(
-    r"\b(?:offset|pos|cursor|read_pos|write_pos)\w*\s*\+\s*[A-Za-z_]\w*\s*>=?\s*[A-Za-z_][\w.:>]*\.(?:size|length|capacity)\s*\(\s*\)"
-)
 FS_EXISTS_EC_RE = re.compile(r"\b(?:filesystem::|fs::)exists\s*\([^;,\n]+,\s*([A-Za-z_]\w*)\s*\)")
 UI_HARDCODED_CJK_RE = re.compile(
     r"\b(?:QMessageBox::\w+|setText|setWindowTitle|setToolTip|setPlaceholderText|showMessage)\s*\([^;\n]*[\u4e00-\u9fff]"
@@ -269,88 +277,45 @@ def scan_file(file_path: str, check_ui_i18n: bool) -> List[Violation]:
       if prev_word:
         token = prev_word.group(1)
         if token in ("*", "&", ">"):
-          # Could be pointer/ref return type `char* strcpy(...)` vs arithmetic `a * rand()` or `a > rand()`.
-          if (
-              "=" not in prefix
-              and "(" not in prefix
-              and "<<" not in prefix
-              and ";" not in prefix
-              and "return" not in prefix.split()
-          ):
+          if "=" not in prefix and "(" not in prefix and "<<" not in prefix and ";" not in prefix and "return" not in prefix.split():
             continue
         elif token not in CALL_PRECEDING_KEYWORDS:
           continue
       api = match.group(1)
       spec = BANNED_APIS[api]
-      violations.append(
-          Violation(
-              file_path=file_path,
-              line=line_no,
-              rule_id="redline-banned-c-api",
-              message=f"禁止调用高危/非线程安全函数 '{api}()' [{spec.cert_tag}]，请改用: {spec.alternative}",
-          )
-      )
+      violations.append(Violation(
+          file_path, line_no, rule_id="redline-banned-c-api",
+          message=f"禁止调用高危/非线程安全函数 '{api}()' [{spec.cert_tag}]，请改用: {spec.alternative}",
+      ))
 
   # R2: Empty catch blocks (single or multi-line)
   for match in EMPTY_CATCH_RE.finditer(code_only):
     line_no = offset_to_line(code_only, match.start())
-    if exempt_lines.get(line_no):
-      continue
-    violations.append(
-        Violation(
-            file_path=file_path,
-            line=line_no,
-            rule_id="redline-swallowed-catch",
-            message="禁止使用空 catch 块静默吞掉异常；请记录错误上下文并向上传播或 Fail-Fast",
-        )
-    )
+    if not exempt_lines.get(line_no):
+      violations.append(Violation(
+          file_path, line_no, rule_id="redline-swallowed-catch",
+          message="禁止使用空 catch 块静默吞掉异常；请记录错误上下文并向上传播或 Fail-Fast",
+      ))
 
   # R3: Fragile CWD-relative build paths inside string literals / code
   for line_no, raw_line in enumerate(code_with_strings.splitlines(), start=1):
-    if exempt_lines.get(line_no):
-      continue
-    if FRAGILE_CWD_RE.search(raw_line):
-      violations.append(
-          Violation(
-              file_path=file_path,
-              line=line_no,
-              rule_id="redline-fragile-cwd-path",
-              message="禁止硬编码依赖 CWD 的脆弱相对构建路径 (./build/, ../build/)；请基于可执行文件同级目录 (/proc/self/exe) 或显式参数解析",
-          )
-      )
+    if not exempt_lines.get(line_no) and FRAGILE_CWD_RE.search(raw_line):
+      violations.append(Violation(
+          file_path, line_no, rule_id="redline-fragile-cwd-path",
+          message="禁止硬编码依赖 CWD 的脆弱相对构建路径 (./build/, ../build/)；请基于可执行文件同级目录 (/proc/self/exe) 或显式参数解析",
+      ))
 
   # R4: Optional GUI hardcoded CJK strings (ignore text properly wrapped in Tr(...) / tr(...))
   if check_ui_i18n:
     for line_no, raw_line in enumerate(code_with_strings.splitlines(), start=1):
-      if exempt_lines.get(line_no):
-        continue
-      sanitized_line = UI_TR_WRAPPED_RE.sub("", raw_line)
-      if UI_HARDCODED_CJK_RE.search(sanitized_line):
-        violations.append(
-            Violation(
-                file_path=file_path,
-                line=line_no,
-                rule_id="redline-ui-hardcoded-text",
-                message="表现层控件/弹窗禁止硬编码中文字符串；请统一接入国际化字典 Tr(...)",
-            )
-        )
+      if not exempt_lines.get(line_no) and UI_HARDCODED_CJK_RE.search(UI_TR_WRAPPED_RE.sub("", raw_line)):
+        violations.append(Violation(
+            file_path, line_no, rule_id="redline-ui-hardcoded-text",
+            message="表现层控件/弹窗禁止硬编码中文字符串；请统一接入国际化字典 Tr(...)",
+        ))
 
-  # R5: Addition-overflow prone bounds checks (`offset + len > buf.size()`)
+  # R5: Unchecked std::error_code after std::filesystem::exists(path, ec)
   code_lines = code_only.splitlines()
-  for line_no, raw_line in enumerate(code_lines, start=1):
-    if exempt_lines.get(line_no):
-      continue
-    if ADD_OVERFLOW_BOUNDS_RE.search(raw_line):
-      violations.append(
-          Violation(
-              file_path=file_path,
-              line=line_no,
-              rule_id="redline-addition-overflow-bounds",
-              message="边界校验禁止 'offset + len > buf.size()' 加法溢出写法；请改用安全减法比较: 'offset > buf.size() || len > buf.size() - offset'",
-          )
-      )
-
-  # R6: Unchecked std::error_code after std::filesystem::exists(path, ec)
   for idx, raw_line in enumerate(code_lines):
     line_no = idx + 1
     if exempt_lines.get(line_no):
@@ -363,14 +328,10 @@ def scan_file(file_path: str, check_ui_i18n: bool) -> List[Violation]:
           rf"(?:if\s*\([^;\n]*\b{ec_esc}\b|!\s*{ec_esc}\b|\b{ec_esc}\s*(?:&&|\|\||[!=]=|\?|\.value\()|return\s+[^;\n]*\b{ec_esc}\b|(?:assert|EXPECT_|REQUIRE)[^;\n]*\b{ec_esc}\b)"
       )
       if not ec_checked_re.search(lookahead):
-        violations.append(
-            Violation(
-                file_path=file_path,
-                line=line_no,
-                rule_id="redline-ignored-fs-error-code",
-                message=f"调用 filesystem::exists(..., {ec_name}) 后未检查错误码 '{ec_name}'；需显式区分不存在与 EACCES/ENOTDIR",
-            )
-        )
+        violations.append(Violation(
+            file_path, line_no, rule_id="redline-ignored-fs-error-code",
+            message=f"调用 filesystem::exists(..., {ec_name}) 后未检查错误码 '{ec_name}'；需显式区分不存在与 EACCES/ENOTDIR",
+        ))
 
   return violations
 

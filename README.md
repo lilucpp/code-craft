@@ -138,7 +138,7 @@ flowchart TD
 
 ### 1. 全局常驻底线规则 (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**：
-  * **函数设计红线**：长度控制在 20~30 行内，单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**；
+  * **函数设计红线**：日常函数控制在 20~30 行内（`.clang-tidy` 硬阻断上限 60 行），单一抽象层级 (SLAP)，入参 $\le 3$ 个，**卫语句优先 (Guard Clauses)**；
   * **系统物理底线**：结构体 8-4-2-1 降序对齐消灭 Padding；跨核变量强制 `alignas(64)` 隔离伪共享；
   * **崩溃一致性**：文件落盘强制四步法（`write tmp -> fdatasync -> rename -> dir fsync`），杜绝断电损坏；
   * **关系数据规范**：金额强制 `DECIMAL(18, 4)`，严禁逗号分隔多值，复合索引等值在前范围在后；

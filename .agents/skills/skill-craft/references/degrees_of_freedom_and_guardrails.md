@@ -72,6 +72,12 @@ quadrantChart
 4. **自动化测试与不变式**：RapidCheck 属性测试、libFuzzer、故障注入、ASan/UBSan/TSan 压测；
 5. **Markdown 规则（兜底）**：仅保留静态工具与测试无法自动判定的高层设计哲学与协作准则。
 
-### 4.2 常驻规则瘦身审计（Always-On Context Hygiene）
-* 常驻规则（如 `coding-standards.md`）每多一条冗余细则，都会稀释模型对真正重要原则的注意力；
-* 一旦某条规范已被 `.clang-format` / `.clang-tidy` / 脚本 100% 强制拦截，应从常驻 Markdown 中删去细节复述，只保留一句工具入口指针。
+### 4.2 新 Lint 准入四步路由与复杂度冻结（防正则脚本膨胀）
+严禁使用 Python 正则脚本模拟 C++ AST 或做基于变量名猜测的算术/数据流推导。新增任何检查规则必须按以下四步分流：
+1. **先查 AST 工具**：先运行 `clang-tidy --list-checks` 或查编译器 `-W...`；凡 AST/符号执行可覆盖的，必须配置到 `.clang-tidy`；
+2. **模块依赖拓扑**：凡涉及目录分层、`#include` 环路与 `detail/` 隔离的，必须配置到 `.arch-boundaries.json` / `check_include_dag.py`；
+3. **词法红线冻结（`lint_redlines.py`）**：仅允许收录**纯固定 API 名称或固定字面量黑名单**（由 `scripts/self_test.sh` 强制锁定 **$\le 5$ 类 `rule_id` 且总行数 $\le 380$ 行**）；
+4. **复杂语义与协议不变式**：凡涉及协议校验范围、反序列化上界（`len > size - offset`）、锁序拓扑等，一律写入 `coding-standards.md`（1 行事前生成心智）+ `cpp-verification-playbook`（Gate 1 必测 & Gate 3 盲审）。
+
+### 4.3 常驻规则“事前心智 + 事后兜底”平衡（Always-On Context Hygiene）
+* 常驻规则（如 `coding-standards.md`）应剥离工具配置细节（如 `.clang-format` 的 YAML 键名），但**必须保留高浓缩的定量生成心智**（如“函数 20~30 行/硬上限 60 行、入参 $\le 3$、嵌套 $\le 3$ 卫语句平铺”），以提高模型第一次生成命中率（First-Pass Yield），再由 Lint 提供 100% 确定性兜底。

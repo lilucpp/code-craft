@@ -137,7 +137,7 @@ flowchart TD
 
 ### 1. Global Baseline Rules (`.agents/rules/`)
 * **[`coding-standards.md`](./.agents/rules/coding-standards.md)**:
-  * **Function Design**: Length constrained to 20–30 lines, Single Level of Abstraction Principle (SLAP), $\le 3$ arguments, **Guard Clauses first**;
+  * **Function Design**: Length guided to 20–30 lines (`.clang-tidy` hard block at 60 lines), Single Level of Abstraction Principle (SLAP), $\le 3$ arguments, **Guard Clauses first**;
   * **Systems & Physical**: 8-4-2-1 descending alignment to eliminate padding; `alignas(64)` for multithreaded variables to prevent false sharing;
   * **Crash Consistency**: Mandatory 4-step atomic write (`write tmp -> fdatasync -> rename -> dir fsync`);
   * **Relational Storage**: Financial currency must use `DECIMAL(18, 4)`; B-Tree indexes: equality first, range second;
