@@ -124,7 +124,7 @@ def strip_cpp_comments(source: str) -> str:
 def is_excluded(rel_path: str, extra_excludes: Set[str]) -> bool:
   parts = rel_path.replace("\\", "/").split("/")
   for part in parts[:-1]:
-    if part in DEFAULT_EXCLUDES or part in extra_excludes or part.startswith("build-") or part.startswith("cmake-build"):
+    if part in DEFAULT_EXCLUDES or part in extra_excludes or part.startswith("build-") or part.startswith("build_") or part.startswith("cmake-build"):
       return True
   return False
 
@@ -138,6 +138,7 @@ def collect_files(root: str, extra_excludes: Set[str]) -> List[str]:
         if d not in DEFAULT_EXCLUDES
         and d not in extra_excludes
         and not d.startswith("build-")
+        and not d.startswith("build_")
         and not d.startswith("cmake-build")
     ]
     for fname in sorted(filenames):

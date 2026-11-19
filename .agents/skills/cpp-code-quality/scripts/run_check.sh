@@ -65,7 +65,7 @@ echo "=================================================="
 echo "🛡️  执行 C++ 质量检查 [模式: $MODE | 工具: $TOOL | 修复: $DO_FIX | 门禁: $GATE_LABEL | 标准: $CPP_STD]"
 echo "=================================================="
 
-EXCLUDE_REGEX='(^|/)(third_party|vendor|external|build|build-[^/]+|cmake-build[^/]*|_deps|\.agents|\.git)/|\.pb\.(cc|h)$'
+EXCLUDE_REGEX='(^|/)(third_party|vendor|external|build|build[_-][^/]+|cmake-build[^/]*|_deps|\.agents|\.git)/|\.pb\.(cc|h)$'
 
 # 1. 获取需要检查的源文件列表
 get_untracked_files() {
