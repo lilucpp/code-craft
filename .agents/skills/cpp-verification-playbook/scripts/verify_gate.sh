@@ -83,7 +83,7 @@ resolve_dir() {
 }
 
 if [ -z "$BUILD_DIR" ]; then
-  for cand in "build" "build-asan" "build-debug"; do
+  for cand in "build" "build-asan" "build_asan" "build-debug" "build_debug"; do
     if [ -f "${TARGET_DIR}/${cand}/CTestTestfile.cmake" ] || [ -f "${TARGET_DIR}/${cand}/CMakeCache.txt" ]; then
       BUILD_DIR="${TARGET_DIR}/${cand}"
       break
@@ -98,9 +98,12 @@ else
 fi
 
 if [ -z "$TSAN_BUILD_DIR" ]; then
-  if [ -f "${TARGET_DIR}/build-tsan/CTestTestfile.cmake" ] || [ -f "${TARGET_DIR}/build-tsan/CMakeCache.txt" ]; then
-    TSAN_BUILD_DIR="${TARGET_DIR}/build-tsan"
-  fi
+  for tsan_cand in "build-tsan" "build_tsan"; do
+    if [ -f "${TARGET_DIR}/${tsan_cand}/CTestTestfile.cmake" ] || [ -f "${TARGET_DIR}/${tsan_cand}/CMakeCache.txt" ]; then
+      TSAN_BUILD_DIR="${TARGET_DIR}/${tsan_cand}"
+      break
+    fi
+  done
 else
   TSAN_BUILD_DIR="$(resolve_dir "$TSAN_BUILD_DIR")"
   if [ ! -d "$TSAN_BUILD_DIR" ]; then

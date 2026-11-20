@@ -76,7 +76,7 @@ PRECEDING_WORD_RE = re.compile(r"([A-Za-z_]\w*|[*&>])\s*$")
 RAW_STR_START_RE = re.compile(r'R"([^\s()\\]{0,16})\(')
 
 EMPTY_CATCH_RE = re.compile(r"\bcatch\s*\([^)]*\)\s*\{\s*\}", re.MULTILINE)
-FRAGILE_CWD_RE = re.compile(r"(?:\.\.?/)+(?:cmake-)?build(?:-[^/\"'\s]+)?/")
+FRAGILE_CWD_RE = re.compile(r"(?:\.\.?/)+(?:cmake-)?build(?:[_-][^/\"'\s]+)?/")
 FS_EXISTS_EC_RE = re.compile(r"\b(?:filesystem::|fs::)exists\s*\([^;,\n]+,\s*([A-Za-z_]\w*)\s*\)")
 UI_HARDCODED_CJK_RE = re.compile(
     r"\b(?:QMessageBox::\w+|setText|setWindowTitle|setToolTip|setPlaceholderText|showMessage)\s*\([^;\n]*[\u4e00-\u9fff]"

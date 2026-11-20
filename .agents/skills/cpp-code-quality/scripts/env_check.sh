@@ -48,6 +48,28 @@ check_tool "cppcheck" "cppcheck" "快速未定义行为与内存越界检测"
 # 5. 构建系统（用于导出 compile_commands.json）
 check_tool "cmake" "cmake" "生成编译数据库供 clang-tidy 使用"
 
+# 6. Python3（用于执行 lint_redlines.py 与 check_include_dag.py）
+check_tool "python3" "python3" "运行红线检查与架构 DAG 拓扑门禁脚本"
+
+# 7. 扩展质量与测试工具（可选，不阻塞核心门禁）
+echo "--------------------------------------------------"
+echo "📦 扩展构建/覆盖率/Fuzzing 工具状态（可选）:"
+for opt_spec in \
+  "ninja:高速增量构建生成器 (cmake -G Ninja)" \
+  "clang++:LLVM C++ 编译器与 libFuzzer 模糊测试驱动" \
+  "llvm-cov:LLVM 源码级增量覆盖率统计" \
+  "lcov:GCC/GCOV 代码覆盖率采集" \
+  "gcovr:行/分支增量覆盖率报表生成"; do
+  opt_cmd="${opt_spec%%:*}"
+  opt_desc="${opt_spec#*:}"
+  if command -v "$opt_cmd" &>/dev/null; then
+    opt_ver=$("$opt_cmd" --version 2>&1 | head -n 1 || echo "installed")
+    echo "  [OK]       $opt_cmd: 已就绪 ($opt_ver)"
+  else
+    echo "  [OPTIONAL] $opt_cmd: 未安装 ($opt_desc)"
+  fi
+done
+
 echo "--------------------------------------------------"
 
 # 检测权限状态

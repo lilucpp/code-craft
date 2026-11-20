@@ -218,7 +218,7 @@ if [ "$TOOL" = "all" ] || [ "$TOOL" = "tidy" ]; then
       fi
     fi
     if [ ${#BUILD_ARGS[@]} -eq 0 ]; then
-      for cand in build build-asan build-debug .; do
+      for cand in build build-asan build_asan build-debug build_debug .; do
         if [ -f "$cand/compile_commands.json" ]; then
           BUILD_ARGS=(-p "$cand")
           break
